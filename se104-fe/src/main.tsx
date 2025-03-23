@@ -5,7 +5,9 @@ import Layout from "@/layout";
 import BookPage from "pages/client/book";
 import LoginPage from "pages/client/auth/login";
 import RegisterPage from "pages/client/auth/register";
+import { App } from "antd";
 import "styles/global.scss";
+import { AppProvider } from "./components/context/app.context";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -29,6 +31,10 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <App>
+      <AppProvider>
+        <RouterProvider router={router} />
+      </AppProvider>
+    </App>
   </StrictMode>
 );
