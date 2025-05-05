@@ -6,15 +6,20 @@ import BookPage from "pages/client/book";
 import LoginPage from "pages/client/auth/login";
 import RegisterPage from "pages/client/auth/register";
 import { App } from "antd";
-import "styles/global.scss";
+import "styles/global.css";
 import { AppProvider } from "./components/context/app.context";
+import HomePage from "./pages/client/home";
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
     children: [
       {
-        path: "/book",
+        path: "",
+        element: <HomePage />,
+      },
+      {
+        path: "book",
         element: <BookPage />,
       },
     ],
