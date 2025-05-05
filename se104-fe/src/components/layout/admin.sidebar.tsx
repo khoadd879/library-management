@@ -15,14 +15,14 @@ const AppSidebar = () => {
   const navigate = useNavigate();
 
   return (
-    <aside className="w-64 h-screen bg-[#153D36] text-white flex flex-col px-4 py-8">
+    <aside className="w-64 min-h-screen bg-[#153D36] text-white flex flex-col px-4 py-8 h-full">
       <div className="flex justify-center mb-10">
         <div className="w-20 h-20 bg-gray-300 rounded-full" />
       </div>
 
       <nav className="flex flex-col gap-6 ml-4">
         <button
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/admin")}
           className="flex items-center gap-3 px-2 py-1 hover:text-green-300 transition-colors"
         >
           <div className="w-6 text-lg flex justify-center text-white">
@@ -32,7 +32,7 @@ const AppSidebar = () => {
         </button>
 
         <button
-          onClick={() => navigate("/list")}
+          onClick={() => navigate("/admin/list")}
           className="flex items-center gap-3 px-2 py-1 hover:text-green-300 transition-colors"
         >
           <div className="w-6 text-lg flex justify-center text-white">
@@ -42,7 +42,7 @@ const AppSidebar = () => {
         </button>
 
         <button
-          onClick={() => navigate("/add")}
+          onClick={() => navigate("/admin/add")}
           className="flex items-center gap-3 px-2 py-1 hover:text-green-300 transition-colors"
         >
           <div className="w-6 text-lg flex justify-center text-white">
@@ -52,7 +52,7 @@ const AppSidebar = () => {
         </button>
 
         <button
-          onClick={() => navigate("/receive")}
+          onClick={() => navigate("/admin/receive")}
           className="flex items-center gap-3 px-2 py-1 hover:text-green-300 transition-colors"
         >
           <div className="w-6 text-lg flex justify-center text-white">
@@ -62,7 +62,7 @@ const AppSidebar = () => {
         </button>
 
         <button
-          onClick={() => navigate("/borrow")}
+          onClick={() => navigate("/admin/borrow")}
           className="flex items-center gap-3 px-2 py-1 hover:text-green-300 transition-colors"
         >
           <div className="w-6 text-lg flex justify-center text-white">
@@ -72,7 +72,7 @@ const AppSidebar = () => {
         </button>
 
         <button
-          onClick={() => navigate("/report")}
+          onClick={() => navigate("/admin/report")}
           className="flex items-center gap-3 px-2 py-1 hover:text-green-300 transition-colors"
         >
           <div className="w-6 text-lg flex justify-center text-white">
@@ -82,7 +82,7 @@ const AppSidebar = () => {
         </button>
 
         <button
-          onClick={() => navigate("/chat")}
+          onClick={() => navigate("/admin/chat")}
           className="flex items-center gap-3 px-2 py-1 hover:text-green-300 transition-colors"
         >
           <div className="w-6 text-lg flex justify-center text-white">
