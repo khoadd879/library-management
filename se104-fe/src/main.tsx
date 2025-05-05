@@ -9,18 +9,28 @@ import { App } from "antd";
 import "styles/global.css";
 import { AppProvider } from "./components/context/app.context";
 import HomePage from "./pages/client/home";
+import UserPage from "./pages/client/user";
+import AddUser from "./pages/client/addUser";
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
     children: [
       {
-        path: "",
+        index: true,
         element: <HomePage />,
       },
       {
         path: "book",
         element: <BookPage />,
+      },
+      {
+        path: "list",
+        element: <UserPage />,
+      },
+      {
+        path: "add",
+        element: <AddUser />,
       },
     ],
   },
