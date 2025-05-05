@@ -1,14 +1,17 @@
 import { Outlet } from "react-router-dom";
-import AppHeader from "./components/layout/app.header";
-
+import AppSidebar from "./components/layout/app.sidebar";
 
 function Layout() {
-
   return (
-    <div>
-      <AppHeader />
-      <Outlet />
+    <div className="flex ">
+      <div>
+        <AppSidebar />
+      </div>
+      <div>
+        <Outlet />
+      </div>
     </div>
-  )
+  );
 }
-export default Layout
+
+export default Layout;
