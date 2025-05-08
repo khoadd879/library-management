@@ -3,8 +3,6 @@ import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Layout from "@/layout";
 import BookPage from "@/pages/admin/book";
-import LoginPage from "pages/client/auth/login";
-import RegisterPage from "pages/client/auth/register";
 import { App } from "antd";
 import "styles/global.css";
 import { AppProvider } from "./components/context/app.context";
@@ -24,6 +22,11 @@ import UserHomepage from "./pages/client/homepage";
 import FeaturedBooks from "./pages/client/featured";
 import NewBooks from "./pages/client/newBook";
 import BookDetailPage from "./pages/client/detail";
+import SignIn from "@/pages/client/auth/signin";
+import SignUp from "@/pages/client/auth/signup";
+import ForgotPasswordPage from "./pages/client/auth/forgot";
+import VerificationCodePage from "./pages/client/auth/verification";
+import NewPasswordPage from "./pages/client/auth/newPass";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -79,12 +82,24 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path: "/login",
-    element: <LoginPage />,
+    path: "/signin",
+    element: <SignIn />,
   },
   {
-    path: "/register",
-    element: <RegisterPage />,
+    path: "/signup",
+    element: <SignUp />,
+  },
+  {
+    path: "/forgot",
+    element: <ForgotPasswordPage />,
+  },
+  {
+    path: "/verification",
+    element: <VerificationCodePage />,
+  },
+  {
+    path: "/new-pass",
+    element: <NewPasswordPage />,
   },
 ]);
 

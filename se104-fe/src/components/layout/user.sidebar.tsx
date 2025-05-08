@@ -46,11 +46,11 @@ const UserSidebar = () => {
         />
       </nav>
 
-      <div className="mt-12 text-center">
+      <div className="mt-12 text-center text-white">
         <img
           src="https://cdn-icons-png.flaticon.com/512/29/29302.png"
           alt="Library"
-          className="w-20 h-20 mx-auto"
+          className="w-20 h-20 mx-auto filter invert"
         />
         <p className="text-white italic font-bold text-lg">Library</p>
       </div>
