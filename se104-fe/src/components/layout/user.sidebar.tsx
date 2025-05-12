@@ -8,10 +8,16 @@ import {
   FaSignOutAlt,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { useCurrentApp } from "../context/app.context";
 
 const UserSidebar = () => {
   const navigate = useNavigate();
-
+  const { setIsAuthenticated } = useCurrentApp();
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setIsAuthenticated(false);
+    navigate("/signin");
+  };
   return (
     <aside className="w-64  min-h-screen bg-[#153D36] text-white flex flex-col items-center px-4 py-8 h-full">
       <div className="mb-8">
@@ -57,8 +63,8 @@ const UserSidebar = () => {
 
       <div className="mt-auto pt-8">
         <button
-          onClick={() => navigate("/login")}
           className="flex items-center gap-3 text-sm hover:text-red-400 transition-colors"
+          onClick={handleLogout}
         >
           <FaSignOutAlt />
           <span>ĐĂNG XUẤT</span>

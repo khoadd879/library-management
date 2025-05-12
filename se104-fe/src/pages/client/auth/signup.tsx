@@ -4,13 +4,13 @@ import { message } from "antd";
 import { signUpSendOtpAPI } from "@/services/api";
 
 const SignUp = () => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
 
   const handleSignUp = async () => {
-    if (!username || !password || !confirmPassword) {
+    if (!email || !password || !confirmPassword) {
       message.warning("Vui lòng nhập đầy đủ thông tin!");
       return;
     }
@@ -21,10 +21,16 @@ const SignUp = () => {
     }
 
     try {
-      const res = await signUpSendOtpAPI(username, password, confirmPassword);
-      if (res && res.data) {
-        message.success("Đăng ký thành công!");
-        navigate("/signin");
+      const res = await signUpSendOtpAPI(email, password, confirmPassword);
+      if (res) {
+        message.success(
+          "Đăng ký thành công! Vui lòng kiểm tra email để lấy mã OTP."
+        );
+        navigate("/verification", {
+          state: {
+            email: email,
+          },
+        });
       } else {
         message.error("Đăng ký thất bại!");
       }
@@ -61,9 +67,9 @@ const SignUp = () => {
 
         <input
           type="text"
-          placeholder="Login"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           className="w-full px-4 py-2 rounded-md bg-[#9cd4b0] text-black placeholder-gray-700 focus:outline-none"
         />
         <input

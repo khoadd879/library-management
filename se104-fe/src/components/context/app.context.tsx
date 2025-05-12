@@ -2,10 +2,10 @@ import { authenticateAPI } from "@/services/api";
 import { createContext, useContext, useEffect, useState } from "react";
 
 type IAppContext = {
-  user: IUser | null;
+  user: IFetchUser | null;
   isAuthenticated: boolean;
   setIsAuthenticated: (v: boolean) => void;
-  setUser: (v: IUser) => void;
+  setUser: (v: IFetchUser) => void;
 };
 
 const CurrentAppContext = createContext<IAppContext | null>(null);
@@ -16,14 +16,16 @@ type TProps = {
 
 export const AppProvider = (props: TProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [user, setUser] = useState<IUser | null>(null);
+  const [user, setUser] = useState<IFetchUser | null>(null);
   useEffect(() => {
     const fetchUser = async () => {
       const token = localStorage.getItem("token");
       const res = await authenticateAPI(token);
       if (res) {
-        setUser(res.data);
+        setIsAuthenticated(true);
+        setUser(res);
       }
+      console.log("hee");
     };
     fetchUser();
   }, []);

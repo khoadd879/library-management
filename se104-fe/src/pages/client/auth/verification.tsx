@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { signUpWithOtpAPI } from "@/services/api";
 import { message } from "antd";
 
 const VerificationCodePage = () => {
   const [timer, setTimer] = useState(30);
-  const [otp, setOtp] = useState(["", "", "", ""]);
-  const email = "email@gmail.com";
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const email = location.state?.email || "";
 
   useEffect(() => {
     if (timer > 0) {
@@ -18,22 +21,22 @@ const VerificationCodePage = () => {
 
   const handleConfirmCode = async () => {
     const enteredOtp = otp.join("").trim();
-    if (enteredOtp.length !== 4) {
-      message.warning("Vui lòng nhập đầy đủ mã xác minh (4 chữ số)");
+    if (enteredOtp.length !== 6) {
+      message.warning("Vui lòng nhập đầy đủ mã xác minh (6 chữ số)");
       return;
     }
 
     try {
       const res = await signUpWithOtpAPI(email, enteredOtp);
-      if (res.data?.isSuccess) {
+      if (res) {
         message.success("Xác minh thành công!");
-        navigate("/new-pass");
+        navigate("/signin");
       } else {
-        message.error(res.data?.message || "Mã xác minh không đúng!");
+        message.error("Mã xác minh không đúng!");
       }
     } catch (err) {
       message.error("Lỗi xác minh. Vui lòng thử lại!");
-      console.error(err);
+      console.error("Verify error:", err);
     }
   };
 
@@ -42,6 +45,19 @@ const VerificationCodePage = () => {
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
+
+    if (value && index < 5) {
+      inputsRef.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    index: number
+  ) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      inputsRef.current[index - 1]?.focus();
+    }
   };
 
   return (
@@ -68,10 +84,11 @@ const VerificationCodePage = () => {
       <div className="bg-transparent text-white text-center max-w-md w-full space-y-6 z-10">
         <h1 className="text-2xl font-bold">Verification code</h1>
         <p className="text-sm text-gray-300">
-          Verify code sent to: <span className="text-[#a5f3fc]">{email}</span>
+          Mã xác minh đã gửi đến:{" "}
+          <span className="text-[#a5f3fc]">{email}</span>
         </p>
 
-        <div className="flex justify-center gap-4">
+        <div className="flex justify-center gap-3">
           {otp.map((digit, idx) => (
             <input
               key={idx}
@@ -79,6 +96,10 @@ const VerificationCodePage = () => {
               maxLength={1}
               value={digit}
               onChange={(e) => handleChange(e.target.value, idx)}
+              onKeyDown={(e) => handleKeyDown(e, idx)}
+              ref={(el: HTMLInputElement | null) => {
+                inputsRef.current[idx] = el;
+              }}
               className="w-12 h-12 text-center text-xl rounded-md bg-white text-black focus:outline-none"
             />
           ))}
