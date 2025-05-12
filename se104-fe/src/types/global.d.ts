@@ -30,4 +30,73 @@ declare global {
     token: string;
     refreshToken: string;
   }
+
+  export interface IAddAuthor {
+    idTypeBook: string;
+    nameAuthor: string;
+    nationality: string;
+    biography: string;
+  }
+
+  export interface IAddBookPayload {
+    idTypeBook: string;
+    nameSideBook: string;
+    describeBook: string;
+    idAuthors: string[];
+    bookCreateRequest: IBookCreateRequest;
+  }
+
+  export interface IDetailRequest {
+    quantity: number;
+  }
+  export interface IBookCreateRequest {
+    publisher: string;
+    reprintYear: number;
+    valueOfBook: number;
+  }
+  export interface IHeaderBook {
+    idTypeBook: string;
+    nameHeaderBook: string;
+    describeBook: string;
+    idAuthors: string[];
+    bookCreateRequest: IBookCreateRequest;
+  }
+
+  export interface IAddBookReceiptPayload {
+    headerBook: IHeaderBook;
+    idReader: string;
+    listDetailRequest: IDetailRequest[];
+  }
+  export interface ITheBookUpdateRequest {
+    status: string;
+  }
+
+  export interface IUpdateBookPayload {
+    idTypeBook: string;
+    nameSideBook: string;
+    describeBook: string;
+    idAuthors: string[];
+    bookReceiptRequest: IBookReceiptRequest;
+    theBookUpdateRequest: ITheBookUpdateRequest;
+  }
+  export interface IAddReaderPayload {
+    idTypeReader: string;
+    nameReader: string;
+    sex: string;
+    address: string;
+    email: string;
+    dob: string; // cái này dùng datepicker xong r dùng hàm .toISOString()
+    phone: string;
+    readerPassword: string;
+    totalDebt: number;
+  }
+  export interface IUpdateReaderPayload {
+    nameReader: string;
+    sex: string;
+    address: string;
+    email: string;
+    dob: string; // cái này dùng datepicker xong r dùng hàm .toISOString()
+    phone: string;
+    readerPassword: string;
+  }
 }

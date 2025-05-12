@@ -26,14 +26,77 @@ export const signUpWithOtpAPI = (email: string, otp: string) => {
 
 export const authenticateAPI = (token: string | null) => {
   const urlBackend = "/api/Authentication/Authentication";
-  return axios.post<IBackendRes<any>>(urlBackend, token, {
-    headers: { "Content-Type": "application/json" },
-  });
+  return axios.post<IBackendRes<any>>(urlBackend, { token });
 };
 
 export const refreshTokenAPI = (refreshToken: string) => {
   const urlBackend = "/api/Authentication/RefreshToken";
-  return axios.post<IBackendRes<any>>(urlBackend, refreshToken, {
-    headers: { "Content-Type": "application/json" },
-  });
+  return axios.post<IBackendRes<any>>(urlBackend, { refreshToken });
+};
+//author api
+export const addAuthorAPI = (data: IAddAuthor) => {
+  const urlBackend = "/api/Author/add_author";
+  return axios.post<IBackendRes<IAddAuthor>>(urlBackend, data);
+};
+export const listAuthorAPI = (searchKey: string) => {
+  const urlBackend = "/api/Author/list_author";
+  return axios.post<IBackendRes<IAddAuthor>>(urlBackend, { searchKey });
+};
+export const updateAuthorAPI = (idAuthor: string, data: IAddAuthor) => {
+  const urlBackend = `/api/Author/update_author/${idAuthor}`;
+  return axios.put<IBackendRes<IAddAuthor>>(urlBackend, data);
+};
+export const deleteAuthorAPI = (idAuthor: string) => {
+  const urlBackend = `/api/Author/delete_author/${idAuthor}`;
+  return axios.delete<IBackendRes<IAddAuthor>>(urlBackend);
+};
+//book
+export const addBookAPI = (data: IAddBookPayload) => {
+  const urlBackend = "/api/Book/add_book";
+  return axios.post<IBackendRes<any>>(urlBackend, data);
+};
+export const deleteBookAPI = (idBook: string, idTheBook: string) => {
+  const urlBackend = `/api/Book/delete_book/${idBook}/${idTheBook}`;
+  return axios.delete<IBackendRes<any>>(urlBackend);
+};
+export const updateBookAPI = (
+  idBook: string,
+  idTheBook: string,
+  data: IUpdateBookPayload
+) => {
+  const urlBackend = `/api/Book/update_book/${idBook}/${idTheBook}`;
+  return axios.put<IBackendRes<any>>(urlBackend, data);
+};
+//book receipt
+export const addBookReceiptAPI = (data: IAddBookReceiptPayload) => {
+  const urlBackend = "/api/BookReceipt/add_bookreceipt";
+  return axios.post<IBackendRes<any>>(urlBackend, data);
+};
+export const deleteBookReceiptAPI = (idBookReceipt: string) => {
+  const urlBackend = `/api/BookReceipt/delete_bookreceipt/${idBookReceipt}`;
+  return axios.delete<IBackendRes<any>>(urlBackend);
+};
+//reader
+export const listReaderAPI = (searchKey: string) => {
+  const urlBackend = "/api/reader/Reader/list_reader";
+  return axios.post<IBackendRes<any>>(urlBackend, { searchKey });
+};
+export const addReaderAPI = (data: IAddReaderPayload) => {
+  const urlBackend = "/api/reader/Reader/add_reader";
+  return axios.post<IBackendRes<any>>(urlBackend, data);
+};
+export const updateReaderAPI = (
+  idReader: string,
+  data: IUpdateReaderPayload
+) => {
+  const urlBackend = `/api/reader/Reader/update_reader/${idReader}`;
+  return axios.put<IBackendRes<any>>(urlBackend, data);
+};
+export const deleteReaderAPI = (idReader: string) => {
+  const urlBackend = `/api/reader/Reader/delete_reader/${idReader}`;
+  return axios.delete<IBackendRes<any>>(urlBackend);
+};
+export const findReaderAPI = (token: string, username: string) => {
+  const urlBackend = "/api/reader/Reader/find_reader";
+  return axios.post<IBackendRes<any>>(urlBackend, { token, username });
 };
