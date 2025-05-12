@@ -1,9 +1,10 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import "@ant-design/v5-patch-for-react-19";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Layout from "@/layout";
 import BookPage from "@/pages/admin/book";
-import { App } from "antd";
+import { App as AntdApp } from "antd";
 import "styles/global.css";
 import { AppProvider } from "./components/context/app.context";
 import HomePage from "./pages/admin/home";
@@ -27,88 +28,62 @@ import SignUp from "@/pages/client/auth/signup";
 import ForgotPasswordPage from "./pages/client/auth/forgot";
 import VerificationCodePage from "./pages/client/auth/verification";
 import NewPasswordPage from "./pages/client/auth/newPass";
+import ProtectedRoute from "@/components/auth/protected";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <UserLayout />,
+    element: <ProtectedRoute />,
     children: [
-      { index: true, element: <UserHomepage /> },
-      { path: "favorites", element: <Favorite /> },
-      { path: "history", element: <History /> },
-      { path: "payment", element: <div>Thanh toán tiền phạt</div> },
-      { path: "chat", element: <ChatUser /> },
-      { path: "author", element: <AuthorPage /> },
-      { path: "featured", element: <FeaturedBooks /> },
-      { path: "new-books", element: <NewBooks /> },
-      { path: "detail", element: <BookDetailPage /> },
+      {
+        path: "/",
+        element: <UserLayout />,
+        children: [
+          { index: true, element: <UserHomepage /> },
+          { path: "favorites", element: <Favorite /> },
+          { path: "history", element: <History /> },
+          { path: "payment", element: <div>Thanh toán tiền phạt</div> },
+          { path: "chat", element: <ChatUser /> },
+          { path: "author", element: <AuthorPage /> },
+          { path: "featured", element: <FeaturedBooks /> },
+          { path: "new-books", element: <NewBooks /> },
+          { path: "detail", element: <BookDetailPage /> },
+        ],
+      },
     ],
   },
   {
     path: "/admin",
-    element: <Layout />,
+    element: <ProtectedRoute />,
     children: [
       {
-        index: true,
-        element: <HomePage />,
-      },
-      {
-        path: "book",
-        element: <BookPage />,
-      },
-      {
-        path: "list",
-        element: <UserPage />,
-      },
-      {
-        path: "add",
-        element: <AddUser />,
-      },
-      {
-        path: "borrow",
-        element: <BorrowBook />,
-      },
-      {
-        path: "receive",
-        element: <ReceiveBook />,
-      },
-      {
-        path: "report",
-        element: <Report />,
-      },
-      {
-        path: "chat",
-        element: <Chat />,
+        path: "/admin",
+        element: <Layout />,
+        children: [
+          { index: true, element: <HomePage /> },
+          { path: "book", element: <BookPage /> },
+          { path: "list", element: <UserPage /> },
+          { path: "add", element: <AddUser /> },
+          { path: "borrow", element: <BorrowBook /> },
+          { path: "receive", element: <ReceiveBook /> },
+          { path: "report", element: <Report /> },
+          { path: "chat", element: <Chat /> },
+        ],
       },
     ],
   },
-  {
-    path: "/signin",
-    element: <SignIn />,
-  },
-  {
-    path: "/signup",
-    element: <SignUp />,
-  },
-  {
-    path: "/forgot",
-    element: <ForgotPasswordPage />,
-  },
-  {
-    path: "/verification",
-    element: <VerificationCodePage />,
-  },
-  {
-    path: "/new-pass",
-    element: <NewPasswordPage />,
-  },
+  { path: "/signin", element: <SignIn /> },
+  { path: "/signup", element: <SignUp /> },
+  { path: "/forgot", element: <ForgotPasswordPage /> },
+  { path: "/verification", element: <VerificationCodePage /> },
+  { path: "/new-pass", element: <NewPasswordPage /> },
 ]);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App>
+    <AntdApp>
       <AppProvider>
         <RouterProvider router={router} />
       </AppProvider>
-    </App>
+    </AntdApp>
   </StrictMode>
 );

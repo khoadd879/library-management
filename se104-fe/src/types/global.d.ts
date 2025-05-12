@@ -26,6 +26,21 @@ declare global {
     avatar: string;
     id: string;
   }
+  export interface IFetchUser {
+    idReader: string;
+    idTypeReader: string;
+    nameReader: string | null;
+    sex: string | null;
+    address: string | null;
+    email: string | null;
+    dob: string;
+    createDate: string;
+    expiryDate: string;
+    readerUsername: string;
+    typeReader: any;
+    roleName: string;
+  }
+
   interface ISignIn {
     token: string;
     refreshToken: string;

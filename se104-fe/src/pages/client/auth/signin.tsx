@@ -1,3 +1,4 @@
+import { useCurrentApp } from "@/components/context/app.context";
 import { loginAPI } from "@/services/api";
 import { message } from "antd";
 import { useState } from "react";
@@ -6,13 +7,21 @@ import { useNavigate } from "react-router-dom";
 const SignIn = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const { setIsAuthenticated } = useCurrentApp();
 
   const handleLogin = async () => {
+    if (!username || !password) {
+      message.warning("Vui lòng nhập đầy đủ tài khoản và mật khẩu!");
+      return;
+    }
+
     try {
       const res = await loginAPI(username, password);
-      if (res && res.data) {
-        localStorage.setItem("token", res.data.token);
+      if (res) {
+        setIsAuthenticated(true);
+        localStorage.setItem("token", res.token);
         message.success("Đăng nhập thành công!");
         navigate("/");
       } else {
@@ -48,12 +57,23 @@ const SignIn = () => {
             className="w-full px-4 py-2 rounded-md bg-[#9cd4b0] text-black placeholder-gray-700 focus:outline-none"
           />
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full px-4 py-2 rounded-md bg-[#9cd4b0] text-black placeholder-gray-700 focus:outline-none"
           />
+
+          <div className="text-left text-sm">
+            <label className="inline-flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={showPassword}
+                onChange={() => setShowPassword(!showPassword)}
+              />
+              <span>Hiện mật khẩu</span>
+            </label>
+          </div>
 
           <div className="flex justify-between text-xs px-1">
             <a href="/signup" style={{ color: "white" }}>
