@@ -1,15 +1,48 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { signUpWithOtpAPI } from "@/services/api";
+import { message } from "antd";
 
 const VerificationCodePage = () => {
   const [timer, setTimer] = useState(30);
+  const [otp, setOtp] = useState(["", "", "", ""]);
+  const email = "email@gmail.com";
   const navigate = useNavigate();
+
   useEffect(() => {
     if (timer > 0) {
       const countdown = setTimeout(() => setTimer(timer - 1), 1000);
       return () => clearTimeout(countdown);
     }
   }, [timer]);
+
+  const handleConfirmCode = async () => {
+    const enteredOtp = otp.join("").trim();
+    if (enteredOtp.length !== 4) {
+      message.warning("Vui lòng nhập đầy đủ mã xác minh (4 chữ số)");
+      return;
+    }
+
+    try {
+      const res = await signUpWithOtpAPI(email, enteredOtp);
+      if (res.data?.isSuccess) {
+        message.success("Xác minh thành công!");
+        navigate("/new-pass");
+      } else {
+        message.error(res.data?.message || "Mã xác minh không đúng!");
+      }
+    } catch (err) {
+      message.error("Lỗi xác minh. Vui lòng thử lại!");
+      console.error(err);
+    }
+  };
+
+  const handleChange = (value: string, index: number) => {
+    if (!/^[0-9]?$/.test(value)) return;
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+  };
 
   return (
     <div className="min-h-screen bg-[#0a3d3f] flex items-center justify-center relative overflow-hidden">
@@ -24,26 +57,28 @@ const VerificationCodePage = () => {
 
       <div className="absolute top-5 right-5 text-white text-sm">
         <a
-          href="#"
+          href="/signin"
           className="flex items-center space-x-1 underline hover:opacity-80"
         >
           <span className="text-lg text-white">←</span>
-          <span className=" text-white">Sign in</span>
+          <span className="text-white">Sign in</span>
         </a>
       </div>
 
       <div className="bg-transparent text-white text-center max-w-md w-full space-y-6 z-10">
         <h1 className="text-2xl font-bold">Verification code</h1>
         <p className="text-sm text-gray-300">
-          Verify code sent to:{" "}
-          <span className="text-[#a5f3fc]">email@gmail.com</span>
+          Verify code sent to: <span className="text-[#a5f3fc]">{email}</span>
         </p>
 
         <div className="flex justify-center gap-4">
-          {[1, 2, 3, 4].map((_, idx) => (
+          {otp.map((digit, idx) => (
             <input
               key={idx}
               type="text"
+              maxLength={1}
+              value={digit}
+              onChange={(e) => handleChange(e.target.value, idx)}
               className="w-12 h-12 text-center text-xl rounded-md bg-white text-black focus:outline-none"
             />
           ))}
@@ -51,9 +86,7 @@ const VerificationCodePage = () => {
 
         <button
           className="w-full py-2 bg-[#21b39b] rounded-md text-white font-semibold hover:opacity-90"
-          onClick={() => {
-            navigate("/new-pass");
-          }}
+          onClick={handleConfirmCode}
         >
           Confirm code
         </button>

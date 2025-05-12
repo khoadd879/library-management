@@ -1,4 +1,30 @@
+import { loginAPI } from "@/services/api";
+import { message } from "antd";
+import { useState } from "react";
+
+import { useNavigate } from "react-router-dom";
+
 const SignIn = () => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+
+  const handleLogin = async () => {
+    try {
+      const res = await loginAPI(username, password);
+      if (res && res.data) {
+        localStorage.setItem("token", res.data.token);
+        message.success("Đăng nhập thành công!");
+        navigate("/");
+      } else {
+        message.error("Đăng nhập thất bại!");
+      }
+    } catch (error) {
+      message.error("Đăng nhập thất bại. Vui lòng thử lại!");
+      console.error("Login error:", error);
+    }
+  };
+
   return (
     <>
       <div className="min-h-screen bg-[#0a3d3f] flex items-center justify-center relative overflow-hidden">
@@ -18,11 +44,15 @@ const SignIn = () => {
           <input
             type="text"
             placeholder="Login"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             className="w-full px-4 py-2 rounded-md bg-[#9cd4b0] text-black placeholder-gray-700 focus:outline-none"
           />
           <input
             type="password"
             placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             className="w-full px-4 py-2 rounded-md bg-[#9cd4b0] text-black placeholder-gray-700 focus:outline-none"
           />
 
@@ -35,12 +65,15 @@ const SignIn = () => {
             </a>
           </div>
 
-          <button className="w-full py-2 bg-[#21b39b] rounded-md text-white font-semibold hover:opacity-90">
+          <button
+            onClick={handleLogin}
+            className="w-full py-2 bg-[#21b39b] rounded-md text-white font-semibold hover:opacity-90"
+          >
             Log in
           </button>
         </div>
       </div>
-      <div className="absolute bottom-0   w-screen z-0">
+      <div className="absolute bottom-0 w-screen z-0">
         <svg
           viewBox="0 0 1440 320"
           className="w-[100vw] h-[260px]"
