@@ -1,4 +1,5 @@
-import { createContext, useContext, useState } from "react";
+import { authenticateAPI } from "@/services/api";
+import { createContext, useContext, useEffect, useState } from "react";
 
 type IAppContext = {
   user: IUser | null;
@@ -16,7 +17,16 @@ type TProps = {
 export const AppProvider = (props: TProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<IUser | null>(null);
-
+  useEffect(() => {
+    const fetchUser = async () => {
+      const token = localStorage.getItem("token");
+      const res = await authenticateAPI(token);
+      if (res) {
+        setUser(res.data);
+      }
+    };
+    fetchUser();
+  }, []);
   return (
     <CurrentAppContext.Provider
       value={{
@@ -31,13 +41,13 @@ export const AppProvider = (props: TProps) => {
   );
 };
 export const useCurrentApp = () => {
-    const currentAppContext = useContext(CurrentAppContext);
+  const currentAppContext = useContext(CurrentAppContext);
 
-    if (!currentAppContext) {
-        throw new Error(
-            "useCurrentApp has to be used within <CurrentAppContext.Provider>"
-        );
-    }
+  if (!currentAppContext) {
+    throw new Error(
+      "useCurrentApp has to be used within <CurrentAppContext.Provider>"
+    );
+  }
 
-    return currentAppContext;
+  return currentAppContext;
 };
