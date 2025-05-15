@@ -19,6 +19,7 @@ const SignIn = () => {
 
     try {
       const res = await loginAPI(username, password);
+
       if (res) {
         setIsAuthenticated(true);
         localStorage.setItem("token", res.token);
