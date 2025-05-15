@@ -25,8 +25,15 @@ export const signUpWithOtpAPI = (email: string, otp: string) => {
 };
 
 export const authenticateAPI = (token: string | null) => {
-  const urlBackend = "/api/Authentication/Authentication";
-  return axios.post<any>(urlBackend, { token });
+  return axios.post(
+    "/api/Authentication/Authentication",
+    JSON.stringify(token),
+    {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
 };
 
 export const refreshTokenAPI = (refreshToken: string) => {
