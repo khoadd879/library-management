@@ -53,22 +53,21 @@ declare global {
     biography: string;
   }
 
-  export interface IAddBookPayload {
+  interface IAddBookForm {
     idTypeBook: string;
-    nameSideBook: string;
+    nameHeaderBook: string;
     describeBook: string;
     idAuthors: string[];
-    bookCreateRequest: IBookCreateRequest;
+    bookImage: File;
+    publisher: string;
+    reprintYear: number;
+    valueOfBook: number;
   }
 
   export interface IDetailRequest {
     quantity: number;
   }
-  export interface IBookCreateRequest {
-    publisher: string;
-    reprintYear: number;
-    valueOfBook: number;
-  }
+
   export interface IHeaderBook {
     idTypeBook: string;
     nameHeaderBook: string;
@@ -104,6 +103,7 @@ declare global {
     phone: string;
     readerPassword: string;
     totalDebt: number;
+    AvatarImage: File;
   }
   export interface IUpdateReaderPayload {
     nameReader: string;

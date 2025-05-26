@@ -1,13 +1,71 @@
 import React, { useState, useEffect } from "react";
+import { message, Upload, Button } from "antd";
+import { UploadOutlined } from "@ant-design/icons";
+import { addBookAPI } from "@/services/api";
 
 const ReceiveBook = () => {
   const [today, setToday] = useState("");
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [bookImage, setBookImage] = useState<File | null>(null);
+
+  const [form, setForm] = useState({
+    nameHeaderBook: "",
+    describeBook: "",
+    idTypeBook: "",
+    idAuthors: [] as string[],
+    publisher: "",
+    reprintYear: new Date().getFullYear(),
+    valueOfBook: 0,
+  });
 
   useEffect(() => {
     const current = new Date();
     const formatted = current.toISOString().slice(0, 10);
     setToday(formatted);
   }, []);
+
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleImageChange = ({ file }: any) => {
+    if (file && file.originFileObj) {
+      setBookImage(file.originFileObj);
+      setPreviewImage(URL.createObjectURL(file.originFileObj));
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const formData = new FormData();
+      formData.append("IdTypeBook", form.idTypeBook);
+      formData.append("NameHeaderBook", form.nameHeaderBook);
+      formData.append("DescribeBook", form.describeBook);
+      form.idAuthors.forEach((id) => formData.append("IdAuthors", id));
+      formData.append("bookCreateRequest.Publisher", form.publisher);
+      formData.append(
+        "bookCreateRequest.ReprintYear",
+        form.reprintYear.toString()
+      );
+      formData.append(
+        "bookCreateRequest.ValueOfBook",
+        form.valueOfBook.toString()
+      );
+      if (bookImage) formData.append("BookImage", bookImage);
+
+      await addBookAPI(formData);
+      message.success("Thêm sách thành công!");
+    } catch (err) {
+      console.error(err);
+      message.error("Thêm sách thất bại!");
+    }
+  };
 
   return (
     <div className="w-full min-h-screen bg-[#f4f7f9]">
@@ -27,32 +85,42 @@ const ReceiveBook = () => {
 
         <div className="flex justify-center gap-10">
           <div className="w-1/4 flex items-start justify-center">
-            <img
-              src="https://th.bing.com/th/id/OIP.auqsJ2IYALrvSlS7oaw-OwHaKD?rs=1&pid=ImgDetMain"
-              alt="Book"
-              className="rounded-lg shadow-lg w-48"
-            />
+            {previewImage ? (
+              <img
+                src={previewImage}
+                alt="Book"
+                className="rounded-lg shadow-lg w-48"
+              />
+            ) : (
+              <div className="rounded-lg shadow-lg w-48 h-64 bg-gray-200 flex items-center justify-center">
+                <span className="text-sm text-gray-500">Chưa có ảnh</span>
+              </div>
+            )}
           </div>
 
-          <form className="w-1/2 space-y-4">
+          <form onSubmit={handleSubmit} className="w-1/2 space-y-4">
             <div>
               <label className="text-sm font-semibold text-[#153D36]">
                 Tên sách
               </label>
               <input
                 type="text"
-                placeholder="Nhập họ tên của độc giả..."
+                name="nameHeaderBook"
+                value={form.nameHeaderBook}
+                onChange={handleChange}
                 className="w-full px-4 py-2 border rounded outline-none text-sm"
               />
             </div>
 
             <div>
               <label className="text-sm font-semibold text-[#153D36]">
-                Tác giả
+                Nhà xuất bản
               </label>
               <input
                 type="text"
-                placeholder="Nhập tên tác giả..."
+                name="publisher"
+                value={form.publisher}
+                onChange={handleChange}
                 className="w-full px-4 py-2 border rounded outline-none text-sm"
               />
             </div>
@@ -60,42 +128,50 @@ const ReceiveBook = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-semibold text-[#153D36]">
-                  Năm xuất bản
+                  Năm tái bản
                 </label>
                 <input
                   type="number"
-                  placeholder="Nhập năm xuất bản..."
+                  name="reprintYear"
+                  value={form.reprintYear}
+                  onChange={handleChange}
                   className="w-full px-4 py-2 border rounded outline-none text-sm"
                 />
               </div>
-
               <div>
                 <label className="text-sm font-semibold text-[#153D36]">
                   Thể loại
                 </label>
-                <select className="w-full px-4 py-2 border rounded outline-none text-sm">
-                  <option>Value</option>
-                  <option>Loại A</option>
-                  <option>Loại B</option>
-                  <option>Loại C</option>
+                <select
+                  name="idTypeBook"
+                  value={form.idTypeBook}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border rounded outline-none text-sm"
+                >
+                  <option value="">-- Chọn thể loại --</option>
+                  <option value="1">Loại A</option>
+                  <option value="2">Loại B</option>
+                  <option value="3">Loại C</option>
                 </select>
               </div>
             </div>
 
             <div>
               <label className="text-sm font-semibold text-[#153D36]">
-                Nhập trị giá
+                Trị giá
               </label>
               <input
                 type="number"
-                placeholder="Nhập trị giá..."
+                name="valueOfBook"
+                value={form.valueOfBook}
+                onChange={handleChange}
                 className="w-full px-4 py-2 border rounded outline-none text-sm"
               />
             </div>
 
             <div>
               <label className="text-sm font-semibold text-[#153D36]">
-                Nhập ngày nhận
+                Ngày nhận
               </label>
               <input
                 type="date"
@@ -107,13 +183,26 @@ const ReceiveBook = () => {
 
             <div>
               <label className="text-sm font-semibold text-[#153D36]">
-                Nhập mô tả
+                Mô tả
               </label>
               <textarea
+                name="describeBook"
+                value={form.describeBook}
+                onChange={handleChange}
                 rows={4}
-                placeholder="Nhập mô tả của quyển sách..."
                 className="w-full px-4 py-2 border rounded outline-none text-sm"
               />
+            </div>
+
+            <div>
+              <Upload
+                beforeUpload={() => false}
+                onChange={handleImageChange}
+                showUploadList={false}
+                accept="image/*"
+              >
+                <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
+              </Upload>
             </div>
 
             <div className="text-center pt-4">

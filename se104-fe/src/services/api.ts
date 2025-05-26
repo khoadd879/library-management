@@ -58,10 +58,14 @@ export const deleteAuthorAPI = (idAuthor: string) => {
   return axios.delete<IBackendRes<IAddAuthor>>(urlBackend);
 };
 //book
-export const addBookAPI = (data: IAddBookPayload) => {
-  const urlBackend = "/api/Book/add_book";
-  return axios.post<IBackendRes<any>>(urlBackend, data);
+export const addBookAPI = (formData: FormData) => {
+  return axios.post("/api/Book/add_book", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
 };
+
 export const deleteBookAPI = (idBook: string, idTheBook: string) => {
   const urlBackend = `/api/Book/delete_book/${idBook}/${idTheBook}`;
   return axios.delete<IBackendRes<any>>(urlBackend);
@@ -88,10 +92,18 @@ export const listReaderAPI = (searchKey: string) => {
   const urlBackend = "/api/reader/Reader/list_reader";
   return axios.post<IBackendRes<any>>(urlBackend, { searchKey });
 };
-export const addReaderAPI = (data: IAddReaderPayload) => {
-  const urlBackend = "/api/reader/Reader/add_reader";
-  return axios.post<IBackendRes<any>>(urlBackend, data);
+export const addReaderAPI = (formData: FormData) => {
+  return axios.post<IBackendRes<any>>(
+    "/api/reader/Reader/add_reader",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
 };
+
 export const updateReaderAPI = (
   idReader: string,
   data: IUpdateReaderPayload
