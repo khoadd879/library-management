@@ -68,6 +68,14 @@ declare global {
     quantity: number;
   }
 
+export interface IGetAllBookAndComment {
+  idHeaderBook: string;
+  nameHeaderBook: string;
+  describe: string;
+  isLiked: boolean;
+  evaluations: any[]; 
+}
+
   export interface IHeaderBook {
     idTypeBook: string;
     nameHeaderBook: string;
