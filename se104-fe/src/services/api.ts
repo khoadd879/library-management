@@ -78,6 +78,17 @@ export const updateBookAPI = (
   const urlBackend = `/api/Book/update_book/${idBook}/${idTheBook}`;
   return axios.put<IBackendRes<any>>(urlBackend, data);
 };
+
+export const getAllBooksAndCommentsAPI = (token: string) => {
+  const urlBackend = "/api/Book/getAllBooksAndComments";
+  return axios.post<IBackendRes<IGetAllBookAndComment>>(urlBackend, JSON.stringify(token), {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+};
+
+
 //book receipt
 export const addBookReceiptAPI = (data: IAddBookReceiptPayload) => {
   const urlBackend = "/api/BookReceipt/add_bookreceipt";

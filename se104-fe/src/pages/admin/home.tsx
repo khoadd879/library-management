@@ -1,4 +1,37 @@
+import { useEffect, useState } from "react";
+import { getAllBooksAndCommentsAPI } from "@/services/api";
+import { message } from "antd";
+
 const HomePage = () => {
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          message.warning("Lỗi không có token");
+          return;
+        }
+
+        const response = await getAllBooksAndCommentsAPI(token);
+
+        if (Array.isArray(response.data)) {
+          setFeaturedBooks(response.data.slice(0, 5));
+          console.log("Suceed to call getAllBooksAndComments")
+        } else {
+          message.error("Dữ liệu trả về không đúng định dạng.");
+        }
+      } catch (error) {
+        console.error("Failed to fetch books:", error);
+        message.error("Lỗi khi tải sách.");
+      }
+    };
+
+    fetchBooks();
+  }, []);
+
+  const [featuredBooks, setFeaturedBooks] = useState<IGetAllBookAndComment[]>([]);
+  console.log(featuredBooks);
+
   return (
     <div className="bg-[#f4f7f9] min-h-screen ">
       <div className="bg-[#153D36] px-6 md:px-12 py-4 flex justify-between items-center">
@@ -23,19 +56,20 @@ const HomePage = () => {
                 </a>
               </div>
               <div className="flex gap-4 overflow-x-auto">
-                {[...Array(5)].map((_, i) => (
+                {featuredBooks.map((book, i) => (
                   <div
                     key={i}
                     className="min-w-[140px] bg-white rounded-lg shadow p-2"
                   >
                     <div className="h-40 bg-gray-200 rounded mb-2" />
                     <p className="text-sm font-semibold text-[#154734]">
-                      One Bullet Away
+                      {book.nameHeaderBook}
                     </p>
-                    <p className="text-xs text-gray-500">Nathaniel Fick</p>
+                    <p className="text-xs text-gray-500">{book.describe}</p>
                   </div>
                 ))}
               </div>
+
             </div>
 
             <div className="bg-white rounded-xl p-4 shadow">
