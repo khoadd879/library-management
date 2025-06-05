@@ -29,6 +29,10 @@ import ForgotPasswordPage from "./pages/client/auth/forgot";
 import VerificationCodePage from "./pages/client/auth/verification";
 import NewPasswordPage from "./pages/client/auth/newPass";
 import ProtectedRoute from "@/components/auth/protected";
+import Profile from "./pages/client/profile";
+import UserProfile from "./pages/admin/userprofile";
+import BookList from "./pages/admin/bookList";
+import AuthorInfo from "./pages/client/authorInfo";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -47,6 +51,7 @@ const router = createBrowserRouter([
           { path: "featured", element: <FeaturedBooks /> },
           { path: "new-books", element: <NewBooks /> },
           { path: "detail", element: <BookDetailPage /> },
+          { path: "profile", element: <Profile /> },
         ],
       },
     ],
@@ -67,6 +72,7 @@ const router = createBrowserRouter([
           { path: "receive", element: <ReceiveBook /> },
           { path: "report", element: <Report /> },
           { path: "chat", element: <Chat /> },
+          { path: "profile", element: <Profile /> },
         ],
       },
     ],
@@ -76,6 +82,25 @@ const router = createBrowserRouter([
   { path: "/forgot", element: <ForgotPasswordPage /> },
   { path: "/verification", element: <VerificationCodePage /> },
   { path: "/new-pass", element: <NewPasswordPage /> },
+    {
+    path: "/test-admin",
+    element: <Layout />,
+    children: [
+      { index: true, element: <HomePage /> },
+      { path: "userprofile", element: <UserProfile /> },
+      {path: "booklist", element: <BookList />},
+      {path: "user", element: <UserPage />},
+      {path: "authorInfo", element: <AuthorInfo />},
+    ],
+  },
+  {
+    path: "/test-user",
+    element: <UserLayout />,
+    children: [
+      { index: true, element: <UserHomepage /> },
+      { path: "profile", element: <Profile /> },
+    ],
+  },
 ]);
 
 createRoot(document.getElementById("root")!).render(
