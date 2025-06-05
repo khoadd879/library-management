@@ -21,7 +21,10 @@ const UserSidebar = () => {
   return (
     <aside className="w-64  min-h-screen bg-[#153D36] text-white flex flex-col items-center px-4 py-8 h-full">
       <div className="mb-8">
-        <div className="w-24 h-24 bg-gray-300 rounded-full" />
+        <button 
+          onClick={() => navigate("/profile")}
+          className="w-24 h-24 bg-gray-300 rounded-full overflow-hidden hover:opacity-80 transition-opacity cursor-pointer"
+        ></button>
       </div>
 
       <nav className="flex flex-col gap-6 w-full">

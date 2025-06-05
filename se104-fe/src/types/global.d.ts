@@ -122,4 +122,39 @@ export interface IGetAllBookAndComment {
     phone: string;
     readerPassword: string;
   }
+export interface IUserProfile {
+  username?: string;
+  fullName?: string;
+  gender?: string;
+  createdAt?: string | Date;
+  cardExpiryDate?: string | Date;
+  address?: string;
+  email?: string;
+  phone?: string;
+  avatar?: string | null;
 }
+
+interface IUser {
+  id: string;
+  username: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  address: string;
+  gender: string;
+  password: string;
+  joinDate: string;
+  expireDate?: string;
+  permissions: {
+    receiveBooks: boolean;
+    manageUsers: boolean;
+    borrowBooks: boolean;
+    viewLists: boolean;
+    viewReports: boolean;
+  };
+  avatar?: string | null;
+  dob?: string;
+}
+
+}
+
