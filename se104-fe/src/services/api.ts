@@ -40,6 +40,20 @@ export const refreshTokenAPI = (refreshToken: string) => {
   const urlBackend = "/api/Authentication/RefreshToken";
   return axios.post<any>(urlBackend, { refreshToken });
 };
+
+export const forgotPassword = (email: string) => {
+  const urlBackend = "/api/ForgotPassword/send_otp";
+  return axios.post<any>(urlBackend, {email});
+};
+
+export const verifyOTP = (email: string, otp: String) => {
+  const urlBackend = "/api/ForgotPassword/verify_otp";
+  return axios.post<any>(urlBackend, {email, otp});
+};
+export const changePassword = (email: string, newPassword: String, repeatPassword: String) => {
+  const urlBackend = "/api/ForgotPassword/change_password";
+  return axios.post<any>(urlBackend, {email, newPassword, repeatPassword});
+};
 //author api
 export const addAuthorAPI = (data: IAddAuthor) => {
   const urlBackend = "/api/Author/add_author";
@@ -80,7 +94,7 @@ export const updateBookAPI = (
 };
 
 export const getAllBooksAndCommentsAPI = (token: string) => {
-  const urlBackend = "/api/Book/getAllBooksAndComments";
+  const urlBackend = "/api/Book/getbooksandcomments";
   return axios.post<IBackendRes<IGetAllBookAndComment>>(urlBackend, JSON.stringify(token), {
     headers: {
       "Content-Type": "application/json",

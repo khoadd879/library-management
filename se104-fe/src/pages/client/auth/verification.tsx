@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { signUpWithOtpAPI } from "@/services/api";
+import { signUpWithOtpAPI, verifyOTP } from "@/services/api";
 import { message } from "antd";
 
 const VerificationCodePage = () => {
@@ -9,8 +9,10 @@ const VerificationCodePage = () => {
   const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
-
+  const mode = location.state?.mode || "signup";
   const email = location.state?.email || "";
+
+  //TODO: Làm phần resend OTP
 
   useEffect(() => {
     if (timer > 0) {
@@ -27,10 +29,21 @@ const VerificationCodePage = () => {
     }
 
     try {
-      const res = await signUpWithOtpAPI(email, enteredOtp);
+      let res;
+      if (mode === "signup") {
+        res = await signUpWithOtpAPI(email, enteredOtp);
+      } else if (mode === "forgot") {
+        res = await verifyOTP(email, enteredOtp); // <-- API khác
+      }
+
       if (res) {
         message.success("Xác minh thành công!");
-        navigate("/signin");
+
+        if (mode === "signup") {
+          navigate("/signin");
+        } else if (mode === "forgot") {
+          navigate("/new-pass", { state: { email } });
+        }
       } else {
         message.error("Mã xác minh không đúng!");
       }
@@ -39,6 +52,7 @@ const VerificationCodePage = () => {
       console.error("Verify error:", err);
     }
   };
+
 
   const handleChange = (value: string, index: number) => {
     if (!/^[0-9]?$/.test(value)) return;
@@ -60,6 +74,7 @@ const VerificationCodePage = () => {
     }
   };
 
+  
   return (
     <div className="min-h-screen bg-[#0a3d3f] flex items-center justify-center relative overflow-hidden">
       <div className="absolute top-5 left-5 flex items-center space-x-2 text-white text-lg font-semibold">
@@ -112,12 +127,22 @@ const VerificationCodePage = () => {
           Confirm code
         </button>
 
-        <p className="text-sm">
-          <span className="font-bold">
-            0:{timer < 10 ? `0${timer}` : timer}
-          </span>{" "}
-          Resend confirmation code
-        </p>
+        {timer > 0 ? (
+          <p className="text-sm">
+            <span className="font-bold">
+              0:{timer < 10 ? `0${timer}` : timer}
+            </span>{" "}
+            Resend confirmation code
+          </p>
+        ) : (
+          <button
+            className="text-sm underline text-[#a5f3fc] hover:opacity-80"
+            //onClick={handleResendOTP}
+          >
+            Gửi lại mã xác minh
+          </button>
+        )}
+
       </div>
 
       <div className="absolute bottom-0 w-full z-0">

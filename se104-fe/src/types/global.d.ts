@@ -69,11 +69,23 @@ declare global {
   }
 
 export interface IGetAllBookAndComment {
-  idHeaderBook: string;
-  nameHeaderBook: string;
+  idBook: string;          
+  nameBook: string;         
   describe: string;
+  image: string;
   isLiked: boolean;
-  evaluations: any[]; 
+  evaluations: any[];
+  authors: {
+    idAuthor: string,
+    idTypeBook:{
+      idTypeBook: string,
+      nameTypeBook: string,
+    },
+    nameAuthor: string,
+    nationality: string,
+    biography: string,
+    urlAvatar: string
+  }[];
 }
 
   export interface IHeaderBook {

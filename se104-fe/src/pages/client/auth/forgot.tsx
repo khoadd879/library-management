@@ -1,7 +1,38 @@
 import { useNavigate } from "react-router-dom";
+import { forgotPassword } from "@/services/api";
+import { message } from "antd";
+import { useState } from "react";
 
 const ForgotPasswordPage = () => {
+  const [email, setEmail] = useState("");
   const navigate = useNavigate();
+
+  const handleSendOTP = async () => {
+    if (!email) {
+      message.warning("Vui lòng nhập email!");
+      return;
+    }
+
+    try {
+      const res = await forgotPassword(email);
+      if (res) {
+        message.success("Gửi mã OTP thành công");
+        navigate("/verification", {
+          state: {
+            email: email,
+            mode: "forgot",
+          },
+        });
+      } else {
+        message.error("Gửi mã OTP thất bại!");
+      }
+    } catch (error) {
+      message.error("Thất bại");
+      console.error("OTP error:", error);
+    }
+  }
+
+
   return (
     <div className="min-h-screen bg-[#0a3d3f] flex items-center justify-center relative overflow-hidden">
       <div className="absolute top-5 left-5 flex items-center space-x-2 text-white text-lg font-semibold">
@@ -33,14 +64,16 @@ const ForgotPasswordPage = () => {
         <input
           type="email"
           placeholder="Email address"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSendOTP()}
           className="w-full px-4 py-2 rounded-md bg-[#9cd4b0] text-black placeholder-gray-700 focus:outline-none"
         />
 
         <button
           className="w-full py-2 bg-[#21b39b] rounded-md text-white font-semibold hover:opacity-90"
-          onClick={() => {
-            navigate("/verification");
-          }}
+          onClick={
+            handleSendOTP}
         >
           Confirm mail
         </button>
