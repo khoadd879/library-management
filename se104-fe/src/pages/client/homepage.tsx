@@ -17,7 +17,7 @@ const UserHomepage = () => {
         }
 
         const response = await getAllBooksAndCommentsAPI(token);
-      
+
         console.log("Full response from API:", response);
 
         if (Array.isArray(response)) {
@@ -69,14 +69,23 @@ const UserHomepage = () => {
                   <div
                     key={i}
                     className="min-w-[140px] bg-white rounded-lg shadow p-2 cursor-pointer hover:shadow-lg transition"
-                    onClick={() => navigate(`/detail/${book.idHeaderBook}`)}
+                    onClick={() => navigate(`/detail/${book.idBook}`)}
                   >
-                    <div className="h-40 bg-gray-200 rounded mb-2" />
-                    <p className="text-sm font-semibold text-[#154734]">
-                      {book.nameHeaderBook}
+                    {book.image ? (
+                      <img
+                        src={book.image}
+                        alt={book.nameBook}
+                        className="h-40 w-full object-cover rounded mb-2"
+                      />
+                    ) : (
+                      <div className="h-40 bg-gray-200 rounded mb-2" />
+                    )}
+                    <p className="text-sm font-semibold text-[#154734]">{book.nameBook}</p>
+                    <p className="text-xs text-gray-500">
+                      {book.authors.length > 0 ? book.authors[0].nameAuthor : "Không rõ tác giả"}
                     </p>
-                    <p className="text-xs text-gray-500">{book.describe}</p>
                   </div>
+
                 ))}
               </div>
             </div>

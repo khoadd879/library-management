@@ -1,8 +1,37 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { changePassword } from "@/services/api";
+import { message } from "antd";
+import { useState } from "react";
+
 
 const NewPasswordPage = () => {
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+  const email = location.state?.email;
+
+  const handleChangePassword = async () => {
+    if(!password || !confirmPassword){
+      message.warning("Vui lòng nhập đầy đủ mật khẩu!");
+      return;
+    }
+    
+    try {
+      const res = await changePassword(email, password, confirmPassword);
+
+      if(res){
+        message.success("Đổi mật khẩu thành công!");
+        navigate("/signin");
+      }else{
+        message.error("Đổi mật khẩu thất bại");
+      }
+    } catch (error) {
+      message.error("Error");
+      console.error("Change password error:", error);
+    }
+  }
   return (
     <div className="min-h-screen bg-[#0a3d3f] flex items-center justify-center relative overflow-hidden">
       <div className="absolute top-5 left-5 flex items-center space-x-2 text-white text-lg font-semibold">
@@ -31,19 +60,23 @@ const NewPasswordPage = () => {
         <input
           type="password"
           placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleChangePassword()}
           className="w-full px-4 py-2 rounded-md bg-[#9cd4b0] text-black placeholder-gray-700 focus:outline-none"
         />
         <input
           type="password"
           placeholder="Confirm password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleChangePassword()}
           className="w-full px-4 py-2 rounded-md bg-[#9cd4b0] text-black placeholder-gray-700 focus:outline-none"
         />
 
         <button
           className="w-full py-2 bg-[#21b39b] rounded-md text-white font-semibold hover:opacity-90"
-          onClick={() => {
-            navigate("/signin");
-          }}
+          onClick={handleChangePassword}
         >
           Confirm password
         </button>

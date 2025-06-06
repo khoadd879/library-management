@@ -63,7 +63,7 @@ const HomePage = () => {
                   >
                     <div className="h-40 bg-gray-200 rounded mb-2" />
                     <p className="text-sm font-semibold text-[#154734]">
-                      {book.nameHeaderBook}
+                      {book.nameBook}
                     </p>
                     <p className="text-xs text-gray-500">{book.describe}</p>
                   </div>
