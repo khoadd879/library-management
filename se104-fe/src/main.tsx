@@ -50,7 +50,7 @@ const router = createBrowserRouter([
           { path: "author", element: <AuthorPage /> },
           { path: "featured", element: <FeaturedBooks /> },
           { path: "new-books", element: <NewBooks /> },
-          { path: "detail", element: <BookDetailPage /> },
+         { path: "detail/:id", element: <BookDetailPage /> },
           { path: "profile", element: <Profile /> },
         ],
       },
@@ -90,7 +90,7 @@ const router = createBrowserRouter([
       { path: "userprofile", element: <UserProfile /> },
       {path: "booklist", element: <BookList />},
       {path: "user", element: <UserPage />},
-      {path: "authorInfo", element: <AuthorInfo />},
+      {path: "authorInfo/:id", element: <AuthorInfo />},
     ],
   },
   {

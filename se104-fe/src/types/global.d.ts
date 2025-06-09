@@ -47,6 +47,7 @@ declare global {
   }
 
   export interface IAddAuthor {
+    idAuthor: string;
     idTypeBook: string;
     nameAuthor: string;
     nationality: string;

@@ -3,6 +3,7 @@ import { getAllBooksAndCommentsAPI } from "@/services/api";
 import { message } from "antd";
 
 const HomePage = () => {
+ 
   useEffect(() => {
     const fetchBooks = async () => {
       try {
@@ -14,12 +15,15 @@ const HomePage = () => {
 
         const response = await getAllBooksAndCommentsAPI(token);
 
-        if (Array.isArray(response.data)) {
-          setFeaturedBooks(response.data.slice(0, 5));
-          console.log("Suceed to call getAllBooksAndComments")
+        console.log("Full response from API:", response);
+
+        if (Array.isArray(response)) {
+          setFeaturedBooks(response.slice(0, 5));
         } else {
+          console.error("Unexpected response format:", response);
           message.error("Dữ liệu trả về không đúng định dạng.");
         }
+
       } catch (error) {
         console.error("Failed to fetch books:", error);
         message.error("Lỗi khi tải sách.");

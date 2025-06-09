@@ -1,14 +1,19 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAllBooksAndCommentsAPI } from "@/services/api";
+import { getAllBooksAndCommentsAPI, listAuthorAPI } from "@/services/api";
 import { message } from "antd";
 
 const UserHomepage = () => {
   const navigate = useNavigate();
+
+  // State lưu sách nổi bật
   const [featuredBooks, setFeaturedBooks] = useState<IGetAllBookAndComment[]>([]);
 
+  // State lưu danh sách tác giả
+  const [authors, setAuthors] = useState<IAddAuthor[]>([]);
+
   useEffect(() => {
-    const fetchBooks = async () => {
+    const fetchBooksAndAuthors = async () => {
       try {
         const token = localStorage.getItem('token');
         if (!token) {
@@ -16,24 +21,28 @@ const UserHomepage = () => {
           return;
         }
 
-        const response = await getAllBooksAndCommentsAPI(token);
-
-        console.log("Full response from API:", response);
-
-        if (Array.isArray(response)) {
-          setFeaturedBooks(response.slice(0, 5));
+        // Lấy sách
+        const booksResponse = await getAllBooksAndCommentsAPI(token);
+        if (Array.isArray(booksResponse)) {
+          setFeaturedBooks(booksResponse.slice(0, 5));
         } else {
-          console.error("Unexpected response format:", response);
-          message.error("Dữ liệu trả về không đúng định dạng.");
+          message.error("Dữ liệu sách trả về không đúng định dạng.");
         }
 
+        // Lấy danh sách tác giả
+        const authorRes = await listAuthorAPI(token);
+        if (Array.isArray(authorRes)) {
+          setAuthors(authorRes);
+        } else {
+          message.error("Dữ liệu tác giả trả về không đúng định dạng.");
+        }
       } catch (error) {
-        console.error("Failed to fetch books:", error);
-        message.error("Lỗi khi tải sách.");
+        console.error(error);
+        message.error("Lỗi khi tải dữ liệu.");
       }
     };
 
-    fetchBooks();
+    fetchBooksAndAuthors();
   }, []);
 
   return (
@@ -85,7 +94,6 @@ const UserHomepage = () => {
                       {book.authors.length > 0 ? book.authors[0].nameAuthor : "Không rõ tác giả"}
                     </p>
                   </div>
-
                 ))}
               </div>
             </div>
@@ -134,16 +142,17 @@ const UserHomepage = () => {
                 </a>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                {[...Array(4)].map((_, i) => (
+                {authors.slice(0, 4).map((author, i) => (
                   <div
                     key={i}
                     className="flex flex-col items-center text-center border rounded p-2"
+                    onClick={() => navigate(`/authorInfo/${author.idAuthor}`)}
                   >
                     <div className="w-12 h-12 rounded-full bg-gray-300" />
                     <p className="text-sm font-semibold text-[#154734]">
-                      Dương Trọng Khang
+                      {author.nameAuthor}
                     </p>
-                    <p className="text-xs text-gray-500">10 cuốn sách</p>
+                  
                     <a href="#" className="text-blue-500 text-xs mt-1">
                       Thông tin chi tiết
                     </a>
