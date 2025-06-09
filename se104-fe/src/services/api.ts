@@ -59,9 +59,14 @@ export const addAuthorAPI = (data: IAddAuthor) => {
   const urlBackend = "/api/Author/add_author";
   return axios.post<IBackendRes<IAddAuthor>>(urlBackend, data);
 };
-export const listAuthorAPI = (searchKey: string) => {
+export const listAuthorAPI = (token: string) => {
   const urlBackend = "/api/Author/list_author";
-  return axios.post<IBackendRes<IAddAuthor>>(urlBackend, { searchKey });
+  return axios.get<IBackendRes<IAddAuthor>>(urlBackend, { 
+   headers:{
+     "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+   }
+   });
 };
 export const updateAuthorAPI = (idAuthor: string, data: IAddAuthor) => {
   const urlBackend = `/api/Author/update_author/${idAuthor}`;
@@ -94,15 +99,24 @@ export const updateBookAPI = (
 };
 
 export const getAllBooksAndCommentsAPI = (token: string) => {
-  const urlBackend = "/api/Book/getbooksandcomments";
-  return axios.post<IBackendRes<IGetAllBookAndComment>>(urlBackend, JSON.stringify(token), {
+  const urlBackend = "/api/Book/getbooksindetail";
+  return axios.get<IBackendRes<IGetAllBookAndComment>>(urlBackend ,{
     headers: {
       "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
     },
   });
 };
 
-
+export const getBookAndCommentsByIdAPI = (token: string, idBook: string) => {
+  const urlBackend = `/api/Book/getbooksindetailbyid${idBook}`;
+  return axios.get<IBackendRes<IGetAllBookAndComment>>(urlBackend, {
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+  });
+};
 //book receipt
 export const addBookReceiptAPI = (data: IAddBookReceiptPayload) => {
   const urlBackend = "/api/BookReceipt/add_bookreceipt";
