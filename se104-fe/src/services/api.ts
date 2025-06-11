@@ -43,30 +43,39 @@ export const refreshTokenAPI = (refreshToken: string) => {
 
 export const forgotPassword = (email: string) => {
   const urlBackend = "/api/ForgotPassword/send_otp";
-  return axios.post<any>(urlBackend, {email});
+  return axios.post<any>(urlBackend, { email });
 };
 
 export const verifyOTP = (email: string, otp: String) => {
   const urlBackend = "/api/ForgotPassword/verify_otp";
-  return axios.post<any>(urlBackend, {email, otp});
+  return axios.post<any>(urlBackend, { email, otp });
 };
-export const changePassword = (email: string, newPassword: String, repeatPassword: String) => {
+export const changePassword = (
+  email: string,
+  newPassword: String,
+  repeatPassword: String
+) => {
   const urlBackend = "/api/ForgotPassword/change_password";
-  return axios.post<any>(urlBackend, {email, newPassword, repeatPassword});
+  return axios.post<any>(urlBackend, { email, newPassword, repeatPassword });
 };
 //author api
-export const addAuthorAPI = (data: IAddAuthor) => {
+export const addAuthorAPI = (formData: FormData) => {
   const urlBackend = "/api/Author/add_author";
-  return axios.post<IBackendRes<IAddAuthor>>(urlBackend, data);
+  return axios.post<IBackendRes<any>>(urlBackend, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
 };
+
 export const listAuthorAPI = (token: string) => {
   const urlBackend = "/api/Author/list_author";
-  return axios.get<IBackendRes<IAddAuthor>>(urlBackend, { 
-   headers:{
-     "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`
-   }
-   });
+  return axios.get<IBackendRes<IAddAuthor>>(urlBackend, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
 };
 export const updateAuthorAPI = (idAuthor: string, data: IAddAuthor) => {
   const urlBackend = `/api/Author/update_author/${idAuthor}`;
@@ -100,10 +109,10 @@ export const updateBookAPI = (
 
 export const getAllBooksAndCommentsAPI = (token: string) => {
   const urlBackend = "/api/Book/getbooksindetail";
-  return axios.get<IBackendRes<IGetAllBookAndComment>>(urlBackend ,{
+  return axios.get<IBackendRes<IGetAllBookAndComment>>(urlBackend, {
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
     },
   });
 };
@@ -113,7 +122,7 @@ export const getBookAndCommentsByIdAPI = (token: string, idBook: string) => {
   return axios.get<IBackendRes<IGetAllBookAndComment>>(urlBackend, {
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,
     },
   });
 };
@@ -134,12 +143,7 @@ export const listReaderAPI = (searchKey: string) => {
 export const addReaderAPI = (formData: FormData) => {
   return axios.post<IBackendRes<any>>(
     "/api/reader/Reader/add_reader",
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }
+    formData
   );
 };
 
@@ -157,4 +161,10 @@ export const deleteReaderAPI = (idReader: string) => {
 export const findReaderAPI = (token: string, username: string) => {
   const urlBackend = "/api/reader/Reader/find_reader";
   return axios.post<IBackendRes<any>>(urlBackend, { token, username });
+};
+export const getTypeBooksAPI = () => {
+  return axios.get("/api/TypeBook/getTypeBook");
+};
+export const getListAuthor = () => {
+  return axios.get("/api/Author/list_author");
 };

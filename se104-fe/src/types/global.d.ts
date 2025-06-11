@@ -47,11 +47,11 @@ declare global {
   }
 
   export interface IAddAuthor {
-    idAuthor: string;
     idTypeBook: string;
     nameAuthor: string;
     nationality: string;
     biography: string;
+    avatarImage: File;
   }
 
   interface IAddBookForm {
@@ -69,25 +69,25 @@ declare global {
     quantity: number;
   }
 
-export interface IGetAllBookAndComment {
-  idBook: string;          
-  nameBook: string;         
-  describe: string;
-  image: string;
-  isLiked: boolean;
-  evaluations: any[];
-  authors: {
-    idAuthor: string,
-    idTypeBook:{
-      idTypeBook: string,
-      nameTypeBook: string,
-    },
-    nameAuthor: string,
-    nationality: string,
-    biography: string,
-    urlAvatar: string
-  }[];
-}
+  export interface IGetAllBookAndComment {
+    idBook: string;
+    nameBook: string;
+    describe: string;
+    image: string;
+    isLiked: boolean;
+    evaluations: any[];
+    authors: {
+      idAuthor: string;
+      idTypeBook: {
+        idTypeBook: string;
+        nameTypeBook: string;
+      };
+      nameAuthor: string;
+      nationality: string;
+      biography: string;
+      urlAvatar: string;
+    }[];
+  }
 
   export interface IHeaderBook {
     idTypeBook: string;
@@ -135,39 +135,37 @@ export interface IGetAllBookAndComment {
     phone: string;
     readerPassword: string;
   }
-export interface IUserProfile {
-  username?: string;
-  fullName?: string;
-  gender?: string;
-  createdAt?: string | Date;
-  cardExpiryDate?: string | Date;
-  address?: string;
-  email?: string;
-  phone?: string;
-  avatar?: string | null;
-}
+  export interface IUserProfile {
+    username?: string;
+    fullName?: string;
+    gender?: string;
+    createdAt?: string | Date;
+    cardExpiryDate?: string | Date;
+    address?: string;
+    email?: string;
+    phone?: string;
+    avatar?: string | null;
+  }
 
-interface IUser {
-  id: string;
-  username: string;
-  fullName: string;
-  email: string;
-  phone: string;
-  address: string;
-  gender: string;
-  password: string;
-  joinDate: string;
-  expireDate?: string;
-  permissions: {
-    receiveBooks: boolean;
-    manageUsers: boolean;
-    borrowBooks: boolean;
-    viewLists: boolean;
-    viewReports: boolean;
-  };
-  avatar?: string | null;
-  dob?: string;
+  interface IUser {
+    id: string;
+    username: string;
+    fullName: string;
+    email: string;
+    phone: string;
+    address: string;
+    gender: string;
+    password: string;
+    joinDate: string;
+    expireDate?: string;
+    permissions: {
+      receiveBooks: boolean;
+      manageUsers: boolean;
+      borrowBooks: boolean;
+      viewLists: boolean;
+      viewReports: boolean;
+    };
+    avatar?: string | null;
+    dob?: string;
+  }
 }
-
-}
-
