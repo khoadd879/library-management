@@ -1,20 +1,33 @@
 import React, { useEffect, useState } from "react";
-import { addAuthorAPI, getTypeBooksAPI } from "@/services/api";
+import {
+  addAuthorAPI,
+  addReaderAPI,
+  getTypeBooksAPI,
+  getTypeReadersAPI,
+} from "@/services/api";
 import AuthorForm from "@/components/admin/user/AuthorForm";
 import { App } from "antd";
+import ReaderForm from "@/components/admin/user/ReaderForm";
 
 interface ITypeBookOption {
   value: string;
   label: string;
 }
+export interface ITypeReaderOption {
+  value: string;
+  label: string;
+}
 
 const AddUser = () => {
-  const { message } = App.useApp(); // dùng app.message
+  const { message } = App.useApp();
   const [activeTab, setActiveTab] = useState<"docgia" | "tacgia">("tacgia");
   const [authorAvatarPreview, setAuthorAvatarPreview] = useState<string | null>(
     null
   );
   const [typeBookOptions, setTypeBookOptions] = useState<ITypeBookOption[]>([]);
+  const [typeReaderOptions, setTypeReaderOptions] = useState<
+    ITypeReaderOption[]
+  >([]);
 
   const [authorForm, setAuthorForm] = useState({
     IdTypeBook: "",
@@ -23,7 +36,42 @@ const AddUser = () => {
     Biography: "",
     AvatarImage: undefined as File | undefined,
   });
+
+  const [readerForm, setReaderForm] = useState({
+    IdTypeReader: "",
+    NameReader: "",
+    Email: "",
+    Dob: "",
+    Sex: "",
+    Address: "",
+    Phone: "",
+    ReaderPassword: "123456",
+    AvatarImage: undefined as File | undefined,
+  });
+
+  const [readerAvatarPreview, setReaderAvatarPreview] = useState<string | null>(
+    null
+  );
+
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchTypeReaderOptions = async () => {
+      try {
+        const res = await getTypeReadersAPI();
+        const options = res.map((item: any) => ({
+          value: item.idTypeReader,
+          label: item.nameTypeReader,
+        }));
+        setTypeReaderOptions(options);
+      } catch (err) {
+        message.error("Không thể lấy danh sách loại độc giả.");
+      }
+    };
+
+    fetchTypeReaderOptions();
+  }, [message]);
+
   useEffect(() => {
     const fetchTypes = async () => {
       try {
@@ -55,6 +103,23 @@ const AddUser = () => {
     const { name, value } = e.target;
     setAuthorForm((prev) => ({ ...prev, [name]: value }));
   };
+  const handleReaderChange = (
+    e:
+      | React.ChangeEvent<
+          HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+        >
+      | any
+  ) => {
+    const { name, value, files } = e.target;
+
+    if (name === "AvatarImage" && files?.length > 0) {
+      const file = files[0];
+      setReaderForm((prev) => ({ ...prev, AvatarImage: file }));
+      setReaderAvatarPreview(URL.createObjectURL(file));
+    } else {
+      setReaderForm((prev) => ({ ...prev, [name]: value }));
+    }
+  };
 
   const handleSubmitAuthor = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,6 +147,49 @@ const AddUser = () => {
     } catch (err) {
       console.error(err);
       message.error("Thêm tác giả thất bại!");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const handleSubmitReader = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("NameReader", readerForm.NameReader);
+      formData.append("Email", readerForm.Email);
+      formData.append("Dob", readerForm.Dob);
+      formData.append("Sex", readerForm.Sex);
+      formData.append("Address", readerForm.Address);
+      formData.append("Phone", readerForm.Phone);
+      formData.append("IdTypeReader", readerForm.IdTypeReader);
+      formData.append("ReaderPassword", readerForm.ReaderPassword);
+
+      if (readerForm.AvatarImage) {
+        formData.append("AvatarImage", readerForm.AvatarImage);
+      }
+
+      const res = await addReaderAPI(formData);
+      console.log(res);
+      if (res) {
+        setReaderForm({
+          NameReader: "",
+          Email: "",
+          Dob: "",
+          Sex: "",
+          Address: "",
+          IdTypeReader: "",
+          Phone: "",
+          ReaderPassword: "123456",
+          AvatarImage: undefined,
+        });
+        setReaderAvatarPreview(null);
+        message.success("Thêm độc giả thành công!");
+      } else {
+        message.error("Lỗi");
+      }
+    } catch (err) {
+      console.error(err);
     } finally {
       setIsLoading(false);
     }
@@ -124,6 +232,17 @@ const AddUser = () => {
           preview={authorAvatarPreview}
           setPreview={setAuthorAvatarPreview}
           typeBookOptions={typeBookOptions}
+          isLoading={isLoading}
+        />
+      )}
+      {activeTab === "docgia" && (
+        <ReaderForm
+          form={readerForm}
+          onChange={handleReaderChange}
+          onSubmit={handleSubmitReader}
+          preview={readerAvatarPreview}
+          setPreview={setReaderAvatarPreview}
+          typeReaderOptions={typeReaderOptions}
           isLoading={isLoading}
         />
       )}

@@ -1,6 +1,25 @@
 import React from "react";
 
-const ReaderForm = ({ form, onChange, onSubmit, preview, setPreview }: any) => {
+interface ReaderFormProps {
+  form: any;
+  onChange: (
+    e: React.ChangeEvent<any> | { target: { name: string; value: any } }
+  ) => void;
+  onSubmit: (e: React.FormEvent) => void;
+  preview: string | null;
+  setPreview: (url: string | null) => void;
+  typeReaderOptions: { value: string; label: string }[];
+  isLoading: boolean;
+}
+
+const ReaderForm = ({
+  form,
+  onChange,
+  onSubmit,
+  preview,
+  setPreview,
+  typeReaderOptions,
+}: ReaderFormProps) => {
   return (
     <form
       onSubmit={onSubmit}
@@ -33,6 +52,21 @@ const ReaderForm = ({ form, onChange, onSubmit, preview, setPreview }: any) => {
           className="text-sm"
         />
       </div>
+
+      <select
+        name="IdTypeReader"
+        value={form.IdTypeReader}
+        onChange={onChange}
+        className="w-full px-4 py-2 border rounded outline-none text-sm"
+      >
+        <option value="">-- Chọn loại độc giả --</option>
+        {typeReaderOptions.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+
       <input
         type="text"
         name="NameReader"
