@@ -57,10 +57,10 @@ declare global {
     idTypeBook: string;
     nameTypeBook: string;
   };
-  books: IBook[];
+  books: IBookAuthor[];
 }
 
-export interface IBook {
+export interface IBookAuthor {
   idBook: string;
   nameBook: string;
   publisher: string;
