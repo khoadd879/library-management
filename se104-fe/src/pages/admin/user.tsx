@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import BookList from "@/pages/admin/bookList";
+import BookList from "@/components/admin/listPage/BookList";
 import ReaderList from "@/components/admin/listPage/ReaderList";
 import AuthorList from "@/components/admin/listPage/AuthorList";
 
@@ -8,7 +8,6 @@ const UserPage = () => {
 
   return (
     <div className="w-full min-h-screen bg-[#f4f7f9]">
-      {/* Header */}
       <div className="bg-[#153D36] px-12 py-4 flex justify-between items-center">
         <input
           type="text"
@@ -19,7 +18,6 @@ const UserPage = () => {
       </div>
 
       <div className="px-12 py-6">
-        {/* Tabs */}
         <div className="flex justify-between items-center mb-4">
           <div className="flex gap-2">
             {["author", "reader", "book"].map((type) => (
@@ -68,7 +66,6 @@ const UserPage = () => {
           </div>
         </div>
 
-        {/* Render content by tab */}
         {tab === "book" ? (
           <BookList />
         ) : tab === "reader" ? (

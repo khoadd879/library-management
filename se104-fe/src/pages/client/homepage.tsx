@@ -1,44 +1,63 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAllBooksAndCommentsAPI, listAuthorAPI } from "@/services/api";
+import {
+  getAllBooksAndCommentsAPI,
+  getLoanSlipHistoryAPI,
+  listAuthorAPI,
+} from "@/services/api";
 import { message } from "antd";
 
 const UserHomepage = () => {
   const navigate = useNavigate();
-
-  // State lưu sách nổi bật
-  const [featuredBooks, setFeaturedBooks] = useState<IGetAllBookAndComment[]>([]);
-
-  // State lưu danh sách tác giả
+  const [featuredBooks, setFeaturedBooks] = useState<IBook[]>([]);
   const [authors, setAuthors] = useState<IAddAuthor[]>([]);
+  const [latestBooks, setLatestBooks] = useState<IBook[]>([]);
+  const [loanHistory, setLoanHistory] = useState<ILoanHistory[]>([]);
 
   useEffect(() => {
     const fetchBooksAndAuthors = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         if (!token) {
-          message.warning("Lỗi không có token");
+          message.warning("Lỗi: Không tìm thấy token.");
+          return;
+        }
+        const idUser = localStorage.getItem("idUser");
+        if (!idUser) {
+          message.error("Không tìm thấy người dùng.");
           return;
         }
 
-        // Lấy sách
-        const booksResponse = await getAllBooksAndCommentsAPI(token);
+        const historyRes = await getLoanSlipHistoryAPI(idUser);
+        if (Array.isArray(historyRes)) {
+          setLoanHistory(historyRes.slice(0, 5));
+        } else {
+          message.error("Dữ liệu lịch sử không hợp lệ.");
+        }
+        const [booksResponse, authorRes] = await Promise.all([
+          getAllBooksAndCommentsAPI(),
+          listAuthorAPI(token),
+        ]);
+
         if (Array.isArray(booksResponse)) {
           setFeaturedBooks(booksResponse.slice(0, 5));
+
+          const sorted = [...booksResponse].sort(
+            (a, b) => Number(b.reprintYear) - Number(a.reprintYear)
+          );
+          setLatestBooks(sorted.slice(0, 3));
         } else {
-          message.error("Dữ liệu sách trả về không đúng định dạng.");
+          message.error("Dữ liệu sách không đúng định dạng.");
         }
 
-        // Lấy danh sách tác giả
-        const authorRes = await listAuthorAPI(token);
         if (Array.isArray(authorRes)) {
-          setAuthors(authorRes);
+          setAuthors(authorRes.slice(0, 4));
         } else {
-          message.error("Dữ liệu tác giả trả về không đúng định dạng.");
+          message.error("Dữ liệu tác giả không đúng định dạng.");
         }
       } catch (error) {
-        console.error(error);
-        message.error("Lỗi khi tải dữ liệu.");
+        console.error("Lỗi khi tải dữ liệu:", error);
+        message.error("Đã xảy ra lỗi khi tải dữ liệu.");
       }
     };
 
@@ -46,7 +65,7 @@ const UserHomepage = () => {
   }, []);
 
   return (
-    <div className="bg-[#f4f7f9] min-h-screen ">
+    <div className="bg-[#f4f7f9] min-h-screen">
       <div className="bg-[#153D36] px-6 md:px-12 py-4 flex justify-between items-center">
         <input
           type="text"
@@ -56,27 +75,25 @@ const UserHomepage = () => {
         <div className="text-xl text-white ml-4">🔔</div>
       </div>
 
-      <div className="container max-w-screen-xl mx-auto px-4 md:px-12 ">
+      <div className="container max-w-screen-xl mx-auto px-4 md:px-12">
         <div className="flex flex-col lg:flex-row gap-6">
           <div className="w-full lg:w-2/3 flex flex-col gap-6">
-            {/* Featured Books */}
-            <div className="bg-white rounded-xl p-6 md:p-8 shadow">
+            <div className="bg-white rounded-xl p-6 shadow">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="font-semibold text-lg text-[#154734]">
                   Nổi bật
                 </h2>
-                <a
-                  href="#"
+                <button
                   className="text-blue-500 text-sm"
                   onClick={() => navigate("featured")}
                 >
                   Xem tất cả &gt;
-                </a>
+                </button>
               </div>
               <div className="flex gap-4 overflow-x-auto">
-                {featuredBooks.map((book, i) => (
+                {featuredBooks.map((book) => (
                   <div
-                    key={i}
+                    key={book.idBook}
                     className="min-w-[140px] bg-white rounded-lg shadow p-2 cursor-pointer hover:shadow-lg transition"
                     onClick={() => navigate(`/detail/${book.idBook}`)}
                   >
@@ -89,73 +106,90 @@ const UserHomepage = () => {
                     ) : (
                       <div className="h-40 bg-gray-200 rounded mb-2" />
                     )}
-                    <p className="text-sm font-semibold text-[#154734]">{book.nameBook}</p>
+                    <p className="text-sm font-semibold text-[#154734]">
+                      {book.nameBook}
+                    </p>
                     <p className="text-xs text-gray-500">
-                      {book.authors.length > 0 ? book.authors[0].nameAuthor : "Không rõ tác giả"}
+                      {book.authors?.[0]?.nameAuthor || "Không rõ tác giả"}
                     </p>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Borrowing History */}
             <div className="bg-white rounded-xl p-4 shadow">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="font-semibold text-lg text-[#154734]">
                   Lịch sử mượn sách
                 </h2>
-                <a href="#" className="text-blue-500 text-sm">
+                <button className="text-blue-500 text-sm">
                   Xem tất cả &gt;
-                </a>
+                </button>
               </div>
               <div className="flex gap-4 overflow-x-auto">
-                {[...Array(5)].map((_, i) => (
+                {loanHistory.map((item) => (
                   <div
-                    key={i}
+                    key={item.idBook}
                     className="min-w-[140px] bg-white rounded-lg shadow p-2 cursor-pointer hover:shadow-lg transition"
-                    onClick={() => navigate(`/detail`)}
+                    onClick={() => navigate(`/detail/${item.idBook}`)}
                   >
-                    <div className="h-40 bg-gray-200 rounded mb-2" />
+                    {item.avatarUrl ? (
+                      <img
+                        src={item.avatarUrl}
+                        alt={item.nameBook}
+                        className="h-40 w-full object-cover rounded mb-2"
+                      />
+                    ) : (
+                      <div className="h-40 bg-gray-200 rounded mb-2" />
+                    )}
                     <p className="text-sm font-semibold text-[#154734]">
-                      One Bullet Away
+                      {item.nameBook}
                     </p>
-                    <p className="text-xs text-gray-500">Nathaniel Fick</p>
+                    <p className="text-xs text-gray-500">{item.genre}</p>
                   </div>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* Author & New Books */}
           <div className="w-full lg:w-1/3 flex flex-col gap-6">
-            <div className="bg-white rounded-xl p-6 md:p-4.5 shadow">
+            <div className="bg-white rounded-xl p-6 shadow">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="font-semibold text-lg text-[#154734]">
                   Tác giả
                 </h2>
-                <a
-                  href="#"
+                <button
                   className="text-blue-500 text-sm"
                   onClick={() => navigate("/author")}
                 >
                   Xem tất cả &gt;
-                </a>
+                </button>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                {authors.slice(0, 4).map((author, i) => (
+                {authors.map((author) => (
                   <div
-                    key={i}
-                    className="flex flex-col items-center text-center border rounded p-2"
+                    key={author.idAuthor}
+                    className="flex flex-col items-center text-center border rounded p-2 cursor-pointer"
                     onClick={() => navigate(`/authorInfo/${author.idAuthor}`)}
                   >
-                    <div className="w-12 h-12 rounded-full bg-gray-300" />
+                    {author.urlAvatar ? (
+                      <img
+                        src={author.urlAvatar}
+                        alt={author.nameAuthor}
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 bg-gray-300 rounded-full" />
+                    )}
                     <p className="text-sm font-semibold text-[#154734]">
                       {author.nameAuthor}
                     </p>
-                  
-                    <a href="#" className="text-blue-500 text-xs mt-1">
+                    <p className="text-xs text-gray-500">
+                      {author.idTypeBook?.nameTypeBook}
+                    </p>
+                    <span className="text-blue-500 text-xs mt-1">
                       Thông tin chi tiết
-                    </a>
+                    </span>
                   </div>
                 ))}
               </div>
@@ -166,26 +200,35 @@ const UserHomepage = () => {
                 <h2 className="font-semibold text-lg text-[#154734]">
                   Sách mới
                 </h2>
-                <a
-                  href="#"
+                <button
                   className="text-blue-500 text-sm"
                   onClick={() => navigate("/new-books")}
                 >
                   Xem tất cả &gt;
-                </a>
+                </button>
               </div>
               <div className="flex gap-4 overflow-x-auto">
-                {[...Array(4)].map((_, i) => (
+                {latestBooks.map((book) => (
                   <div
-                    key={i}
+                    key={book.idBook}
                     className="min-w-[140px] bg-white rounded-lg shadow p-2 cursor-pointer hover:shadow-lg transition"
-                    onClick={() => navigate(`/detail`)}
+                    onClick={() => navigate(`/detail/${book.idBook}`)}
                   >
-                    <div className="h-40 bg-gray-200 rounded mb-2" />
+                    {book.image ? (
+                      <img
+                        src={book.image}
+                        alt={book.nameBook}
+                        className="h-40 w-full object-cover rounded mb-2"
+                      />
+                    ) : (
+                      <div className="h-40 bg-gray-200 rounded mb-2" />
+                    )}
                     <p className="text-sm font-semibold text-[#154734]">
-                      One Bullet Away
+                      {book.nameBook}
                     </p>
-                    <p className="text-xs text-gray-500">Nathaniel Fick</p>
+                    <p className="text-xs text-gray-500">
+                      {book.authors?.[0]?.nameAuthor || "Không rõ tác giả"}
+                    </p>
                   </div>
                 ))}
               </div>

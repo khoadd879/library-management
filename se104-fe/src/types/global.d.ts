@@ -44,6 +44,7 @@ declare global {
   interface ISignIn {
     token: string;
     refreshToken: string;
+    iduser: string;
   }
 
   interface IAddBookForm {
@@ -162,10 +163,7 @@ declare global {
   }
   export interface IAddAuthor {
     idAuthor: string;
-    idTypeBook: {
-      idTypeBook: string;
-      nameTypeBook: string;
-    };
+    idTypeBook: ITypeBook;
     nameAuthor: string;
     nationality: string;
     biography: string;
@@ -185,5 +183,56 @@ declare global {
       idTypeReader: string;
       nameTypeReader: string;
     };
+  }
+  export interface ITypeBook {
+    idTypeBook: string;
+    nameTypeBook: string;
+  }
+
+  export interface IAuthor {
+    idAuthor: string;
+    idTypeBook: ITypeBook;
+    nameAuthor: string;
+    nationality: string;
+    biography: string;
+    urlAvatar: string | null;
+  }
+
+  export interface IEvaluation {}
+
+  export interface IBook {
+    idBook: string;
+    nameBook: string;
+    describe: string;
+    valueOfbook: number;
+    image: string;
+    isLiked: boolean;
+    evaluations: IEvaluation[];
+    authors: IAuthor[];
+    reprintYear: number;
+  }
+  export interface ILoanHistory {
+    idBook: string;
+    nameBook: string;
+    genre: string;
+    dateBorrow: string;
+    dateReturn: string;
+    avatarUrl: string | null;
+  }
+  interface IChatContent {
+    type: "text" | "image" | "file";
+    data: string;
+  }
+
+  interface ISendMessagePayload {
+    receiverId: string;
+    content: IChatContent;
+  }
+  export interface IChatMessage {
+    id: string;
+    senderId: string;
+    receiverId: string;
+    content: IChatContent;
+    sentAt: string;
   }
 }

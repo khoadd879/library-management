@@ -9,7 +9,6 @@ const AuthorList = () => {
     const fetchAuthors = async () => {
       try {
         const res = await getListAuthor();
-        console.log(res);
         if (res) {
           setAuthors(res);
         }

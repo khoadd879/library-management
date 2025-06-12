@@ -22,30 +22,8 @@ const SignIn = () => {
       const res = await loginAPI(username, password);
 
       if (res) {
-        // ✅ Lưu token vào localStorage
         localStorage.setItem("token", res.token);
-
-        // ✅ Decode JWT payload
-        const base64Url = res.token.split(".")[1];
-        const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-        const jsonPayload = decodeURIComponent(
-          atob(base64)
-            .split("")
-            .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-            .join("")
-        );
-        const payload = JSON.parse(jsonPayload);
-
-        // ✅ Lấy nameidentifier
-        const nameIdentifier =
-          payload[
-            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
-          ];
-
-        // ✅ Lưu vào localStorage hoặc context nếu cần
-        localStorage.setItem("idUser", nameIdentifier);
-        console.log("Logged in as:", nameIdentifier);
-
+        localStorage.setItem("idUser", res.iduser);
         setIsAuthenticated(true);
         message.success("Đăng nhập thành công!");
         navigate("/");
