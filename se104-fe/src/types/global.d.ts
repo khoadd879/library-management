@@ -47,6 +47,29 @@ declare global {
     iduser: string;
   }
 
+  export interface IGetAuthor {
+  idAuthor: string;
+  nameAuthor: string;
+  biography: string;
+  nationality: string;
+  urlAvatar: string | null;
+  idTypeBook: {
+    idTypeBook: string;
+    nameTypeBook: string;
+  };
+  books: IBookAuthor[];
+}
+
+export interface IBookAuthor {
+  idBook: string;
+  nameBook: string;
+  publisher: string;
+  reprintYear: number;
+  valueOfBook: number;
+  urlImage: string;
+}
+
+
   interface IAddBookForm {
     idTypeBook: string;
     nameHeaderBook: string;
