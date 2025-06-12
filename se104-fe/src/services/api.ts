@@ -88,7 +88,7 @@ export const deleteAuthorAPI = (idAuthor: string) => {
 
 export const getAuthorByID = (token: string, idAuthor: string) => {
   const urlBackend = `/api/Author/getauthorbyid${idAuthor}`;
-  return axios.get<IAddAuthor>(urlBackend, {
+  return axios.get<IGetAuthor>(urlBackend, {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
