@@ -85,6 +85,16 @@ export const deleteAuthorAPI = (idAuthor: string) => {
   const urlBackend = `/api/Author/delete_author/${idAuthor}`;
   return axios.delete<IBackendRes<IAddAuthor>>(urlBackend);
 };
+
+export const getAuthorByID = (token: string, idAuthor: string) => {
+  const urlBackend = `/api/Author/getauthorbyid${idAuthor}`;
+  return axios.get<IAddAuthor>(urlBackend, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
 //book
 export const addBookAPI = (formData: FormData) => {
   return axios.post("/api/Book/add_book", formData, {

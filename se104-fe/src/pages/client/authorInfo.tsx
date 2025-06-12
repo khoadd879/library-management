@@ -1,61 +1,67 @@
-import React from "react";
+import { useEffect, useState } from "react";
+import { getAuthorByID } from "@/services/api";
+import { useParams } from "react-router-dom";
 
 const AuthorDetail = () => {
-  const author = {
-    name: "J.K. Rowling",
-    avatar: "https://th.bing.com/th/id/OIP.auqsJ2IYALrvSlS7oaw-OwHaKD?rs=1&pid=ImgDetMain",
-    description: "J.K. Rowling is the author of the enduringly popular Harry Potter books. After the idea for Harry Potter came to her on a delayed train journey in 1990, she plotted out and started writing the series of seven books and the first was published as Harry Potter and the Philosopher's Stone in the UK in 1997. The series took another ten years to complete, concluding in 2007 with the publication of Harry Potter and the Deathly Hallows.'.",
-  };
+  const { id } = useParams<{ id: string }>();
+  const token = localStorage.getItem("token") || "";
+  const [authorDetail, setAuthorDetail] = useState<IAddAuthor | null>(null);
 
-  const books = [
-    {
-      title: "Of Mice and Men",
-      author: "John Steinbeck",
-      image: "https://th.bing.com/th/id/OIP.auqsJ2IYALrvSlS7oaw-OwHaKD?rs=1&pid=ImgDetMain",
-    },
-    {
-      title: "The Grapes of Wrath",
-      author: "John Steinbeck",
-      image: "https://th.bing.com/th/id/OIP.auqsJ2IYALrvSlS7oaw-OwHaKD?rs=1&pid=ImgDetMain",
-    },
-    {
-      title: "East of Eden",
-      author: "John Steinbeck",
-      image: "https://th.bing.com/th/id/OIP.auqsJ2IYALrvSlS7oaw-OwHaKD?rs=1&pid=ImgDetMain",
-    },
-    {
-      title: "Cannery Row",
-      author: "John Steinbeck",
-      image: "https://th.bing.com/th/id/OIP.auqsJ2IYALrvSlS7oaw-OwHaKD?rs=1&pid=ImgDetMain",
-    },
-  ];
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchData = async () => {
+      try {
+        const res = await getAuthorByID(token, id);
+       
+        if (res) {
+          console.log("Dữ liệu tác giả trả về:", res);
+          setAuthorDetail(res);
+        } else {
+          console.error("Không có dữ liệu tác giả:", res);
+        }
+
+      } catch (error) {
+        console.error("Lỗi khi lấy chi tiết tác giả:", error);
+      }
+    };
+
+    fetchData();
+  }, [id]);
+
+  if (!authorDetail) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-600">
+        Đang tải dữ liệu tác giả...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white px-8 py-6">
-      {/* Phần thông tin tác giả */}
+      {/* Thông tin tác giả */}
       <div className="flex flex-col md:flex-row gap-6 mb-8">
         <div className="md:w-1/5">
-          <img 
-            src={author.avatar} 
-            alt={author.name} 
-            className="w-full h-auto rounded-lg shadow-md"
+          <img
+             src={authorDetail.avatarImage}
+            alt={authorDetail.nameAuthor}
+            className="w-full h-auto rounded-lg shadow-md object-cover"
           />
-        </div>
-        <div className="md:w-3/4">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">{author.name}</h1>
-          <p className="text-gray-600 text-justify">{author.description}</p>
-        </div>
-      </div>
 
-      {/* Phần tiêu đề sách của tác giả */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-red-600">
-          Sách của {author.name} <span className="text-xl">📚</span>
-        </h2>
+        </div>
+        <div className="md:w-4/5">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+            {authorDetail.nameAuthor}
+          </h1>
+          <p className="text-gray-600 mb-2"><strong>Quốc tịch:</strong> {authorDetail.nationality}</p>
+          <p className="text-gray-600 text-justify whitespace-pre-line">
+            {authorDetail.biography}
+          </p>
+        </div>
       </div>
 
       {/* Danh sách sách */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+      {/* <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
         {[...Array(2)]
           .flatMap(() => books)
           .map((book, index) => (
@@ -72,7 +78,7 @@ const AuthorDetail = () => {
               <p className="text-xs text-gray-500">{book.author}</p>
             </div>
           ))}
-      </div>
+      </div> */}
     </div>
   );
 };
