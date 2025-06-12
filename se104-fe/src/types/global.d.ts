@@ -44,14 +44,7 @@ declare global {
   interface ISignIn {
     token: string;
     refreshToken: string;
-  }
-
-  export interface IAddAuthor {
-    idTypeBook: string;
-    nameAuthor: string;
-    nationality: string;
-    biography: string;
-    avatarImage: File;
+    iduser: string;
   }
 
   interface IAddBookForm {
@@ -147,7 +140,7 @@ declare global {
     avatar?: string | null;
   }
 
-  interface IUser {
+  export interface IUser {
     id: string;
     username: string;
     fullName: string;
@@ -167,5 +160,79 @@ declare global {
     };
     avatar?: string | null;
     dob?: string;
+  }
+  export interface IAddAuthor {
+    idAuthor: string;
+    idTypeBook: ITypeBook;
+    nameAuthor: string;
+    nationality: string;
+    biography: string;
+    urlAvatar: string | null;
+  }
+  export interface IReader {
+    idReader: string;
+    nameReader: string;
+    address: string;
+    email: string;
+    phone: string;
+    createDate: string;
+    readerAccount: string;
+    totalDebt: number;
+    urlAvatar: string | null;
+    idTypeReader: {
+      idTypeReader: string;
+      nameTypeReader: string;
+    };
+  }
+  export interface ITypeBook {
+    idTypeBook: string;
+    nameTypeBook: string;
+  }
+
+  export interface IAuthor {
+    idAuthor: string;
+    idTypeBook: ITypeBook;
+    nameAuthor: string;
+    nationality: string;
+    biography: string;
+    urlAvatar: string | null;
+  }
+
+  export interface IEvaluation {}
+
+  export interface IBook {
+    idBook: string;
+    nameBook: string;
+    describe: string;
+    valueOfbook: number;
+    image: string;
+    isLiked: boolean;
+    evaluations: IEvaluation[];
+    authors: IAuthor[];
+    reprintYear: number;
+  }
+  export interface ILoanHistory {
+    idBook: string;
+    nameBook: string;
+    genre: string;
+    dateBorrow: string;
+    dateReturn: string;
+    avatarUrl: string | null;
+  }
+  interface IChatContent {
+    type: "text" | "image" | "file";
+    data: string;
+  }
+
+  interface ISendMessagePayload {
+    receiverId: string;
+    content: IChatContent;
+  }
+  export interface IChatMessage {
+    id: string;
+    senderId: string;
+    receiverId: string;
+    content: IChatContent;
+    sentAt: string;
   }
 }

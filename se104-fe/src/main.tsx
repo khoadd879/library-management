@@ -31,7 +31,7 @@ import NewPasswordPage from "./pages/client/auth/newPass";
 import ProtectedRoute from "@/components/auth/protected";
 import Profile from "./pages/client/profile";
 import UserProfile from "./pages/admin/userprofile";
-import BookList from "./pages/admin/bookList";
+import BookList from "./components/admin/listPage/BookList";
 import AuthorInfo from "./pages/client/authorInfo";
 const router = createBrowserRouter([
   {
@@ -50,7 +50,7 @@ const router = createBrowserRouter([
           { path: "author", element: <AuthorPage /> },
           { path: "featured", element: <FeaturedBooks /> },
           { path: "new-books", element: <NewBooks /> },
-         { path: "detail/:id", element: <BookDetailPage /> },
+          { path: "detail/:id", element: <BookDetailPage /> },
           { path: "profile", element: <Profile /> },
         ],
       },
@@ -82,15 +82,15 @@ const router = createBrowserRouter([
   { path: "/forgot", element: <ForgotPasswordPage /> },
   { path: "/verification", element: <VerificationCodePage /> },
   { path: "/new-pass", element: <NewPasswordPage /> },
-    {
+  {
     path: "/test-admin",
     element: <Layout />,
     children: [
       { index: true, element: <HomePage /> },
       { path: "userprofile", element: <UserProfile /> },
-      {path: "booklist", element: <BookList />},
-      {path: "user", element: <UserPage />},
-      {path: "authorInfo/:id", element: <AuthorInfo />},
+      { path: "booklist", element: <BookList /> },
+      { path: "user", element: <UserPage /> },
+      { path: "authorInfo/:id", element: <AuthorInfo /> },
     ],
   },
   {

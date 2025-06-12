@@ -1,6 +1,6 @@
 import { useCurrentApp } from "@/components/context/app.context";
 import { loginAPI } from "@/services/api";
-import { message } from "antd";
+import { message, Spin } from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -8,53 +8,35 @@ const SignIn = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { setIsAuthenticated } = useCurrentApp();
 
   const handleLogin = async () => {
-  if (!username || !password) {
-    message.warning("Vui lòng nhập đầy đủ tài khoản và mật khẩu!");
-    return;
-  }
-
-  try {
-    const res = await loginAPI(username, password);
-
-    if (res) {
-      // ✅ Lưu token vào localStorage
-      localStorage.setItem("token", res.token);
-
-      // ✅ Decode JWT payload
-      const base64Url = res.token.split(".")[1];
-      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split("")
-          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-          .join("")
-      );
-      const payload = JSON.parse(jsonPayload);
-
-      // ✅ Lấy nameidentifier
-      const nameIdentifier =
-        payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
-
-      // ✅ Lưu vào localStorage hoặc context nếu cần
-      localStorage.setItem("idUser", nameIdentifier);
-      console.log("Logged in as:", nameIdentifier);
-
-      setIsAuthenticated(true);
-      message.success("Đăng nhập thành công!");
-      navigate("/");
-    } else {
-      message.error("Đăng nhập thất bại!");
+    if (!username || !password) {
+      message.warning("Vui lòng nhập đầy đủ tài khoản và mật khẩu!");
+      return;
     }
-  } catch (error) {
-    message.error("Đăng nhập thất bại. Vui lòng thử lại!");
-    console.error("Login error:", error);
-  }
-};
+    setLoading(true);
+    try {
+      const res = await loginAPI(username, password);
 
+      if (res) {
+        localStorage.setItem("token", res.token);
+        localStorage.setItem("idUser", res.iduser);
+        setIsAuthenticated(true);
+        message.success("Đăng nhập thành công!");
+        navigate("/");
+      } else {
+        message.error("Đăng nhập thất bại!");
+      }
+    } catch (error) {
+      message.error("Đăng nhập thất bại. Vui lòng thử lại!");
+      console.error("Login error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -111,9 +93,19 @@ const SignIn = () => {
 
           <button
             onClick={handleLogin}
-            className="w-full py-2 bg-[#21b39b] rounded-md text-white font-semibold hover:opacity-90"
+            disabled={loading}
+            className={`w-full py-2 bg-[#21b39b] rounded-md text-white font-semibold hover:opacity-90 flex items-center justify-center ${
+              loading ? "opacity-70 cursor-not-allowed" : ""
+            }`}
           >
-            Log in
+            {loading ? (
+              <div className="flex items-center justify-center gap-2">
+                <Spin size="small" />
+                <span>Đang đăng nhập...</span>
+              </div>
+            ) : (
+              "Log in"
+            )}
           </button>
         </div>
       </div>
@@ -122,8 +114,7 @@ const SignIn = () => {
           viewBox="0 0 1440 320"
           className="w-[100vw] h-[260px]"
           xmlns="http://www.w3.org/2000/svg"
-        >
-        </svg>
+        ></svg>
       </div>
     </>
   );

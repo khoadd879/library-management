@@ -117,16 +117,6 @@ export const updateBookAPI = (
   return axios.put<IBackendRes<any>>(urlBackend, data);
 };
 
-export const getAllBooksAndCommentsAPI = (token: string) => {
-  const urlBackend = "/api/Book/getbooksindetail";
-  return axios.get<IBackendRes<IGetAllBookAndComment>>(urlBackend, {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
-};
-
 export const getBookAndCommentsByIdAPI = (token: string, idBook: string) => {
   const urlBackend = `/api/Book/getbooksindetailbyid${idBook}`;
   return axios.get<IBackendRes<IGetAllBookAndComment>>(urlBackend, {
@@ -175,9 +165,7 @@ export const findReaderAPI = (token: string, username: string) => {
 export const getTypeBooksAPI = () => {
   return axios.get("/api/TypeBook/getTypeBook");
 };
-export const getListAuthor = () => {
-  return axios.get("/api/Author/list_author");
-};
+
 export const addLoanBookAPI = (idReader: string, idTheBook: string) => {
   const urlBackend = "/api/LoanSlipBook/add_loanbook";
   return axios.post(urlBackend, { idReader, idTheBook });
@@ -199,10 +187,29 @@ export const addSlipBookAPI = (
     idTheBook,
   });
 };
-export const getLoanSlipHistoryAPI = (idUser: string) => {
-  const url = `/api/LoanSlipBook/getloansliphistory?idUser=${idUser}`;
-  return axios.get<IBackendRes<any>>(url);
-};
+
 export const getTypeReadersAPI = () => {
   return axios.get("/api/TypeReader/getAllTypeReader");
+};
+export const getListAuthor = () => {
+  return axios.get<IAddAuthor[]>("/api/Author/list_author");
+};
+export const getListReader = () => {
+  return axios.get<IReader[]>("/api/reader/Reader/list_reader");
+};
+export const getAllBooksAndCommentsAPI = () => {
+  return axios.get<IBook[]>("/api/Book/getbooksindetail");
+};
+export const getLoanSlipHistoryAPI = (idUser: string) => {
+  const url = `/api/LoanSlipBook/getloansliphistory?idUser=${idUser}`;
+  return axios.get<ILoanHistory[]>(url);
+};
+export const sendMessageAPI = async (payload: ISendMessagePayload) => {
+  const url = "/api/Chat/send";
+  return await axios.post(url, payload);
+};
+export const getChatHistoryAPI = async (receiveUserId: string) => {
+  const url = `/api/Chat/history?receiveUserId=${receiveUserId}`;
+  const res = await axios.get<IChatMessage[]>(url);
+  return res;
 };
