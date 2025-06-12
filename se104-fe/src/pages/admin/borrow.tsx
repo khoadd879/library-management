@@ -1,17 +1,19 @@
+import React, { useState } from "react";
 import BorrowForm from "@/components/admin/book/BorrowForm";
 import FineForm from "@/components/admin/book/FineForm";
-import ReturnForm from "@/components/admin/book/ReturnForm";
-import React, { useState } from "react";
+import ListBorrow from "@/components/admin/book/ListBorrow";
 
 const BorrowBook = () => {
-  const [selectedTab, setSelectedTab] = useState("borrow");
+  const [selectedTab, setSelectedTab] = useState<"borrow" | "list" | "fine">(
+    "borrow"
+  );
 
   const renderTab = () => {
     switch (selectedTab) {
       case "borrow":
         return <BorrowForm />;
-      case "return":
-        return <ReturnForm />;
+      case "list":
+        return <ListBorrow />;
       case "fine":
         return <FineForm />;
       default:
@@ -41,16 +43,18 @@ const BorrowBook = () => {
         >
           MƯỢN SÁCH
         </button>
+
         <button
-          onClick={() => setSelectedTab("return")}
+          onClick={() => setSelectedTab("list")}
           className={`px-4 py-2 rounded font-medium text-sm ${
-            selectedTab === "return"
+            selectedTab === "list"
               ? "bg-[#153D36] text-white"
               : "bg-gray-200 text-[#153D36]"
           }`}
         >
-          TRẢ SÁCH
+          DANH SÁCH MƯỢN
         </button>
+
         <button
           onClick={() => setSelectedTab("fine")}
           className={`px-4 py-2 rounded font-medium text-sm ${

@@ -213,3 +213,9 @@ export const getChatHistoryAPI = async (receiveUserId: string) => {
   const res = await axios.get<IChatMessage[]>(url);
   return res;
 };
+export const getAllLoanSlipsAPI = async () => {
+  const res = await axios.get<ILoanSlip[]>(
+    "/api/LoanSlipBook/getAllBookLoanSlip"
+  );
+  return res;
+};

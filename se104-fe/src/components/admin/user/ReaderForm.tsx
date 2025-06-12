@@ -1,5 +1,5 @@
 import React from "react";
-
+import { Spin } from "antd";
 interface ReaderFormProps {
   form: any;
   onChange: (
@@ -19,6 +19,7 @@ const ReaderForm = ({
   preview,
   setPreview,
   typeReaderOptions,
+  isLoading,
 }: ReaderFormProps) => {
   return (
     <form
@@ -120,9 +121,14 @@ const ReaderForm = ({
       <div className="pt-4 flex justify-center">
         <button
           type="submit"
-          className="bg-[#153D36] text-white px-6 py-2 rounded text-sm font-semibold"
+          disabled={isLoading}
+          className={`px-6 py-2 rounded text-sm font-semibold flex items-center gap-2 justify-center ${
+            isLoading
+              ? "bg-gray-400 text-white cursor-not-allowed"
+              : "bg-[#153D36] text-white"
+          }`}
         >
-          Thêm độc giả
+          {isLoading ? <Spin size="small" /> : "Thêm độc giả"}
         </button>
       </div>
     </form>

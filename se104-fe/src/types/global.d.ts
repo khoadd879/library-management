@@ -235,4 +235,12 @@ declare global {
     content: IChatContent;
     sentAt: string;
   }
+  export interface ILoanSlip {
+    idLoanSlipBook: string;
+    idTheBook: string;
+    idReader: string;
+    borrowDate: string; // ISO date string: "2025-05-29T00:00:00"
+    returnDate: string; // ISO date string
+    fineAmount: number;
+  }
 }
