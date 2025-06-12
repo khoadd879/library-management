@@ -9,10 +9,12 @@ const AuthorInfo = () => {
   const token = localStorage.getItem("token") || "";
 
   const [authorDetail, setAuthorDetail] = useState<IGetAuthor | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAuthor = async () => {
       try {
+        setLoading(true);
         if (!id || !token) {
           message.error("Thiếu ID tác giả hoặc token.");
           return;
@@ -27,16 +29,26 @@ const AuthorInfo = () => {
       } catch (error) {
         console.error(error);
         message.error("Lỗi khi lấy dữ liệu tác giả.");
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchAuthor();
   }, [id, token]);
 
-  if (!authorDetail) {
+  if (loading) {
     return (
       <div className="min-h-screen flex justify-center items-center text-gray-500">
         Đang tải thông tin tác giả...
+      </div>
+    );
+  }
+
+  if (!authorDetail) {
+    return (
+      <div className="min-h-screen flex justify-center items-center text-red-500">
+        Không tìm thấy thông tin tác giả.
       </div>
     );
   }

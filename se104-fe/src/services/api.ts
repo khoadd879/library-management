@@ -219,3 +219,13 @@ export const getAllLoanSlipsAPI = async () => {
   );
   return res;
 };
+
+export const addFavoriteBookAPI = async (idBook: string) => {
+  const url = `/api/Book/LikeBook?idBook=${idBook}`;
+  return await axios.post<IBackendRes<any>>(url);
+};
+
+export const getFavoriteBooksAPI = async () => {
+  const url = "/api/Book/getlikedbook";
+  return await axios.get<IBook[]>(url);
+}
