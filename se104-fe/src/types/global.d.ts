@@ -46,14 +46,6 @@ declare global {
     refreshToken: string;
   }
 
-  export interface IAddAuthor {
-    idTypeBook: string;
-    nameAuthor: string;
-    nationality: string;
-    biography: string;
-    avatarImage: File;
-  }
-
   interface IAddBookForm {
     idTypeBook: string;
     nameHeaderBook: string;
@@ -147,7 +139,7 @@ declare global {
     avatar?: string | null;
   }
 
-  interface IUser {
+  export interface IUser {
     id: string;
     username: string;
     fullName: string;
@@ -167,5 +159,31 @@ declare global {
     };
     avatar?: string | null;
     dob?: string;
+  }
+  export interface IAddAuthor {
+    idAuthor: string;
+    idTypeBook: {
+      idTypeBook: string;
+      nameTypeBook: string;
+    };
+    nameAuthor: string;
+    nationality: string;
+    biography: string;
+    urlAvatar: string | null;
+  }
+  export interface IReader {
+    idReader: string;
+    nameReader: string;
+    address: string;
+    email: string;
+    phone: string;
+    createDate: string;
+    readerAccount: string;
+    totalDebt: number;
+    urlAvatar: string | null;
+    idTypeReader: {
+      idTypeReader: string;
+      nameTypeReader: string;
+    };
   }
 }

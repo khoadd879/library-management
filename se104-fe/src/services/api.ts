@@ -165,9 +165,7 @@ export const findReaderAPI = (token: string, username: string) => {
 export const getTypeBooksAPI = () => {
   return axios.get("/api/TypeBook/getTypeBook");
 };
-export const getListAuthor = () => {
-  return axios.get("/api/Author/list_author");
-};
+
 export const addLoanBookAPI = (idReader: string, idTheBook: string) => {
   const urlBackend = "/api/LoanSlipBook/add_loanbook";
   return axios.post(urlBackend, { idReader, idTheBook });
@@ -195,4 +193,10 @@ export const getLoanSlipHistoryAPI = (idUser: string) => {
 };
 export const getTypeReadersAPI = () => {
   return axios.get("/api/TypeReader/getAllTypeReader");
+};
+export const getListAuthor = () => {
+  return axios.get<IAddAuthor[]>("/api/Author/list_author");
+};
+export const getListReader = () => {
+  return axios.get<IReader[]>("/api/reader/Reader/list_reader");
 };
