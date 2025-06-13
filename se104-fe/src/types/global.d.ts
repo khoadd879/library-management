@@ -48,27 +48,26 @@ declare global {
   }
 
   export interface IGetAuthor {
-  idAuthor: string;
-  nameAuthor: string;
-  biography: string;
-  nationality: string;
-  urlAvatar: string | null;
-  idTypeBook: {
-    idTypeBook: string;
-    nameTypeBook: string;
-  };
-  books: IBookAuthor[];
-}
+    idAuthor: string;
+    nameAuthor: string;
+    biography: string;
+    nationality: string;
+    urlAvatar: string | null;
+    idTypeBook: {
+      idTypeBook: string;
+      nameTypeBook: string;
+    };
+    books: IBookAuthor[];
+  }
 
-export interface IBookAuthor {
-  idBook: string;
-  nameBook: string;
-  publisher: string;
-  reprintYear: number;
-  valueOfBook: number;
-  urlImage: string;
-}
-
+  export interface IBookAuthor {
+    idBook: string;
+    nameBook: string;
+    publisher: string;
+    reprintYear: number;
+    valueOfBook: number;
+    urlImage: string;
+  }
 
   interface IAddBookForm {
     idTypeBook: string;
@@ -260,5 +259,9 @@ export interface IBookAuthor {
     borrowDate: string; // ISO date string: "2025-05-29T00:00:00"
     returnDate: string; // ISO date string
     fineAmount: number;
+  }
+  export interface IGetStarByIdBook {
+    star: number;
+    status: number;
   }
 }
