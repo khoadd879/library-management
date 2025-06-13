@@ -1,62 +1,64 @@
+import { useEffect, useState } from "react";
+import { message, Modal } from "antd"; // dùng Modal xác nhận
 import {
+  deleteAuthorAPI,
   getListAuthor,
   getTypeBooksAPI,
   updateAuthorAPI,
 } from "@/services/api";
-import { useEffect, useState } from "react";
-import { message } from "antd";
 import UpdateAuthorModal from "../user/UpdateAuthorModal";
+
 const AuthorList = () => {
   const [authors, setAuthors] = useState<IAddAuthor[]>([]);
   const [loading, setLoading] = useState(true);
-  const [openModal, setOpenModal] = useState(false);
-  const [selectedAuthor, setSelectedAuthor] = useState<IAddAuthor | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [typeBookOptions, setTypeBookOptions] = useState<
     { value: string; label: string }[]
   >([]);
+
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedAuthor, setSelectedAuthor] = useState<IAddAuthor | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchTypeBooks = async () => {
+      try {
+        const res = await getTypeBooksAPI();
+        const options = res.map((item: any) => ({
+          value: item.idTypeBook,
+          label: item.nameTypeBook,
+        }));
+        setTypeBookOptions(options);
+      } catch (err) {
+        console.error("Lỗi khi lấy thể loại sách:", err);
+        message.error("Không thể tải thể loại sách.");
+      }
+    };
+    fetchTypeBooks();
+  }, []);
+
+  const loadAuthors = async () => {
+    setLoading(true);
+    try {
+      const res = await getListAuthor();
+      setAuthors(res || []);
+    } catch (err) {
+      console.error("Lỗi khi tải tác giả:", err);
+      message.error("Không thể tải danh sách tác giả.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadAuthors();
+  }, []);
+
   const handleEdit = (author: IAddAuthor) => {
     setSelectedAuthor(author);
     setOpenModal(true);
   };
-  useEffect(() => {
-    const fetchTypes = async () => {
-      try {
-        const res = await getTypeBooksAPI();
-        console.log(res);
-        const unique = Array.from(
-          new Map(res?.map((item: any) => [item.idTypeBook, item])).values()
-        ).map((item: any) => ({
-          value: item.idTypeBook,
-          label: item.typeBook,
-        }));
 
-        setTypeBookOptions(unique);
-      } catch (err) {
-        console.error("Lỗi lấy thể loại sách:", err);
-        message.error("Không thể lấy danh sách thể loại sách.");
-      }
-    };
-
-    fetchTypes();
-  }, [message]);
-
-  useEffect(() => {
-    const fetchAuthors = async () => {
-      try {
-        const res = await getListAuthor();
-        if (res) {
-          setAuthors(res);
-        }
-      } catch (err) {
-        console.error("Failed to load authors", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAuthors();
-  }, []);
   const handleUpdateSubmit = async (formData: FormData) => {
     if (!selectedAuthor) return;
     setIsSubmitting(true);
@@ -64,15 +66,31 @@ const AuthorList = () => {
       await updateAuthorAPI(selectedAuthor.idAuthor, formData);
       message.success("Cập nhật tác giả thành công!");
       setOpenModal(false);
-      const res = await getListAuthor();
-      if (res) setAuthors(res);
+      await loadAuthors();
     } catch (err) {
       console.error(err);
-      message.error("Cập nhật thất bại!");
+      message.error("Cập nhật tác giả thất bại!");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const confirmDelete = async () => {
+    if (!pendingDeleteId) return;
+    try {
+      await deleteAuthorAPI(pendingDeleteId);
+      message.success("Đã xoá tác giả thành công!");
+      await loadAuthors();
+    } catch (err) {
+      console.error("Lỗi khi xoá tác giả:", err);
+      message.error("Xoá tác giả thất bại!");
+    } finally {
+      setPendingDeleteId(null);
+    }
+  };
+
+  const pendingAuthor = authors.find((a) => a.idAuthor === pendingDeleteId);
+
   if (loading) return <div className="p-4">Đang tải danh sách tác giả...</div>;
 
   return (
@@ -119,12 +137,18 @@ const AuthorList = () => {
                 >
                   ✏️
                 </button>
-                <button className="text-red-500">🗑️</button>
+                <button
+                  className="text-red-500"
+                  onClick={() => setPendingDeleteId(author.idAuthor)}
+                >
+                  🗑️
+                </button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+
       {selectedAuthor && (
         <UpdateAuthorModal
           open={openModal}
@@ -141,6 +165,21 @@ const AuthorList = () => {
           isLoading={isSubmitting}
         />
       )}
+
+      <Modal
+        title="Xác nhận xoá tác giả"
+        open={!!pendingDeleteId}
+        onOk={confirmDelete}
+        onCancel={() => setPendingDeleteId(null)}
+        okText="Xoá"
+        cancelText="Huỷ"
+        okButtonProps={{ danger: true }}
+      >
+        <p>
+          Bạn có chắc chắn muốn xoá tác giả{" "}
+          <strong>{pendingAuthor?.nameAuthor || "này"}</strong>?
+        </p>
+      </Modal>
     </div>
   );
 };

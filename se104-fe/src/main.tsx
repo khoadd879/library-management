@@ -3,12 +3,11 @@ import { createRoot } from "react-dom/client";
 import "@ant-design/v5-patch-for-react-19";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Layout from "@/layout";
-import BookPage from "@/pages/admin/book";
 import { App as AntdApp } from "antd";
 import "styles/global.css";
 import { AppProvider } from "./components/context/app.context";
 import HomePage from "./pages/admin/home";
-import UserPage from "./pages/admin/user";
+import UserPage from "./pages/admin/list";
 import AddUser from "./pages/admin/addUser";
 import BorrowBook from "./pages/admin/borrow";
 import ReceiveBook from "./pages/admin/receive";
@@ -33,6 +32,7 @@ import Profile from "./pages/client/profile";
 import UserProfile from "./pages/admin/userprofile";
 import BookList from "./components/admin/listPage/BookList";
 import AuthorInfo from "./pages/client/authorInfo";
+import List from "./pages/admin/list";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -52,7 +52,7 @@ const router = createBrowserRouter([
           { path: "new-books", element: <NewBooks /> },
           { path: "detail/:id", element: <BookDetailPage /> },
           { path: "profile", element: <Profile /> },
-          {path: "authorInfo/:id", element: <AuthorInfo />},
+          { path: "authorInfo/:id", element: <AuthorInfo /> },
         ],
       },
     ],
@@ -66,7 +66,6 @@ const router = createBrowserRouter([
         element: <Layout />,
         children: [
           { index: true, element: <HomePage /> },
-          { path: "book", element: <BookPage /> },
           { path: "list", element: <UserPage /> },
           { path: "add", element: <AddUser /> },
           { path: "borrow", element: <BorrowBook /> },
@@ -90,7 +89,7 @@ const router = createBrowserRouter([
       { index: true, element: <HomePage /> },
       { path: "userprofile", element: <UserProfile /> },
       { path: "booklist", element: <BookList /> },
-      { path: "user", element: <UserPage /> },
+      { path: "list", element: <List /> },
       { path: "authorInfo/:id", element: <AuthorInfo /> },
     ],
   },

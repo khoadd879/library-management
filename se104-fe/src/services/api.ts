@@ -79,16 +79,11 @@ export const listAuthorAPI = (token: string) => {
 };
 export const updateAuthorAPI = (idAuthor: string, formData: FormData) => {
   const urlBackend = `/api/Author/update_author/${idAuthor}`;
-  return axios.put<IBackendRes<any>>(urlBackend, formData, {
+  return axios.patch<IBackendRes<any>>(urlBackend, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
   });
-};
-
-export const deleteAuthorAPI = (idAuthor: string) => {
-  const urlBackend = `/api/Author/delete_author/${idAuthor}`;
-  return axios.delete<IBackendRes<IAddAuthor>>(urlBackend);
 };
 
 export const getAuthorByID = (token: string, idAuthor: string) => {
@@ -109,10 +104,6 @@ export const addBookAPI = (formData: FormData) => {
   });
 };
 
-export const deleteBookAPI = (idBook: string, idTheBook: string) => {
-  const urlBackend = `/api/Book/delete_book/${idBook}/${idTheBook}`;
-  return axios.delete<IBackendRes<any>>(urlBackend);
-};
 export const updateBookAPI = (
   idBook: string,
   idTheBook: string,
@@ -163,16 +154,12 @@ export const updateReaderAPI = (idReader: string, formData: FormData) => {
     }
   );
 };
-export const deleteReaderAPI = (idReader: string) => {
-  const urlBackend = `/api/reader/Reader/delete_reader/${idReader}`;
-  return axios.delete<IBackendRes<any>>(urlBackend);
-};
 export const findReaderAPI = (token: string, username: string) => {
   const urlBackend = "/api/reader/Reader/find_reader";
   return axios.post<IBackendRes<any>>(urlBackend, { token, username });
 };
 export const getTypeBooksAPI = () => {
-  return axios.get("/api/TypeBook/getTypeBook");
+  return axios.get("/api/TypeBook/getAllTypeBook");
 };
 
 export const addLoanBookAPI = (idReader: string, idTheBook: string) => {
@@ -237,4 +224,22 @@ export const addFavoriteBookAPI = async (idBook: string) => {
 export const getFavoriteBooksAPI = async () => {
   const url = "/api/Book/getlikedbook";
   return await axios.get<IBook[]>(url);
-}
+};
+export const deleteLoanSlipBookAPI = (idLoanSlipBook: string) => {
+  return axios.delete(`/api/LoanSlipBook/delete_loanbook/${idLoanSlipBook}`);
+};
+export const addPenaltyAPI = (idReader: string, amountCollected: number) => {
+  return axios.post("/api/PenaltyTicket/add_penalty", {
+    idReader,
+    amountCollected,
+  });
+};
+export const deleteAuthorAPI = (idAuthor: string) => {
+  return axios.delete(`/api/Author/delete_author/${idAuthor}`);
+};
+export const deleteReaderAPI = (idReader: string) => {
+  return axios.delete(`/api/reader/Reader/delete_reader/${idReader}`);
+};
+export const deleteBookAPI = (idBook: string) => {
+  return axios.delete(`/api/Book/delete_book/${idBook}`);
+};

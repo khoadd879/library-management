@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import {
+  deleteReaderAPI,
   getListReader,
   getTypeReadersAPI,
   updateReaderAPI,
 } from "@/services/api";
 import UpdateReaderModal from "../user/UpdateReaderModal";
-import { message } from "antd";
+import { message, Modal } from "antd"; // 🆗 dùng Modal thay vì window.confirm
 
 const ReaderList = () => {
   const [readers, setReaders] = useState<IReader[]>([]);
@@ -16,6 +17,7 @@ const ReaderList = () => {
   const [typeReaderOptions, setTypeReaderOptions] = useState<
     { value: string; label: string }[]
   >([]);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchReaders = async () => {
@@ -31,6 +33,7 @@ const ReaderList = () => {
 
     fetchReaders();
   }, []);
+
   useEffect(() => {
     const fetchTypeReaderOptions = async () => {
       try {
@@ -47,10 +50,12 @@ const ReaderList = () => {
 
     fetchTypeReaderOptions();
   }, []);
+
   const handleEdit = (reader: IReader) => {
     setSelectedReader(reader);
     setIsOpen(true);
   };
+
   const handleUpdate = async (formData: FormData) => {
     if (!selectedReader) return;
     setIsSubmitting(true);
@@ -58,7 +63,6 @@ const ReaderList = () => {
       formData.append("ReaderPassword", selectedReader.ReaderPassword);
       await updateReaderAPI(selectedReader.idReader, formData);
       const res = await getListReader();
-
       setReaders(res);
       setIsOpen(false);
       message.success("Cập nhật độc giả thành công!");
@@ -68,6 +72,32 @@ const ReaderList = () => {
       setIsSubmitting(false);
     }
   };
+
+  const loadReaders = async () => {
+    try {
+      const res = await getListReader();
+      setReaders(res);
+    } catch (err) {
+      console.error("Lỗi khi tải độc giả:", err);
+      message.error("Không thể tải danh sách độc giả.");
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!pendingDeleteId) return;
+    try {
+      await deleteReaderAPI(pendingDeleteId);
+      message.success("Đã xoá độc giả thành công!");
+      await loadReaders();
+    } catch (err) {
+      console.error("Lỗi xoá độc giả:", err);
+      message.error("Không thể xoá độc giả!");
+    } finally {
+      setPendingDeleteId(null);
+    }
+  };
+
+  const pendingReader = readers.find((r) => r.idReader === pendingDeleteId);
 
   if (loading) return <div className="p-4">Đang tải danh sách độc giả...</div>;
 
@@ -115,13 +145,18 @@ const ReaderList = () => {
                 >
                   ✏️
                 </button>
-
-                <button className="text-red-500">🗑️</button>
+                <button
+                  className="text-red-500"
+                  onClick={() => setPendingDeleteId(reader.idReader)}
+                >
+                  🗑️
+                </button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+
       {selectedReader && (
         <UpdateReaderModal
           open={isOpen}
@@ -142,6 +177,21 @@ const ReaderList = () => {
           isLoading={isSubmitting}
         />
       )}
+
+      <Modal
+        title="Xác nhận xoá độc giả"
+        open={!!pendingDeleteId}
+        onOk={confirmDelete}
+        onCancel={() => setPendingDeleteId(null)}
+        okText="Xoá"
+        cancelText="Huỷ"
+        okButtonProps={{ danger: true }}
+      >
+        <p>
+          Bạn có chắc muốn xoá độc giả{" "}
+          <strong>{pendingReader?.nameReader || "này"}</strong>?
+        </p>
+      </Modal>
     </div>
   );
 };

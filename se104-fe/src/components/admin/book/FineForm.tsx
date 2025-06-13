@@ -1,113 +1,99 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { message, Spin } from "antd";
+import { getAllReadersAPI, addPenaltyAPI } from "@/services/api";
+
+interface IReaderSimple {
+  idReader: string;
+  nameReader: string;
+}
 
 const FineForm = () => {
-  const [readerName, setReaderName] = useState("");
-  const [totalDebt, setTotalDebt] = useState<number | undefined>(undefined);
+  const [readers, setReaders] = useState<IReaderSimple[]>([]);
+  const [selectedReaderId, setSelectedReaderId] = useState("");
   const [amountCollected, setAmountCollected] = useState<number | undefined>(
     undefined
   );
-  const [remainingDebt, setRemainingDebt] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleCollectedChange = (value: string) => {
-    const collected = parseFloat(value) || 0;
-    setAmountCollected(collected);
-    if (totalDebt !== undefined) {
-      setRemainingDebt(Math.max(totalDebt - collected, 0));
-    }
-  };
+  useEffect(() => {
+    const fetchReaders = async () => {
+      try {
+        const res = await getAllReadersAPI();
+        if (Array.isArray(res)) setReaders(res);
+      } catch (err) {
+        message.error("Lỗi khi tải danh sách độc giả");
+      }
+    };
+    fetchReaders();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedReaderId || amountCollected === undefined) return;
     setIsLoading(true);
-    try {
-      // Gọi API xử lý phiếu thu nếu có
-      await new Promise((r) => setTimeout(r, 1000)); // giả lập xử lý
+    const res = await addPenaltyAPI(selectedReaderId, amountCollected);
+    console.log(res);
+    if (res?.status === 200) {
       message.success("Xuất phiếu thu tiền phạt thành công!");
-      // Reset form
-      setReaderName("");
-      setTotalDebt(undefined);
+      setSelectedReaderId("");
       setAmountCollected(undefined);
-      setRemainingDebt(0);
-    } catch (err) {
-      console.error(err);
-      message.error("Đã xảy ra lỗi khi xuất phiếu.");
-    } finally {
-      setIsLoading(false);
+    } else {
+      message.error("Xuất phiếu thất bại!");
     }
+
+    setIsLoading(false);
   };
 
   return (
     <Spin spinning={isLoading} tip="Đang xử lý...">
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-xl shadow max-w-3xl mx-auto space-y-4"
+        className="bg-white p-8 rounded-xl shadow max-w-xl mx-auto space-y-6"
       >
         <h2 className="text-2xl font-bold text-[#153D36] text-center mb-4">
           Phiếu thu tiền phạt
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-[#153D36]">
-              Tên độc giả
-            </label>
-            <input
-              type="text"
-              value={readerName}
-              onChange={(e) => setReaderName(e.target.value)}
-              placeholder="Nhập họ tên..."
-              className="w-full px-4 py-2 border rounded outline-none text-sm"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[#153D36]">
-              Tổng nợ
-            </label>
-            <input
-              type="number"
-              value={totalDebt ?? ""}
-              onChange={(e) => setTotalDebt(parseFloat(e.target.value))}
-              placeholder="Tổng nợ..."
-              className="w-full px-4 py-2 border rounded outline-none text-sm"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[#153D36]">
-              Số tiền thu
-            </label>
-            <input
-              type="number"
-              value={amountCollected ?? ""}
-              onChange={(e) => handleCollectedChange(e.target.value)}
-              placeholder="Số tiền thu..."
-              className="w-full px-4 py-2 border rounded outline-none text-sm"
-              required
-            />
-          </div>
-        </div>
+
         <div>
-          <label className="block text-sm font-medium text-[#153D36]">
-            Số tiền nợ còn lại
+          <label className="block text-sm font-medium text-[#153D36] mb-1">
+            Chọn độc giả
+          </label>
+          <select
+            value={selectedReaderId}
+            onChange={(e) => setSelectedReaderId(e.target.value)}
+            required
+            className="w-full px-4 py-2 border rounded outline-none text-sm"
+          >
+            <option value="">-- Chọn độc giả --</option>
+            {readers.map((r) => (
+              <option key={r.idReader} value={r.idReader}>
+                {r.nameReader}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-[#153D36] mb-1">
+            Số tiền thu
           </label>
           <input
             type="number"
-            value={remainingDebt}
-            readOnly
-            className="w-full px-4 py-2 border rounded outline-none text-sm bg-gray-100 cursor-not-allowed"
+            value={amountCollected ?? ""}
+            onChange={(e) => setAmountCollected(parseFloat(e.target.value))}
+            placeholder="Nhập số tiền thu..."
+            className="w-full px-4 py-2 border rounded outline-none text-sm"
+            required
+            min={0}
           />
         </div>
+
         <button
           type="submit"
           disabled={
-            isLoading ||
-            !readerName ||
-            totalDebt === undefined ||
-            amountCollected === undefined
+            isLoading || !selectedReaderId || amountCollected === undefined
           }
-          className={`px-6 py-2 rounded text-sm font-semibold mt-4 mx-auto block ${
+          className={`px-6 py-2 rounded text-sm font-semibold mt-2 mx-auto block ${
             isLoading
               ? "bg-gray-400 text-white cursor-not-allowed"
               : "bg-[#17966F] text-white"
