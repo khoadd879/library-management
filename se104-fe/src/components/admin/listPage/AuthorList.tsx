@@ -1,9 +1,45 @@
-import { getListAuthor } from "@/services/api";
+import {
+  getListAuthor,
+  getTypeBooksAPI,
+  updateAuthorAPI,
+} from "@/services/api";
 import { useEffect, useState } from "react";
-
+import { message } from "antd";
+import UpdateAuthorModal from "../user/UpdateAuthorModal";
 const AuthorList = () => {
   const [authors, setAuthors] = useState<IAddAuthor[]>([]);
   const [loading, setLoading] = useState(true);
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedAuthor, setSelectedAuthor] = useState<IAddAuthor | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [typeBookOptions, setTypeBookOptions] = useState<
+    { value: string; label: string }[]
+  >([]);
+  const handleEdit = (author: IAddAuthor) => {
+    setSelectedAuthor(author);
+    setOpenModal(true);
+  };
+  useEffect(() => {
+    const fetchTypes = async () => {
+      try {
+        const res = await getTypeBooksAPI();
+        console.log(res);
+        const unique = Array.from(
+          new Map(res?.map((item: any) => [item.idTypeBook, item])).values()
+        ).map((item: any) => ({
+          value: item.idTypeBook,
+          label: item.typeBook,
+        }));
+
+        setTypeBookOptions(unique);
+      } catch (err) {
+        console.error("Lỗi lấy thể loại sách:", err);
+        message.error("Không thể lấy danh sách thể loại sách.");
+      }
+    };
+
+    fetchTypes();
+  }, [message]);
 
   useEffect(() => {
     const fetchAuthors = async () => {
@@ -21,7 +57,22 @@ const AuthorList = () => {
 
     fetchAuthors();
   }, []);
-
+  const handleUpdateSubmit = async (formData: FormData) => {
+    if (!selectedAuthor) return;
+    setIsSubmitting(true);
+    try {
+      await updateAuthorAPI(selectedAuthor.idAuthor, formData);
+      message.success("Cập nhật tác giả thành công!");
+      setOpenModal(false);
+      const res = await getListAuthor();
+      if (res) setAuthors(res);
+    } catch (err) {
+      console.error(err);
+      message.error("Cập nhật thất bại!");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   if (loading) return <div className="p-4">Đang tải danh sách tác giả...</div>;
 
   return (
@@ -62,13 +113,34 @@ const AuthorList = () => {
                 {author.biography}
               </td>
               <td className="px-4 py-2 text-center">
-                <button className="mr-2 text-black">✏️</button>
+                <button
+                  className="mr-2 text-black"
+                  onClick={() => handleEdit(author)}
+                >
+                  ✏️
+                </button>
                 <button className="text-red-500">🗑️</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+      {selectedAuthor && (
+        <UpdateAuthorModal
+          open={openModal}
+          onClose={() => setOpenModal(false)}
+          initialData={{
+            nameAuthor: selectedAuthor.nameAuthor,
+            nationality: selectedAuthor.nationality,
+            idTypeBook: selectedAuthor.idTypeBook.idTypeBook,
+            biography: selectedAuthor.biography,
+            urlAvatar: selectedAuthor.urlAvatar,
+          }}
+          typeBookOptions={typeBookOptions}
+          onSubmit={handleUpdateSubmit}
+          isLoading={isSubmitting}
+        />
+      )}
     </div>
   );
 };

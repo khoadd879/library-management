@@ -1,9 +1,21 @@
 import { useEffect, useState } from "react";
-import { getListReader } from "@/services/api";
+import {
+  getListReader,
+  getTypeReadersAPI,
+  updateReaderAPI,
+} from "@/services/api";
+import UpdateReaderModal from "../user/UpdateReaderModal";
+import { message } from "antd";
 
 const ReaderList = () => {
   const [readers, setReaders] = useState<IReader[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedReader, setSelectedReader] = useState<IReader | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [typeReaderOptions, setTypeReaderOptions] = useState<
+    { value: string; label: string }[]
+  >([]);
 
   useEffect(() => {
     const fetchReaders = async () => {
@@ -19,6 +31,43 @@ const ReaderList = () => {
 
     fetchReaders();
   }, []);
+  useEffect(() => {
+    const fetchTypeReaderOptions = async () => {
+      try {
+        const res = await getTypeReadersAPI();
+        const options = res.map((item: any) => ({
+          value: item.idTypeReader,
+          label: item.nameTypeReader,
+        }));
+        setTypeReaderOptions(options);
+      } catch (err) {
+        console.error("Lỗi khi tải loại độc giả:", err);
+      }
+    };
+
+    fetchTypeReaderOptions();
+  }, []);
+  const handleEdit = (reader: IReader) => {
+    setSelectedReader(reader);
+    setIsOpen(true);
+  };
+  const handleUpdate = async (formData: FormData) => {
+    if (!selectedReader) return;
+    setIsSubmitting(true);
+    try {
+      formData.append("ReaderPassword", selectedReader.ReaderPassword);
+      await updateReaderAPI(selectedReader.idReader, formData);
+      const res = await getListReader();
+
+      setReaders(res);
+      setIsOpen(false);
+      message.success("Cập nhật độc giả thành công!");
+    } catch (err) {
+      console.error("Lỗi khi cập nhật:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (loading) return <div className="p-4">Đang tải danh sách độc giả...</div>;
 
@@ -60,13 +109,39 @@ const ReaderList = () => {
                 {new Date(reader.createDate).toLocaleDateString("vi-VN")}
               </td>
               <td className="px-4 py-2 text-center">
-                <button className="mr-2 text-black">✏️</button>
+                <button
+                  className="mr-2 text-black"
+                  onClick={() => handleEdit(reader)}
+                >
+                  ✏️
+                </button>
+
                 <button className="text-red-500">🗑️</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+      {selectedReader && (
+        <UpdateReaderModal
+          open={isOpen}
+          onClose={() => setIsOpen(false)}
+          initialData={{
+            nameReader: selectedReader.nameReader,
+            email: selectedReader.email,
+            dob: selectedReader.dob,
+            sex: selectedReader.sex,
+            address: selectedReader.address,
+            phone: selectedReader.phone,
+            idTypeReader: selectedReader.idTypeReader.idTypeReader,
+            urlAvatar: selectedReader.urlAvatar,
+            readerPassword: selectedReader.ReaderPassword,
+          }}
+          typeReaderOptions={typeReaderOptions}
+          onSubmit={handleUpdate}
+          isLoading={isSubmitting}
+        />
+      )}
     </div>
   );
 };
