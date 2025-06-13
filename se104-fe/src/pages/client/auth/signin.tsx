@@ -39,84 +39,124 @@ const SignIn = () => {
   };
 
   return (
-    <>
-      <div className="min-h-screen bg-[#0a3d3f] flex items-center justify-center relative overflow-hidden">
-        <div className="absolute top-5 left-5 flex items-center space-x-2 text-white text-lg font-semibold">
-          <img
-            src="https://cdn-icons-png.flaticon.com/512/29/29302.png"
-            alt="Library Logo"
-            className="w-8 h-8 filter invert"
-          />
-          <span>Library</span>
+    <div className="min-h-screen bg-[#0a3d3f] flex items-center justify-center relative overflow-hidden p-4">
+      <div className="absolute top-5 left-5 flex items-center space-x-2 text-white text-lg font-semibold">
+        <img
+          src="https://cdn-icons-png.flaticon.com/512/29/29302.png"
+          alt="Library Logo"
+          className="w-8 h-8 filter invert"
+        />
+        <span className="hidden sm:inline">Library</span>
+      </div>
+
+      <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 sm:p-8 w-full max-w-md mx-auto z-10 shadow-xl transition-all duration-300 transform hover:scale-[1.01]">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">Sign In</h1>
+          <p className="text-base sm:text-lg text-gray-200">Welcome to website</p>
         </div>
 
-        <div className="bg-transparent text-white text-center max-w-md w-full space-y-6 z-10">
-          <h1 className="text-3xl font-bold">Sign in</h1>
-          <p className="text-sm text-gray-300">Welcome to website</p>
-
-          <input
-            type="text"
-            placeholder="Login"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-            className="w-full px-4 py-2 rounded-md bg-[#9cd4b0] text-black placeholder-gray-700 focus:outline-none"
-          />
-          <input
-            type={showPassword ? "text" : "password"}
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-            className="w-full px-4 py-2 rounded-md bg-[#9cd4b0] text-black placeholder-gray-700 focus:outline-none"
-          />
-
-          <div className="text-left text-sm">
-            <label className="inline-flex items-center space-x-2">
-              <input
-                type="checkbox"
-                checked={showPassword}
-                onChange={() => setShowPassword(!showPassword)}
-              />
-              <span>Hiện mật khẩu</span>
-            </label>
+        <div className="space-y-4">
+          <div>
+            <input
+              type="text"
+              placeholder="Login"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+              className="w-full px-4 py-3 rounded-lg bg-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-[#21b39b] transition-all text-sm sm:text-base"
+              autoComplete="username"
+            />
           </div>
 
-          <div className="flex justify-between text-xs px-1">
-            <a href="/signup" style={{ color: "white" }}>
-              Sign up
-            </a>
-            <a href="/forgot" style={{ color: "white" }}>
-              Forgot password?
-            </a>
+          <div>
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+              className="w-full px-4 py-3 rounded-lg bg-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-[#21b39b] transition-all text-sm sm:text-base"
+              autoComplete="current-password"
+            />
           </div>
+        </div>
 
-          <button
-            onClick={handleLogin}
-            disabled={loading}
-            className={`w-full py-2 bg-[#21b39b] rounded-md text-white font-semibold hover:opacity-90 flex items-center justify-center ${
-              loading ? "opacity-70 cursor-not-allowed" : ""
-            }`}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-4 gap-2">
+          <label className="inline-flex items-center space-x-2 text-sm text-white/80 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showPassword}
+              onChange={() => setShowPassword(!showPassword)}
+              className="rounded border-white/50 focus:ring-[#21b39b] h-4 w-4"
+            />
+            <span>Show password</span>
+          </label>
+          <a
+            href="/forgot"
+            style={{ color: 'white', fontWeight: '500', transition: 'color 0.3s' }}
           >
-            {loading ? (
-              <div className="flex items-center justify-center gap-2">
-                <Spin size="small" />
-                <span>Đang đăng nhập...</span>
-              </div>
-            ) : (
-              "Log in"
-            )}
-          </button>
+            Forgot password?
+          </a>
+        </div>
+
+        <button
+          onClick={handleLogin}
+          disabled={loading}
+          className={`w-full py-3 bg-[#21b39b] rounded-lg text-white font-semibold hover:bg-[#1a9c86] transition-colors shadow-lg mt-6 text-sm sm:text-base flex items-center justify-center ${
+            loading ? "opacity-70 cursor-not-allowed" : ""
+          }`}
+        >
+          {loading ? (
+            <div className="flex items-center gap-2">
+              <Spin size="small" />
+              <span>Đang đăng nhập...</span>
+            </div>
+          ) : (
+            "Log In"
+          )}
+        </button>
+
+        <div className="text-center text-white/80 text-sm mt-4">
+          Don't have an account?{" "}
+          <a
+            href="/signup"
+            style={{
+              color: "white",
+              fontWeight: "500",
+              textDecoration: "underline",
+              transition: "color 0.3s",
+            }}
+          >
+            Sign Up
+          </a>
         </div>
       </div>
-      <div className="absolute bottom-0 w-screen z-0">
+
+      <div className="absolute bottom-0 left-0 right-0 z-0 h-[180px] sm:h-[260px]">
         <svg
-          viewBox="0 0 1440 320"
-          className="w-[100vw] h-[260px]"
+          viewBox="0 0 1917 253"
+          className="w-full h-full"
           xmlns="http://www.w3.org/2000/svg"
-        ></svg>
+          preserveAspectRatio="none"
+        >
+          <path
+            fill="#345c5b"
+            fillOpacity="1"
+            d="M 758.802 100.0837 C 448 120.246 279.336 115.5669 0 100.0837 V 130.063 C 307.343 150.749 542.161 151.062 783.891 140.983 C 889.408 135.964 996.242 128.632 1111 120.063 C 1488.66 95.9929 1594.95 80.9355 1917 120.063 V 100.0837 C 1660 30.356 1334.76 60.51373 758.802 100.0837 Z"
+          />
+          <path
+            fill="#eff4f2"
+            fillOpacity="1"
+            d="M 0 261 H 1917 V 238.829 V 160.266 C 1581.64 120.2362 1373.88 118.0273 947.5 160.266 C 924.233 162.458 901.598 164.479 879.509 166.308 C 558.784 205.911 353.178 215.238 0 160.266 L 0 261 Z"
+          />
+          <path
+            fill="#7c9b99"
+            fillOpacity="1"
+            d="M 1917 120.063 C 1594.95 80.9355 1488.66 95.9929 1111 120.063 C 996.242 128.632 889.408 135.964 783.891 140.983 C 542.161 151.062 307.343 150.749 0 130.063 L 0 160.266 C 353.178 215.238 558.784 205.911 879.509 166.308 C 901.598 164.479 924.233 162.458 947.5 160.266 C 1373.88 118.0273 1581.64 120.2362 1917 160.266 V 120.063 Z"
+          />
+        </svg>
       </div>
-    </>
+    </div>
   );
 };
 
