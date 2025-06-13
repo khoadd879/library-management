@@ -3,7 +3,7 @@ import BookList from "@/components/admin/listPage/BookList";
 import ReaderList from "@/components/admin/listPage/ReaderList";
 import AuthorList from "@/components/admin/listPage/AuthorList";
 
-const UserPage = () => {
+const List = () => {
   const [tab, setTab] = useState<"author" | "reader" | "book">("reader");
 
   return (
@@ -38,14 +38,6 @@ const UserPage = () => {
               </button>
             ))}
           </div>
-          <div className="text-sm text-right text-gray-700">
-            <p>
-              Total {tab === "book" ? "books" : "members"}:{" "}
-              <span className="font-semibold">
-                {tab === "book" ? "500" : tab === "reader" ? "2000" : "100"}
-              </span>
-            </p>
-          </div>
         </div>
 
         <div className="flex justify-between items-center mb-4">
@@ -57,9 +49,6 @@ const UserPage = () => {
               : "Danh sách sách"}
           </h2>
           <div className="flex gap-2">
-            <button className="bg-[#153D36] text-white px-4 py-2 rounded text-sm">
-              Add new
-            </button>
             <button className="border border-gray-300 px-4 py-2 rounded text-sm bg-white">
               &larr; Filter
             </button>
@@ -78,4 +67,4 @@ const UserPage = () => {
   );
 };
 
-export default UserPage;
+export default List;

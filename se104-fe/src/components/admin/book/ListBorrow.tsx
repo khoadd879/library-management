@@ -4,6 +4,7 @@ import {
   getAllReadersAPI,
   getAllBooksAndCommentsAPI,
   addSlipBookAPI,
+  deleteLoanSlipBookAPI,
 } from "@/services/api";
 import { message } from "antd";
 
@@ -30,9 +31,15 @@ const ListBorrow = () => {
         item.idReader,
         item.idTheBook
       );
-      console.log(res);
+
       if (res.statusCode === 200) {
+        await deleteLoanSlipBookAPI(item.idLoanSlipBook);
         message.success("Trả sách thành công!");
+
+        const updatedLoans = loans.filter(
+          (loan) => loan.idLoanSlipBook !== item.idLoanSlipBook
+        );
+        setLoans(updatedLoans);
       } else {
         message.error("Trả sách thất bại!");
       }
