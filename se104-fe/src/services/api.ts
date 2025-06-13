@@ -243,3 +243,21 @@ export const deleteReaderAPI = (idReader: string) => {
 export const deleteBookAPI = (idBook: string) => {
   return axios.delete(`/api/Book/delete_book/${idBook}`);
 };
+
+//evaluation
+export const addEvaluationAPI = (
+  idBook: string,
+  eva_Comment: string,
+  eva_Star: number
+) => {
+  return axios.post("/api/Book/addEvaluation", {
+    idBook,
+    eva_Comment,
+    eva_Star,
+  });
+};
+
+export const getStarByIdBookAPI = async (idBook: string) => {
+  const url = `/api/Book/getStarById${idBook}`;
+  return await axios.get<IGetStarByIdBook[]>(url);
+};
