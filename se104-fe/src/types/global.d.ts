@@ -142,15 +142,7 @@ export interface IBookAuthor {
     totalDebt: number;
     AvatarImage: File;
   }
-  export interface IUpdateReaderPayload {
-    nameReader: string;
-    sex: string;
-    address: string;
-    email: string;
-    dob: string; // cái này dùng datepicker xong r dùng hàm .toISOString()
-    phone: string;
-    readerPassword: string;
-  }
+
   export interface IUserProfile {
     username?: string;
     fullName?: string;
@@ -200,8 +192,11 @@ export interface IBookAuthor {
     phone: string;
     createDate: string;
     readerAccount: string;
+    dob: string;
+    sex: string;
     totalDebt: number;
     urlAvatar: string | null;
+    ReaderPassword: string;
     idTypeReader: {
       idTypeReader: string;
       nameTypeReader: string;
