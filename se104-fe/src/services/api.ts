@@ -261,3 +261,8 @@ export const getStarByIdBookAPI = async (idBook: string) => {
   const url = `/api/Book/getStarById${idBook}`;
   return await axios.get<IGetStarByIdBook[]>(url);
 };
+
+export const getAllComments = async (idBook: string) => {
+  const url = `/api/Book/getAllComments${idBook}`;
+  return await axios.get<IGetAllComments[]>(url);
+};

@@ -1,6 +1,10 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getBookAndCommentsByIdAPI, getStarByIdBookAPI } from "@/services/api";
+import {
+  getBookAndCommentsByIdAPI,
+  getStarByIdBookAPI,
+  getAllComments,
+} from "@/services/api";
 import ReviewModal from "@/components/client/reviewPopUp";
 
 const BookDetailPage = () => {
@@ -8,11 +12,11 @@ const BookDetailPage = () => {
   const [bookDetail, setBookDetail] = useState<IGetAllBookAndComment | null>(
     null
   );
-  const [comment, setComment] = useState("");
-  const [comments, setComments] = useState<string[]>([]);
+  const [comments, setComments] = useState<IGetAllComments[]>([]);
   const [showModal, setShowModal] = useState(false);
 
   const token = localStorage.getItem("token") || "";
+  const idUser = localStorage.getItem("idUser") || "";
 
   const [ratingData, setRatingData] = useState<{
     average: number;
@@ -46,7 +50,6 @@ const BookDetailPage = () => {
         const res = await getBookAndCommentsByIdAPI(token, id);
         const book =
           Array.isArray(res) && res.length > 0 ? res[0] : res || null;
-
         if (book) {
           setBookDetail(book);
         } else {
@@ -63,10 +66,8 @@ const BookDetailPage = () => {
   useEffect(() => {
     const fetchStars = async () => {
       if (!bookDetail?.idBook) return;
-      console.log("Fetching stars for book ID:", bookDetail.idBook);
       try {
         const data = await getStarByIdBookAPI(bookDetail.idBook);
-        console.log("Stars data:", data);
         const distribution: Record<1 | 2 | 3 | 4 | 5, number> = {
           1: 0,
           2: 0,
@@ -99,12 +100,19 @@ const BookDetailPage = () => {
     fetchStars();
   }, [bookDetail]);
 
-  const handleComment = () => {
-    if (comment.trim()) {
-      setComments([comment, ...comments]);
-      setComment("");
-    }
-  };
+  useEffect(() => {
+    const fetchComments = async () => {
+      if (!id) return;
+      try {
+        const res = await getAllComments(id);
+        setComments(res);
+      } catch (error) {
+        console.error("Lỗi khi lấy comment:", error);
+      }
+    };
+
+    fetchComments();
+  }, [id]);
 
   return (
     <div className="p-6 max-w-6xl mx-auto bg-[#f4f7f9] min-h-screen">
@@ -113,7 +121,7 @@ const BookDetailPage = () => {
       ) : (
         <>
           <div className="flex flex-col md:flex-row gap-6">
-            <div className="w-full md:w-1/3 bg-white rounded shadow p-4 flex justify-center">
+            <div className="w-full md:w-1/3 bg-white rounded shadow p-4 flex flex-col items-center">
               {bookDetail.image ? (
                 <img
                   src={bookDetail.image}
@@ -156,7 +164,7 @@ const BookDetailPage = () => {
               </div>
 
               <div className="flex flex-1 flex-col gap-2 w-full">
-                {([5, 4, 3, 2, 1] as const).map((star) => (
+                {[5, 4, 3, 2, 1].map((star) => (
                   <div
                     key={star}
                     className="flex justify-between items-center text-sm"
@@ -170,17 +178,19 @@ const BookDetailPage = () => {
                         className="bg-yellow-400 h-2 rounded"
                         style={{
                           width: `${getPercent(
-                            ratingData.distribution[star]
+                            ratingData.distribution[star as 1 | 2 | 3 | 4 | 5]
                           )}%`,
                         }}
                       />
                     </div>
                     <div className="w-[40px] text-right text-gray-600">
-                      {getPercent(ratingData.distribution[star])}%
+                      {getPercent(
+                        ratingData.distribution[star as 1 | 2 | 3 | 4 | 5]
+                      )}
+                      %
                     </div>
                   </div>
                 ))}
-
                 <div className="flex justify-end mt-4">
                   <button
                     className="text-red-600 border border-red-500 rounded px-4 py-1 hover:bg-red-50 transition text-sm flex items-center gap-1"
@@ -195,33 +205,56 @@ const BookDetailPage = () => {
 
           <div className="mt-6 bg-white rounded shadow p-4">
             <h3 className="font-semibold text-lg mb-3">Nhận xét:</h3>
-            <div className="flex items-center gap-3 mb-4">
-              <img
-                src="https://i.pravatar.cc/40"
-                alt="avatar"
-                className="rounded-full w-8 h-8"
-              />
-              <input
-                type="text"
-                className="border rounded px-3 py-1 flex-1"
-                placeholder="Viết bình luận..."
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleComment()}
-              />
-            </div>
 
             <div className="space-y-2">
-              {comments.map((cmt, i) => (
-                <div key={i} className="flex items-start gap-3">
+              {comments.map((cmt) => (
+                <div
+                  key={cmt.idEvaluation}
+                  className="flex items-start gap-3 relative"
+                >
                   <img
-                    src={`https://i.pravatar.cc/40?u=user${i}`}
+                    src={
+                      cmt.avatarUrl !== null && cmt.avatarUrl !== ""
+                        ? cmt.avatarUrl
+                        : `https://i.pravatar.cc/40?u=${cmt.idReader}`
+                    }
                     alt="avatar"
-                    className="rounded-full w-8 h-8"
+                    className="rounded-full w-8 h-8 object-cover"
                   />
-                  <p className="bg-gray-100 p-2 rounded shadow w-full">{cmt}</p>
+                  <div className="bg-gray-100 p-2 rounded shadow w-full">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="font-semibold">
+                          {cmt.nameReader || "Người dùng"}
+                        </div>
+                        <div className="text-yellow-500 text-sm">
+                          {Array.from({ length: 5 }, (_, i) => (
+                            <span key={i}>{i < cmt.star ? "★" : "☆"}</span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {cmt.idReader === idUser && (
+                        <div className="relative group">
+                          <button className="text-gray-500 hover:text-gray-800">
+                            ⋮
+                          </button>
+                          <div className="absolute right-0 mt-1 bg-white border rounded shadow-md text-sm hidden group-hover:block z-10">
+                            <button className="block px-4 py-2 hover:bg-gray-100 w-full text-left">
+                              ✏️ Chỉnh sửa
+                            </button>
+                            <button className="block px-4 py-2 hover:bg-gray-100 w-full text-left text-red-600">
+                              🗑️ Xoá
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <p className="mt-1">{cmt.comment}</p>
+                  </div>
                 </div>
               ))}
+
               {comments.length === 0 && (
                 <p className="text-gray-500 italic">Chưa có nhận xét nào.</p>
               )}
