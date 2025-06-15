@@ -266,3 +266,17 @@ export const getAllComments = async (idBook: string) => {
   const url = `/api/Book/getAllComments${idBook}`;
   return await axios.get<IGetAllComments[]>(url);
 };
+
+export const updateCommentAPI = async (
+  idComment: string,
+  comment: string,
+  rate: number
+) => {
+  const url = `/api/Book/editComment${idComment}?comment=${comment}&rate=${rate}`;
+  return await axios.put<IBackendRes<any>>(url);
+};
+
+export const deleteCommentAPI = (idComment: string) => {
+  const url = `/api/Book/deleteComment`;
+  return axios.delete(url);
+};
