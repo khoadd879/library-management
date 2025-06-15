@@ -1,9 +1,10 @@
 import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   getBookAndCommentsByIdAPI,
   getStarByIdBookAPI,
   getAllComments,
+  deleteCommentAPI,
 } from "@/services/api";
 import ReviewModal from "@/components/client/reviewPopUp";
 
@@ -14,6 +15,8 @@ const BookDetailPage = () => {
   );
   const [comments, setComments] = useState<IGetAllComments[]>([]);
   const [showModal, setShowModal] = useState(false);
+  const [activeMenu, setActiveMenu] = useState<string | null>(null); // Thêm state popup menu
+  const [editComment, setEditComment] = useState<IGetAllComments | null>(null);
 
   const token = localStorage.getItem("token") || "";
   const idUser = localStorage.getItem("idUser") || "";
@@ -113,6 +116,33 @@ const BookDetailPage = () => {
 
     fetchComments();
   }, [id]);
+
+  // Hàm xử lý mẫu
+  const handleEdit = (id: string) => {
+    const cmt = comments.find((c) => c.idEvaluation === id);
+    if (cmt) {
+      setEditComment(cmt);
+      setShowModal(true);
+    }
+    setActiveMenu(null);
+  };
+  const handleDelete = (id: string) => {
+    // TODO: Xác nhận và gọi API xóa
+    if (window.confirm("Bạn có chắc muốn xoá nhận xét này?")) {
+      handleDeleteComment(id);
+      setActiveMenu(null);
+    }
+  };
+
+  const handleDeleteComment = async (idComment: string) => {
+    try {
+      const response = await deleteCommentAPI(idComment);
+      console.log("Comment deleted successfully:", response);
+      // Cập nhật lại danh sách comment nếu cần
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+    }
+  };
 
   return (
     <div className="p-6 max-w-6xl mx-auto bg-[#f4f7f9] min-h-screen">
@@ -234,21 +264,38 @@ const BookDetailPage = () => {
                         </div>
                       </div>
 
-                      {cmt.idReader === idUser && (
-                        <div className="relative group">
-                          <button className="text-gray-500 hover:text-gray-800">
-                            ⋮
-                          </button>
-                          <div className="absolute right-0 mt-1 bg-white border rounded shadow-md text-sm hidden group-hover:block z-10">
-                            <button className="block px-4 py-2 hover:bg-gray-100 w-full text-left">
+                      <div className="relative">
+                        <button
+                          className="text-gray-500 hover:text-gray-800"
+                          onClick={() =>
+                            setActiveMenu(
+                              activeMenu === cmt.idEvaluation
+                                ? null
+                                : cmt.idEvaluation
+                            )
+                          }
+                        >
+                          ⋮
+                        </button>
+                        {activeMenu === cmt.idEvaluation && (
+                          <div className="absolute right-0 mt-1 bg-white border rounded shadow-md text-sm z-10 min-w-[120px]">
+                            <button
+                              className="block px-4 py-2 hover:bg-gray-100 w-full text-left disabled:text-gray-400"
+                              disabled={idUser !== cmt.idReader}
+                              onClick={() => handleEdit(cmt.idEvaluation)}
+                            >
                               ✏️ Chỉnh sửa
                             </button>
-                            <button className="block px-4 py-2 hover:bg-gray-100 w-full text-left text-red-600">
+                            <button
+                              className="block px-4 py-2 hover:bg-gray-100 w-full text-left text-red-600 disabled:text-gray-400"
+                              disabled={idUser !== cmt.idReader}
+                              onClick={() => handleDelete(cmt.idEvaluation)}
+                            >
                               🗑️ Xoá
                             </button>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                     <p className="mt-1">{cmt.comment}</p>
                   </div>
@@ -266,7 +313,19 @@ const BookDetailPage = () => {
       {showModal && bookDetail && (
         <ReviewModal
           bookId={bookDetail.idBook}
-          onClose={() => setShowModal(false)}
+          onClose={() => {
+            setShowModal(false);
+            setEditComment(null);
+          }}
+          editData={
+            editComment
+              ? {
+                  idComment: editComment.idEvaluation,
+                  comment: editComment.comment,
+                  rate: editComment.star,
+                }
+              : undefined
+          }
         />
       )}
     </div>
