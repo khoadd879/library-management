@@ -275,4 +275,20 @@ declare global {
     createdAt: string;
     updatedAt: string;
   }
+  export interface IUserProfileRequest {
+    idTypeReader: string | null;
+    nameReader: string | null;
+    sex: string | null;
+    address: string | null;
+    email: string | null;
+    dob: string | null;
+    phone: string | null;
+    reader_username: string;
+    reader_password: string;
+    avatar: File | null;
+  }
+  export interface ITypeReader {
+    idTypeReader: string;
+    nameTypeReader: string;
+  }
 }
