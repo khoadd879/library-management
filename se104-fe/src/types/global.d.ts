@@ -264,4 +264,15 @@ declare global {
     star: number;
     status: number;
   }
+  export interface IGetAllComments {
+    idEvaluation: string;
+    idBook: string;
+    idReader: string;
+    nameReader: string | null;
+    avatarUrl: string | null;
+    comment: string;
+    star: number;
+    createdAt: string;
+    updatedAt: string;
+  }
 }
