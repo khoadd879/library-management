@@ -42,13 +42,14 @@ const ReceiveBook = () => {
         }
 
         const typeBookRes = await getTypeBooksAPI();
+        console.log(typeBookRes);
         const unique = Array.from(
           new Map(
             typeBookRes.map((item: any) => [item.idTypeBook, item])
           ).values()
         ).map((item: any) => ({
           value: item.idTypeBook,
-          label: item.typeBook,
+          label: item.nameTypeBook,
         }));
         setTypeBooks(unique);
       } catch (err) {

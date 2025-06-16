@@ -104,15 +104,6 @@ export const addBookAPI = (formData: FormData) => {
   });
 };
 
-export const updateBookAPI = (
-  idBook: string,
-  idTheBook: string,
-  data: IUpdateBookPayload
-) => {
-  const urlBackend = `/api/Book/update_book/${idBook}/${idTheBook}`;
-  return axios.put<IBackendRes<any>>(urlBackend, data);
-};
-
 export const getBookAndCommentsByIdAPI = (token: string, idBook: string) => {
   const urlBackend = `/api/Book/getbooksindetailbyid${idBook}`;
   return axios.get<IBackendRes<IGetAllBookAndComment>>(urlBackend, {
@@ -260,4 +251,15 @@ export const addEvaluationAPI = (
 export const getStarByIdBookAPI = async (idBook: string) => {
   const url = `/api/Book/getStarById${idBook}`;
   return await axios.get<IGetStarByIdBook[]>(url);
+};
+export const updateBookAPI = (idBook: string, formData: FormData) => {
+  return axios.patch<IBackendRes<any>>(
+    `/api/Book/update_book/${idBook}`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
 };

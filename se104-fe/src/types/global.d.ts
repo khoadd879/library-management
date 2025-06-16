@@ -227,6 +227,7 @@ declare global {
     evaluations: IEvaluation[];
     authors: IAuthor[];
     reprintYear: number;
+    publisher?: string;
   }
   export interface ILoanHistory {
     idBook: string;
