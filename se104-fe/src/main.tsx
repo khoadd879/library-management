@@ -6,13 +6,13 @@ import Layout from "@/layout";
 import { App as AntdApp } from "antd";
 import "styles/global.css";
 import { AppProvider } from "./components/context/app.context";
-import HomePage from "./pages/admin/home";
-import UserPage from "./pages/admin/list";
-import AddUser from "./pages/admin/addUser";
-import BorrowBook from "./pages/admin/borrow";
-import ReceiveBook from "./pages/admin/receive";
-import Report from "./pages/admin/report";
-import Chat from "./pages/admin/chat";
+import HomePage from "./pages/manager/home";
+import UserPage from "./pages/manager/list";
+import AddUser from "./pages/manager/addUser";
+import BorrowBook from "./pages/manager/borrow";
+import ReceiveBook from "./pages/manager/receive";
+import Report from "./pages/manager/report";
+import Chat from "./pages/manager/chat";
 import UserLayout from "./userLayout";
 import Favorite from "./pages/client/favorite";
 import History from "./pages/client/history";
@@ -33,6 +33,7 @@ import UserProfile from "./pages/admin/userprofile";
 import AuthorInfo from "./pages/client/authorInfo";
 import AdminLayout from "./adminLayout";
 import RolePermissionUI from "./pages/admin/userprofile";
+import UserList from "./pages/admin/userList";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -80,7 +81,11 @@ const router = createBrowserRouter([
   {
     path: "admin",
     element: <AdminLayout />,
-    children: [{ index: true, element: <RolePermissionUI /> }],
+    children: [
+      { index: true, element: <RolePermissionUI /> },
+      { path: "roles", element: <RolePermissionUI /> },
+      { path: "users", element: <UserList /> },
+    ],
   },
   { path: "/signin", element: <SignIn /> },
   { path: "/signup", element: <SignUp /> },

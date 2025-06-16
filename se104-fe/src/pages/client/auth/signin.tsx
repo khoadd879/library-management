@@ -12,8 +12,39 @@ const SignIn = () => {
   const navigate = useNavigate();
   const { setIsAuthenticated } = useCurrentApp();
   const handleGoogleLogin = () => {
-    loginGoogleRedirectAPI();
+    const popup = window.open(
+      "https://librarymanagement-api-840378105403.asia-southeast1.run.app/api/Authentication/login-google",
+      "_blank",
+      "width=500,height=600"
+    );
+
+    const handleMessage = (event: MessageEvent) => {
+      if (
+        event.origin !==
+        "https://librarymanagement-api-840378105403.asia-southeast1.run.app"
+      )
+        return;
+      if (event.data?.type === "google-auth-token") {
+        const { token, refreshToken, iduser } = event.data;
+
+        // 👉 Lưu vào localStorage
+        localStorage.setItem("token", token);
+        localStorage.setItem("refreshToken", refreshToken);
+        localStorage.setItem("idUser", iduser);
+
+        // 👉 Cập nhật trạng thái
+        setIsAuthenticated(true);
+        message.success("Đăng nhập Google thành công!");
+        navigate("/");
+
+        window.removeEventListener("message", handleMessage);
+      }
+    };
+
+    // Lắng nghe response từ popup
+    window.addEventListener("message", handleMessage);
   };
+
   const handleLogin = async () => {
     if (!username || !password) {
       message.warning("Vui lòng nhập đầy đủ tài khoản và mật khẩu!");
@@ -22,7 +53,7 @@ const SignIn = () => {
     setLoading(true);
     try {
       const res = await loginAPI(username, password);
-
+      console.log(res);
       if (res) {
         localStorage.setItem("token", res.token);
         localStorage.setItem("idUser", res.iduser);

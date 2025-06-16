@@ -200,6 +200,7 @@ declare global {
       idTypeReader: string;
       nameTypeReader: string;
     };
+    role: string;
   }
   export interface ITypeBook {
     idTypeBook: string;
