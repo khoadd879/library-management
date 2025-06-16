@@ -32,6 +32,7 @@ export const AppProvider = ({ children }: TProps) => {
 
       try {
         const res = await authenticateAPI(token);
+
         if (res) {
           setIsAuthenticated(true);
           setUser(res);

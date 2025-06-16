@@ -24,6 +24,7 @@ const AuthorList = () => {
     const fetchTypeBooks = async () => {
       try {
         const res = await getTypeBooksAPI();
+        console.log(res);
         const options = res.map((item: any) => ({
           value: item.idTypeBook,
           label: item.nameTypeBook,

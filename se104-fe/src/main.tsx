@@ -30,9 +30,9 @@ import NewPasswordPage from "./pages/client/auth/newPass";
 import ProtectedRoute from "@/components/auth/protected";
 import Profile from "./pages/client/profile";
 import UserProfile from "./pages/admin/userprofile";
-import BookList from "./components/admin/listPage/BookList";
 import AuthorInfo from "./pages/client/authorInfo";
-import List from "./pages/admin/list";
+import AdminLayout from "./adminLayout";
+import RolePermissionUI from "./pages/admin/userprofile";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -58,11 +58,11 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path: "/admin",
+    path: "/manager",
     element: <ProtectedRoute />,
     children: [
       {
-        path: "/admin",
+        path: "/manager",
         element: <Layout />,
         children: [
           { index: true, element: <HomePage /> },
@@ -77,30 +77,16 @@ const router = createBrowserRouter([
       },
     ],
   },
+  {
+    path: "admin",
+    element: <AdminLayout />,
+    children: [{ index: true, element: <RolePermissionUI /> }],
+  },
   { path: "/signin", element: <SignIn /> },
   { path: "/signup", element: <SignUp /> },
   { path: "/forgot", element: <ForgotPasswordPage /> },
   { path: "/verification", element: <VerificationCodePage /> },
   { path: "/new-pass", element: <NewPasswordPage /> },
-  {
-    path: "/test-admin",
-    element: <Layout />,
-    children: [
-      { index: true, element: <HomePage /> },
-      { path: "userprofile", element: <UserProfile /> },
-      { path: "booklist", element: <BookList /> },
-      { path: "list", element: <List /> },
-      { path: "authorInfo/:id", element: <AuthorInfo /> },
-    ],
-  },
-  {
-    path: "/test-user",
-    element: <UserLayout />,
-    children: [
-      { index: true, element: <UserHomepage /> },
-      { path: "profile", element: <Profile /> },
-    ],
-  },
 ]);
 
 createRoot(document.getElementById("root")!).render(

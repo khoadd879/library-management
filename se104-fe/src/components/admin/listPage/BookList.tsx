@@ -1,11 +1,26 @@
 import { useEffect, useState } from "react";
 import { message, Modal } from "antd";
-import { getAllBooksAndCommentsAPI, deleteBookAPI } from "@/services/api";
+import {
+  getAllBooksAndCommentsAPI,
+  deleteBookAPI,
+  getListAuthor,
+  getTypeBooksAPI,
+  updateBookAPI,
+} from "@/services/api";
+import UpdateBookModal from "../user/UpdateBookModal";
 
 const BookList = () => {
   const [books, setBooks] = useState<IBook[]>([]);
   const [loading, setLoading] = useState(true);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [selectedBook, setSelectedBook] = useState<IBook | null>(null);
+  const [typeBooks, setTypeBooks] = useState<
+    { value: string; label: string }[]
+  >([]);
+  const [authors, setAuthors] = useState<{ id: string; nameAuthor: string }[]>(
+    []
+  );
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const fetchBooks = async () => {
     setLoading(true);
@@ -28,7 +43,6 @@ const BookList = () => {
     if (!pendingDeleteId) return;
     try {
       await deleteBookAPI(pendingDeleteId);
-
       message.success("Đã xoá sách thành công!");
       await fetchBooks();
     } catch (err) {
@@ -36,6 +50,48 @@ const BookList = () => {
       message.error("Không thể xoá sách!");
     } finally {
       setPendingDeleteId(null);
+    }
+  };
+
+  const openUpdateModal = async (book: IBook) => {
+    try {
+      const [typeRes, authorRes] = await Promise.all([
+        getTypeBooksAPI(),
+        getListAuthor(),
+      ]);
+
+      setTypeBooks(
+        typeRes.map((t: any) => ({
+          value: t.idTypeBook,
+          label: t.nameTypeBook,
+        }))
+      );
+
+      setAuthors(
+        authorRes.map((a: any) => ({
+          id: a.idAuthor,
+          nameAuthor: a.nameAuthor,
+        }))
+      );
+
+      setSelectedBook(book);
+    } catch (err) {
+      message.error("Không thể tải dữ liệu cập nhật sách");
+    }
+  };
+
+  const handleUpdateBook = async (idBook: string, formData: FormData) => {
+    setIsUpdating(true);
+    try {
+      await updateBookAPI(idBook, formData);
+      message.success("Cập nhật sách thành công!");
+      await fetchBooks();
+      setSelectedBook(null);
+    } catch (err) {
+      console.error(err);
+      message.error("Cập nhật sách thất bại!");
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -85,7 +141,12 @@ const BookList = () => {
               </td>
               <td className="px-4 py-2 text-gray-700">{book.valueOfbook}đ</td>
               <td className="px-4 py-2 text-center">
-                <button className="mr-2 text-black">✏️</button>
+                <button
+                  className="mr-2 text-black"
+                  onClick={() => openUpdateModal(book)}
+                >
+                  ✏️
+                </button>
                 <button
                   className="text-red-500"
                   onClick={() => setPendingDeleteId(book.idBook)}
@@ -112,6 +173,28 @@ const BookList = () => {
           <strong>{pendingBook?.nameBook || "này"}</strong>?
         </p>
       </Modal>
+
+      {selectedBook && (
+        <UpdateBookModal
+          open={!!selectedBook}
+          onClose={() => setSelectedBook(null)}
+          initialData={{
+            idBook: selectedBook.idBook,
+            nameHeaderBook: selectedBook.nameBook,
+            describeBook: selectedBook.describe,
+            idTypeBook: selectedBook.authors[0]?.idTypeBook?.idTypeBook || "",
+            idAuthors: selectedBook.authors.map((a) => a.idAuthor),
+            publisher: selectedBook.publisher || "",
+            reprintYear: selectedBook.reprintYear || 2024,
+            valueOfBook: selectedBook.valueOfbook || 0,
+            imageUrl: selectedBook.image || undefined,
+          }}
+          authors={authors}
+          typeBooks={typeBooks}
+          onSubmit={handleUpdateBook}
+          isLoading={isUpdating}
+        />
+      )}
     </div>
   );
 };
