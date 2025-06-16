@@ -23,7 +23,9 @@ const ReaderList = () => {
     const fetchReaders = async () => {
       try {
         const res = await getListReader();
-        setReaders(res);
+        const fil = res.filter((r) => r.role === "Reader");
+        console.log(fil);
+        setReaders(fil);
       } catch (err) {
         console.error("Lỗi khi tải độc giả:", err);
       } finally {
@@ -63,6 +65,7 @@ const ReaderList = () => {
       formData.append("ReaderPassword", selectedReader.ReaderPassword);
       await updateReaderAPI(selectedReader.idReader, formData);
       const res = await getListReader();
+
       setReaders(res);
       setIsOpen(false);
       message.success("Cập nhật độc giả thành công!");

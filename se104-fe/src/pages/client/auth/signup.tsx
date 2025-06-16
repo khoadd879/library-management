@@ -53,12 +53,14 @@ const SignUp = () => {
         <span className="hidden sm:inline">Library</span>
       </div>
 
-
-
       <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 sm:p-8 w-full max-w-md mx-auto z-10 shadow-xl transition-all duration-300 transform hover:scale-[1.01]">
         <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">Sign Up</h1>
-          <p className="text-base sm:text-lg text-gray-200">Welcome to Library</p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+            Sign Up
+          </h1>
+          <p className="text-base sm:text-lg text-gray-200">
+            Welcome to Library
+          </p>
         </div>
 
         <div className="space-y-4">
@@ -73,7 +75,7 @@ const SignUp = () => {
               autoComplete="email"
             />
           </div>
-          
+
           <div>
             <input
               type={showPassword ? "text" : "password"}
@@ -108,8 +110,15 @@ const SignUp = () => {
 
         <div className="text-center text-white/80 text-sm mt-4">
           Already have an account?{" "}
-          <a 
-            href="/signin" style={{ color: 'white', fontWeight: '500', textDecoration: 'underline', transition: 'color 0.3s' }}          >
+          <a
+            href="/signin"
+            style={{
+              color: "white",
+              fontWeight: "500",
+              textDecoration: "underline",
+              transition: "color 0.3s",
+            }}
+          >
             Sign In
           </a>
         </div>
@@ -118,7 +127,7 @@ const SignUp = () => {
       <div className="absolute bottom-0 left-0 right-0 z-0 h-[180px] sm:h-[260px]">
         <svg
           viewBox="0 0 1917 253"
-          className="w-full h-full" 
+          className="w-full h-full"
           xmlns="http://www.w3.org/2000/svg"
           preserveAspectRatio="none"
         >

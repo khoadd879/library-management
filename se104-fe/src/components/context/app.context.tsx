@@ -23,6 +23,7 @@ export const AppProvider = ({ children }: TProps) => {
   useEffect(() => {
     const fetchUser = async () => {
       const token = localStorage.getItem("token");
+
       if (!token) {
         setIsAuthenticated(false);
         setUser(null);
@@ -32,7 +33,7 @@ export const AppProvider = ({ children }: TProps) => {
 
       try {
         const res = await authenticateAPI(token);
-
+        console.log(res);
         if (res) {
           setIsAuthenticated(true);
           setUser(res);
