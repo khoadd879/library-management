@@ -282,3 +282,63 @@ export const deleteCommentAPI = (idComment: string) => {
   const url = `/api/Book/deleteComment`;
   return axios.delete(url);
 };
+export const loginGoogleRedirectAPI = () => {
+  window.location.href = `https://librarymanagement-api-840378105403.asia-southeast1.run.app/api/Authentication/login-google?returnUrl=%2Fapi%2FAuthentication%2Fprofile`;
+};
+
+export const addRoleAPI = (roleName: string, description: string) => {
+  const url = "/api/roles/Role/add_role";
+  return axios.post(url, {
+    roleName,
+    description,
+  });
+};
+
+export const addRolePermissionAPI = (
+  roleName: string,
+  permissionName: string
+) => {
+  return axios.post("/api/RolePermission/add_role_permission", {
+    roleName,
+    permissionName,
+  });
+};
+export const getAllRolesAPI = async () => {
+  return axios.get("/api/roles/Role/getAllRoles");
+};
+export const getPermissionsByRoleAPI = async (roleName: string) => {
+  return axios.get(`/api/roles/Role/getAllPermissonByRole`, {
+    params: { rolename: roleName },
+  });
+};
+export const deleteRoleAPI = async (roleName: string) => {
+  return axios.delete(
+    `/api/roles/Role/delete_role/${encodeURIComponent(roleName)}`
+  );
+};
+export const updateRolePermissionAPI = async (
+  oldRoleName: string,
+  oldPermissionName: string,
+  newRoleName: string,
+  newPermissionName: string
+) => {
+  const res = await axios.patch("/api/RolePermission/update_role_permission", {
+    oldRoleName,
+    oldPermissionName,
+    newRoleName,
+    newPermissionName,
+  });
+
+  return res;
+};
+export const deleteRolePermissionAPI = async (
+  roleName: string,
+  permissionName: string
+) => {
+  return axios.delete("/api/RolePermission/delete_role_permission", {
+    data: {
+      roleName,
+      permissionName,
+    },
+  });
+};

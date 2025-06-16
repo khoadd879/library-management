@@ -1,5 +1,5 @@
 import { useCurrentApp } from "@/components/context/app.context";
-import { loginAPI } from "@/services/api";
+import { loginAPI, loginGoogleRedirectAPI } from "@/services/api";
 import { message, Spin } from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -11,7 +11,9 @@ const SignIn = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { setIsAuthenticated } = useCurrentApp();
-
+  const handleGoogleLogin = () => {
+    loginGoogleRedirectAPI();
+  };
   const handleLogin = async () => {
     if (!username || !password) {
       message.warning("Vui lòng nhập đầy đủ tài khoản và mật khẩu!");
@@ -51,8 +53,12 @@ const SignIn = () => {
 
       <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 sm:p-8 w-full max-w-md mx-auto z-10 shadow-xl transition-all duration-300 transform hover:scale-[1.01]">
         <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">Sign In</h1>
-          <p className="text-base sm:text-lg text-gray-200">Welcome to website</p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+            Sign In
+          </h1>
+          <p className="text-base sm:text-lg text-gray-200">
+            Welcome to website
+          </p>
         </div>
 
         <div className="space-y-4">
@@ -93,7 +99,11 @@ const SignIn = () => {
           </label>
           <a
             href="/forgot"
-            style={{ color: 'white', fontWeight: '500', transition: 'color 0.3s' }}
+            style={{
+              color: "white",
+              fontWeight: "500",
+              transition: "color 0.3s",
+            }}
           >
             Forgot password?
           </a>
@@ -129,6 +139,23 @@ const SignIn = () => {
           >
             Sign Up
           </a>
+        </div>
+        <div className="mt-4 w-full text-center">
+          <span className="text-white text-sm">Or</span>
+        </div>
+
+        <div className="mt-4">
+          <button
+            onClick={handleGoogleLogin}
+            className="w-full py-3 bg-white text-gray-800 font-semibold border border-gray-300 rounded-lg flex items-center justify-center gap-3 shadow-md hover:shadow-lg transition-all"
+          >
+            <img
+              src="https://www.svgrepo.com/show/475656/google-color.svg"
+              alt="Google Logo"
+              className="w-5 h-5"
+            />
+            <span>Đăng nhập với Google</span>
+          </button>
         </div>
       </div>
 

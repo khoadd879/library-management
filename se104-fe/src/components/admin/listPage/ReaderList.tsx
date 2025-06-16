@@ -6,7 +6,7 @@ import {
   updateReaderAPI,
 } from "@/services/api";
 import UpdateReaderModal from "../user/UpdateReaderModal";
-import { message, Modal } from "antd"; // 🆗 dùng Modal thay vì window.confirm
+import { message, Modal } from "antd";
 
 const ReaderList = () => {
   const [readers, setReaders] = useState<IReader[]>([]);
