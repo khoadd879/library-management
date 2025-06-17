@@ -45,9 +45,7 @@ const BookDetailPage = () => {
     return Array.from({ length: 5 }, (_, i) => (
       <span
         key={i}
-        className={
-          i < Math.floor(avg) ? "text-yellow-400" : "text-gray-300"
-        }
+        className={i < Math.floor(avg) ? "text-yellow-400" : "text-gray-300"}
       >
         ★
       </span>
@@ -175,7 +173,7 @@ const BookDetailPage = () => {
                   {bookDetail.authors.map((a) => a.nameAuthor).join(", ")}
                 </p>
                 <p className="text-xs text-gray-400">
-                  Năm: {bookDetail.reprintYear}
+                  Năm xuất bản: {bookDetail.reprintYear}
                 </p>
               </div>
             </div>
@@ -222,7 +220,9 @@ const BookDetailPage = () => {
                             className="bg-yellow-400 h-2 rounded transition-all duration-500"
                             style={{
                               width: `${getPercent(
-                                ratingData.distribution[star as 1 | 2 | 3 | 4 | 5]
+                                ratingData.distribution[
+                                  star as 1 | 2 | 3 | 4 | 5
+                                ]
                               )}%`,
                             }}
                           />
@@ -230,7 +230,8 @@ const BookDetailPage = () => {
                         <div className="w-[40px] text-right text-gray-600">
                           {getPercent(
                             ratingData.distribution[star as 1 | 2 | 3 | 4 | 5]
-                          )}%
+                          )}
+                          %
                         </div>
                       </div>
                     ))}

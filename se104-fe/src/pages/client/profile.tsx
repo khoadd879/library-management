@@ -5,7 +5,7 @@ import {
   updateReaderAPI,
   getListReader,
 } from "@/services/api";
-import { message } from "antd";
+import { message, Modal } from "antd";
 
 const ProfilePage = () => {
   const [userData, setUserData] = useState<IUserProfileRequest | null>(null);
@@ -18,6 +18,7 @@ const ProfilePage = () => {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [password, setPassword] = useState("");
   const [dob, setDob] = useState("");
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const formatDate = (isoDate: string): string => {
     return isoDate.split("T")[0];
@@ -182,6 +183,8 @@ const ProfilePage = () => {
   const handleAvatarClick = () => {
     if (isEditing && fileInputRef.current) {
       fileInputRef.current.click();
+    } else if (!isEditing && (avatarPreview || userData?.avatar)) {
+      setShowAvatarModal(true);
     }
   };
 
@@ -222,8 +225,8 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto bg-[#f4f7f9] min-h-screen">
-      <div className="flex flex-col md:flex-row gap-8 bg-white p-8 rounded-xl shadow-lg">
+    <div className="p-6 max-w-4xl mx-auto bg-gradient-to-br from-[#f4f7f9] to-[#e0f7fa] min-h-screen animate-fade-in">
+      <div className="flex flex-col md:flex-row gap-8 bg-white p-8 rounded-2xl shadow-2xl animate-fade-in-up">
         {/* Avatar */}
         <div className="flex flex-col items-center w-full md:w-1/3 space-y-4">
           <div className="relative group">
@@ -231,19 +234,19 @@ const ProfilePage = () => {
               <img
                 src={avatarPreview}
                 alt="User Avatar"
-                className="w-40 h-40 rounded-full object-cover border-4 border-white shadow-lg transition-all duration-300 group-hover:opacity-80 cursor-pointer"
+                className="w-40 h-40 rounded-full object-cover border-4 border-gradient-to-br from-blue-400 to-purple-400 shadow-xl transition-all duration-300 group-hover:scale-105 cursor-pointer"
                 onClick={handleAvatarClick}
               />
             ) : userData?.avatar && typeof userData.avatar === "string" ? (
               <img
                 src={userData.avatar}
                 alt="User Avatar"
-                className="w-40 h-40 rounded-full object-cover border-4 border-white shadow-lg transition-all duration-300 group-hover:opacity-80 cursor-pointer"
+                className="w-40 h-40 rounded-full object-cover border-4 border-gradient-to-br from-blue-400 to-purple-400 shadow-xl transition-all duration-300 group-hover:scale-105 cursor-pointer"
                 onClick={handleAvatarClick}
               />
             ) : (
               <div
-                className="w-40 h-40 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center border-4 border-white shadow-lg cursor-pointer"
+                className="w-40 h-40 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center border-4 border-gradient-to-br from-blue-400 to-purple-400 shadow-xl cursor-pointer group-hover:scale-105 transition-all duration-300"
                 onClick={handleAvatarClick}
               >
                 <UserOutlined className="text-5xl text-gray-500" />
@@ -265,6 +268,35 @@ const ProfilePage = () => {
               className="hidden"
             />
           </div>
+          {/* Avatar Modal */}
+          <Modal
+            open={showAvatarModal}
+            onCancel={() => setShowAvatarModal(false)}
+            footer={null}
+            centered
+            bodyStyle={{ padding: 0, background: "transparent" }}
+            width={400}
+            className="avatar-modal"
+          >
+            <div className="flex flex-col items-center justify-center p-4">
+              {avatarPreview || userData?.avatar ? (
+                <img
+                  src={
+                    avatarPreview ||
+                    (typeof userData?.avatar === "string"
+                      ? userData.avatar
+                      : undefined)
+                  }
+                  alt="Avatar lớn"
+                  className="w-80 h-80 object-cover rounded-full border-4 border-gradient-to-br from-blue-400 to-purple-400 shadow-2xl bg-white"
+                />
+              ) : (
+                <div className="w-80 h-80 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center border-4 border-gradient-to-br from-blue-400 to-purple-400 shadow-2xl">
+                  <UserOutlined className="text-7xl text-gray-400" />
+                </div>
+              )}
+            </div>
+          </Modal>
 
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-800">

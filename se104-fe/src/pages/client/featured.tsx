@@ -99,7 +99,7 @@ const FeaturedBooks = () => {
                   {book.authors?.[0]?.nameAuthor || "Không rõ tác giả"}
                 </p>
                 <span className="text-xs text-gray-400 block">
-                  Năm: {book.reprintYear}
+                  Năm xuất bản: {book.reprintYear}
                 </span>
               </div>
             ))}
