@@ -1,6 +1,10 @@
 import { UserOutlined, EditOutlined } from "@ant-design/icons";
 import { useState, useRef, useEffect } from "react";
-import { getTypeReadersAPI, updateReaderAPI } from "@/services/api";
+import {
+  getTypeReadersAPI,
+  updateReaderAPI,
+  getListReader,
+} from "@/services/api";
 import { message } from "antd";
 
 const ProfilePage = () => {
@@ -11,9 +15,13 @@ const ProfilePage = () => {
   >([]);
   const [selectedTypeReader, setSelectedTypeReader] = useState<string>("");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [password, setPassword] = useState("");
   const [dob, setDob] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const formatDate = (isoDate: string): string => {
+    return isoDate.split("T")[0];
+  };
 
   const [formData, setFormData] = useState({
     nameReader: "",
@@ -54,9 +62,46 @@ const ProfilePage = () => {
     fetchTypeReaders();
   }, [userData]);
 
+  // Fetch thông tin người dùng
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const idUser = localStorage.getItem("idUser");
+      if (!idUser) {
+        console.error("Không tìm thấy idUser trong localStorage.");
+        return;
+      }
+
+      try {
+        const res = await getListReader();
+        const user = res.find((reader: IReader) => reader.idReader === idUser);
+        if (user) {
+          setUserData({
+            idTypeReader: user.idTypeReader.idTypeReader,
+            nameReader: user.nameReader,
+            sex: user.sex,
+            address: user.address,
+            email: user.email,
+            dob: formatDate(user.dob),
+            phone: user.phone,
+            reader_username: user.readerAccount,
+            reader_password: "", // Mật khẩu không được hiển thị
+            avatar: user.urlAvatar,
+          });
+        } else {
+          console.error("Không tìm thấy thông tin người dùng.");
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy thông tin người dùng:", error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
   // Click chỉnh sửa
   const handleEditClick = () => {
     setIsEditing(true);
+
     setFormData({
       nameReader: userData?.nameReader || "",
       gender: userData?.sex || "",
@@ -68,7 +113,7 @@ const ProfilePage = () => {
       dob: userData?.dob || "",
       idTypeReader: userData?.idTypeReader || "",
     });
-    setDob(userData?.dob || "");
+    setDob(userData?.dob ? formatDate(userData.dob) : "");
   };
 
   const handleCancelClick = () => {
@@ -77,12 +122,10 @@ const ProfilePage = () => {
 
   // Lưu thông tin
   const handleSaveClick = async () => {
-    //if (!userData) return;
     if (!idUSer) {
       console.error("Không tìm thấy idUser trong localStorage.");
       return;
     }
-
     try {
       const form = new FormData();
       form.append("nameReader", formData.nameReader || "");
@@ -90,36 +133,35 @@ const ProfilePage = () => {
       form.append("address", formData.address || "");
       form.append("email", formData.email || "");
       form.append("phone", formData.phone || "");
-      form.append("dob", dob || "");
+      form.append("dob", dob ? new Date(dob).toISOString() : "");
       form.append("idTypeReader", selectedTypeReader);
-
       if (password) {
         form.append("reader_password", password);
       }
-
       if (avatarFile) {
-        form.append("avatar", avatarFile);
+        form.append("AvatarImage", avatarFile); // Đúng key backend yêu cầu
       }
-
-      const res = await updateReaderAPI(idUSer, form);
-      console.log("Cập nhật thành công:", res.data);
+      await updateReaderAPI(idUSer, form);
       message.success("Cập nhật thông tin thành công!");
-
-      setUserData((prev) => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          nameReader: formData.nameReader,
-          sex: formData.gender,
-          address: formData.address,
-          email: formData.email,
-          phone: formData.phone,
-          dob: formData.dob,
-          idTypeReader: selectedTypeReader,
-          avatar: avatarFile ?? prev.avatar,
-        };
-      });
-
+      // Lấy lại thông tin user mới nhất từ backend
+      const res = await getListReader();
+      const user = res.find((reader: IReader) => reader.idReader === idUSer);
+      if (user) {
+        setUserData({
+          idTypeReader: user.idTypeReader.idTypeReader,
+          nameReader: user.nameReader,
+          sex: user.sex,
+          address: user.address,
+          email: user.email,
+          dob: formatDate(user.dob),
+          phone: user.phone,
+          reader_username: user.readerAccount,
+          reader_password: "",
+          avatar: user.urlAvatar,
+        });
+        setAvatarFile(null);
+        setAvatarPreview(null);
+      }
       setIsEditing(false);
     } catch (error) {
       message.error("Cập nhật thất bại. Vui lòng thử lại.");
@@ -147,6 +189,7 @@ const ProfilePage = () => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setAvatarFile(file);
+      setAvatarPreview(URL.createObjectURL(file));
     }
   };
 
@@ -184,9 +227,9 @@ const ProfilePage = () => {
         {/* Avatar */}
         <div className="flex flex-col items-center w-full md:w-1/3 space-y-4">
           <div className="relative group">
-            {avatarFile ? (
+            {avatarPreview ? (
               <img
-                src={URL.createObjectURL(avatarFile)}
+                src={avatarPreview}
                 alt="User Avatar"
                 className="w-40 h-40 rounded-full object-cover border-4 border-white shadow-lg transition-all duration-300 group-hover:opacity-80 cursor-pointer"
                 onClick={handleAvatarClick}

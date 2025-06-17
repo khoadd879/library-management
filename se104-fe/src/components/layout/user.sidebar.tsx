@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FaHome,
   FaHeart,
@@ -11,6 +11,7 @@ import {
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useCurrentApp } from "../context/app.context";
+import { getListReader } from "../../services/api";
 
 interface UserSidebarProps {
   open: boolean;
@@ -20,6 +21,7 @@ interface UserSidebarProps {
 const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
   const navigate = useNavigate();
   const { setIsAuthenticated, user, setUser } = useCurrentApp();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -43,11 +45,6 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
       icon: <FaHistory size={20} />,
       label: "Lịch sử mượn",
       onClick: () => navigate("/history"),
-    },
-    {
-      icon: <FaMoneyBillAlt size={20} />,
-      label: "Thanh toán tiền phạt",
-      onClick: () => navigate("/payment"),
     },
     {
       icon: <FaComments size={20} />,
@@ -74,6 +71,21 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
       : []),
   ];
 
+  useEffect(() => {
+    const fetchAvatar = async () => {
+      try {
+        const readers = await getListReader();
+        const found = Array.isArray(readers)
+          ? readers.find((r) => r.idReader === user?.idReader)
+          : null;
+        setAvatarUrl(found?.urlAvatar || null);
+      } catch (e) {
+        setAvatarUrl(null);
+      }
+    };
+    if (user) fetchAvatar();
+  }, [user]);
+
   return (
     <nav
       className={`fixed top-0 left-0 h-full p-2 flex flex-col duration-300 bg-[#153D36] text-white z-50 ${
@@ -89,7 +101,15 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
         >
           <div className={`flex items-center gap-4 ${!open && "hidden"}`}>
             {/* Avatar with fixed size */}
-            <div className="w-12 h-12 bg-gray-300 rounded-full overflow-hidden flex-shrink-0"></div>
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt="avatar"
+                className="w-12 h-12 rounded-full object-cover flex-shrink-0 border border-white"
+              />
+            ) : (
+              <div className="w-12 h-12 bg-gray-300 rounded-full overflow-hidden flex-shrink-0" />
+            )}
             {/* Text container with constrained width */}
             <div className="flex-1 ">
               <p className="font-medium text-left text-md ">

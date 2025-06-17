@@ -276,7 +276,10 @@ export const updateCommentAPI = async (
 };
 
 export const deleteCommentAPI = (idComment: string) => {
-  const url = `/api/Book/deleteComment`;
+  // Đúng chuẩn API: truyền idComment qua query string
+  const url = `/api/Book/deleteComment?idComment=${encodeURIComponent(
+    idComment
+  )}`;
   return axios.delete(url);
 };
 export const loginGoogleRedirectAPI = () => {
@@ -360,3 +363,9 @@ export const getAllParametersAPI = async () => {
   return res;
 };
 export const getBookStatsByGenreAPI = async () => {};
+
+export const findBooksByNameAPI = async (namebook: string) => {
+  const url = `/api/Book/findBooks${encodeURIComponent(namebook)}`;
+  const res = await axios.get<IBook[]>(url);
+  return res;
+};
