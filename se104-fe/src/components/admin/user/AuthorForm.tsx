@@ -7,6 +7,7 @@ const AuthorForm = ({
   setPreview,
   typeBookOptions,
   isLoading,
+  fileInputRef,
 }: any) => {
   return (
     <form
@@ -30,6 +31,8 @@ const AuthorForm = ({
         <input
           type="file"
           accept="image/*"
+          ref={fileInputRef}
+          style={{ display: "none" }}
           onChange={(e) => {
             const file = e.target.files?.[0];
             if (file) {
@@ -39,6 +42,13 @@ const AuthorForm = ({
           }}
           className="text-sm"
         />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="px-4 py-2 bg-[#153D36] text-white rounded hover:bg-gray-700 text-sm font-medium transition"
+        >
+          Chọn ảnh tác giả
+        </button>
       </div>
       <input
         type="text"

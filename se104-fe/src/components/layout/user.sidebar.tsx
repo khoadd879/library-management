@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   FaHome,
   FaHeart,
@@ -19,40 +19,59 @@ interface UserSidebarProps {
 
 const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
   const navigate = useNavigate();
-  const { setIsAuthenticated, user } = useCurrentApp();
+  const { setIsAuthenticated, user, setUser } = useCurrentApp();
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    setUser(null);
     setIsAuthenticated(false);
     navigate("/signin");
   };
 
   const menuItems = [
     {
-      icon: <FaHome size={28} />,
+      icon: <FaHome size={20} />,
       label: "Trang chủ",
       onClick: () => navigate("/"),
     },
     {
-      icon: <FaHeart size={28} />,
+      icon: <FaHeart size={20} />,
       label: "Yêu thích",
       onClick: () => navigate("/favorites"),
     },
     {
-      icon: <FaHistory size={28} />,
+      icon: <FaHistory size={20} />,
       label: "Lịch sử mượn",
       onClick: () => navigate("/history"),
     },
     {
-      icon: <FaMoneyBillAlt size={28} />,
+      icon: <FaMoneyBillAlt size={20} />,
       label: "Thanh toán tiền phạt",
       onClick: () => navigate("/payment"),
     },
     {
-      icon: <FaComments size={28} />,
+      icon: <FaComments size={20} />,
       label: "Trò chuyện",
       onClick: () => navigate("/chat"),
     },
+    ...(user?.roleName === "Manager" || user?.roleName === "Admin"
+      ? [
+          {
+            icon: <FaUserCircle size={20} />,
+            label: "Thủ thư",
+            onClick: () => navigate("/manager"),
+          },
+        ]
+      : []),
+    ...(user?.roleName === "Admin"
+      ? [
+          {
+            icon: <FaUserCircle size={20} />,
+            label: "Trang quản trị",
+            onClick: () => navigate("/admin"),
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -72,11 +91,11 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
             {/* Avatar with fixed size */}
             <div className="w-12 h-12 bg-gray-300 rounded-full overflow-hidden flex-shrink-0"></div>
             {/* Text container with constrained width */}
-            <div className="flex-1 min-w-0 overflow-hidden">
-              <p className="font-medium text-left text-lg truncate">
+            <div className="flex-1 ">
+              <p className="font-medium text-left text-md ">
                 {user?.nameReader}
               </p>
-              <span className="text-sm text-left opacity-80 truncate">
+              <span className="text-sm text-left opacity-80 ">
                 {user?.email}
               </span>
             </div>
@@ -87,13 +106,13 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
           className="p-2 rounded-full hover:bg-white/20 transition-colors flex-shrink-0"
         >
           <FaBars
-            size={24}
+            size={20}
             className={`duration-300 ${!open && "rotate-90"}`}
           />
         </button>
       </div>
       {/* Navigation Items */}
-      <ul className="flex-0 py-6 space-y-4">
+      <ul className="flex-0 py-6 space-y-4 flex flex-col">
         {menuItems.map((item, index) => (
           <li key={index}>
             <button
@@ -104,7 +123,7 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
               <span
                 className={`${
                   !open ? "opacity-0 w-0" : "opacity-100"
-                } transition-all duration-300 truncate text-lg`}
+                } transition-all duration-300 truncate text-md`}
               >
                 {item.label}
               </span>
@@ -119,11 +138,11 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
         ))}
       </ul>
       {/* Group Logo */}
-      <div className={`flex flex-col items-center py-6 ${!open && "hidden"}`}>
+      <div className={`flex flex-col m-auto ${!open && "hidden"}`}>
         <img
           src="https://cdn-icons-png.flaticon.com/512/29/29302.png"
           alt="Library"
-          className="w-20 h-20 filter invert mb-3"
+          className="w-15 h-15 filter invert "
         />
         <p className="italic font-bold text-xl">Library</p>
       </div>
@@ -134,12 +153,12 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
           className="w-full flex items-center gap-4 px-4 py-4 hover:bg-white/10 rounded-md transition-colors duration-300 relative group"
         >
           <div className="flex justify-center w-8">
-            <FaSignOutAlt size={28} />
+            <FaSignOutAlt size={20} />
           </div>
           <span
             className={`${
               !open ? "opacity-0 w-0" : "opacity-100"
-            } transition-all duration-300 text-lg`}
+            } transition-all duration-300 text-md`}
           >
             ĐĂNG XUẤT
           </span>

@@ -22,10 +22,11 @@ interface AdminSidebarProps {
 
 const AppSidebar: React.FC<AdminSidebarProps> = ({ open, setOpen }) => {
   const navigate = useNavigate();
-  const { setIsAuthenticated, user } = useCurrentApp();
+  const { setIsAuthenticated, user, setUser } = useCurrentApp();
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    setUser(null);
     setIsAuthenticated(false);
     navigate("/signin");
   };
@@ -55,11 +56,6 @@ const AppSidebar: React.FC<AdminSidebarProps> = ({ open, setOpen }) => {
       icon: <FaClipboardList size={20} />,
       label: "Mượn trả sách",
       onClick: () => navigate("/manager/borrow"),
-    },
-    {
-      icon: <FaChartPie size={20} />,
-      label: "Báo cáo",
-      onClick: () => navigate("/manager/report"),
     },
     {
       icon: <FaComments size={20} />,

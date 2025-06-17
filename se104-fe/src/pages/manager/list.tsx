@@ -5,13 +5,15 @@ import AuthorList from "@/components/admin/listPage/AuthorList";
 
 const List = () => {
   const [tab, setTab] = useState<"author" | "reader" | "book">("reader");
-
+  const [searchKeyword, setSearchKeyword] = useState("");
   return (
     <div className="w-full min-h-screen bg-[#f4f7f9]">
       <div className="bg-[#153D36] px-12 py-4 flex justify-between items-center">
         <input
           type="text"
           placeholder="Search..."
+          value={searchKeyword}
+          onChange={(e) => setSearchKeyword(e.target.value)}
           className="w-[400px] px-4 py-2 rounded-full outline-none text-sm text-black bg-white"
         />
         <div className="text-xl text-white">🔔</div>
@@ -48,19 +50,14 @@ const List = () => {
               ? "Tác giả"
               : "Danh sách sách"}
           </h2>
-          <div className="flex gap-2">
-            <button className="border border-gray-300 px-4 py-2 rounded text-sm bg-white">
-              &larr; Filter
-            </button>
-          </div>
         </div>
 
         {tab === "book" ? (
-          <BookList />
+          <BookList keyword={searchKeyword} />
         ) : tab === "reader" ? (
-          <ReaderList />
+          <ReaderList keyword={searchKeyword} />
         ) : (
-          <AuthorList />
+          <AuthorList keyword={searchKeyword} />
         )}
       </div>
     </div>

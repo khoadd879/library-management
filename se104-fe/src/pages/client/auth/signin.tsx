@@ -1,5 +1,9 @@
 import { useCurrentApp } from "@/components/context/app.context";
-import { loginAPI, loginGoogleRedirectAPI } from "@/services/api";
+import {
+  authenticateAPI,
+  loginAPI,
+  loginGoogleRedirectAPI,
+} from "@/services/api";
 import { message, Spin } from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -10,7 +14,7 @@ const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { setIsAuthenticated } = useCurrentApp();
+  const { setIsAuthenticated, setUser } = useCurrentApp();
   const handleGoogleLogin = () => {
     const popup = window.open(
       "https://librarymanagement-api-840378105403.asia-southeast1.run.app/api/Authentication/login-google",
@@ -27,12 +31,10 @@ const SignIn = () => {
       if (event.data?.type === "google-auth-token") {
         const { token, refreshToken, iduser } = event.data;
 
-        // 👉 Lưu vào localStorage
         localStorage.setItem("token", token);
         localStorage.setItem("refreshToken", refreshToken);
         localStorage.setItem("idUser", iduser);
 
-        // 👉 Cập nhật trạng thái
         setIsAuthenticated(true);
         message.success("Đăng nhập Google thành công!");
         navigate("/");
@@ -41,7 +43,6 @@ const SignIn = () => {
       }
     };
 
-    // Lắng nghe response từ popup
     window.addEventListener("message", handleMessage);
   };
 
@@ -50,18 +51,22 @@ const SignIn = () => {
       message.warning("Vui lòng nhập đầy đủ tài khoản và mật khẩu!");
       return;
     }
+
     setLoading(true);
     try {
       const res = await loginAPI(username, password);
       console.log(res);
-      if (res) {
+      if (res && res.token) {
         localStorage.setItem("token", res.token);
         localStorage.setItem("idUser", res.iduser);
+        const userRes = await authenticateAPI(res.token);
+        setUser(userRes);
+        setIsAuthenticated(true);
         setIsAuthenticated(true);
         message.success("Đăng nhập thành công!");
         navigate("/");
       } else {
-        message.error("Đăng nhập thất bại!");
+        message.error("Sai tài khoản hoặc mật khấu!");
       }
     } catch (error) {
       message.error("Đăng nhập thất bại. Vui lòng thử lại!");

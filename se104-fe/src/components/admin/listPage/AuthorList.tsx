@@ -7,8 +7,10 @@ import {
   updateAuthorAPI,
 } from "@/services/api";
 import UpdateAuthorModal from "../user/UpdateAuthorModal";
-
-const AuthorList = () => {
+interface Props {
+  keyword: string;
+}
+const AuthorList = ({ keyword }: Props) => {
   const [authors, setAuthors] = useState<IAddAuthor[]>([]);
   const [loading, setLoading] = useState(true);
   const [typeBookOptions, setTypeBookOptions] = useState<
@@ -93,7 +95,9 @@ const AuthorList = () => {
   const pendingAuthor = authors.find((a) => a.idAuthor === pendingDeleteId);
 
   if (loading) return <div className="p-4">Đang tải danh sách tác giả...</div>;
-
+  const filteredAuthors = authors.filter((author) =>
+    author.nameAuthor.toLowerCase().includes(keyword.toLowerCase())
+  );
   return (
     <div className="bg-white rounded-xl shadow overflow-hidden">
       <table className="w-full text-sm text-left">
@@ -108,7 +112,7 @@ const AuthorList = () => {
           </tr>
         </thead>
         <tbody>
-          {authors.map((author) => (
+          {filteredAuthors.map((author) => (
             <tr key={author.idAuthor} className="border-t hover:bg-gray-50">
               <td className="px-4 py-2">
                 {author.urlAvatar ? (
