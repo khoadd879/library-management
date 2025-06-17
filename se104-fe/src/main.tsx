@@ -46,6 +46,7 @@ const router = createBrowserRouter([
         element: <UserLayout />,
         children: [
           { index: true, element: <UserHomepage /> },
+          { path: "user", element: <UserHomepage /> },
           { path: "favorites", element: <Favorite /> },
           { path: "history", element: <History /> },
           { path: "payment", element: <div>Thanh toán tiền phạt</div> },
@@ -90,6 +91,7 @@ const router = createBrowserRouter([
         element: <AdminLayout />,
         children: [
           { index: true, element: <RolePermissionUI /> },
+          { path: "roles", element: <RolePermissionUI /> },
           { path: "users", element: <UserList /> },
         ],
       },

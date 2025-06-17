@@ -19,6 +19,7 @@ const BookDetailPage = () => {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [editComment, setEditComment] = useState<IGetAllComments | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showFullDesc, setShowFullDesc] = useState(false);
 
   const token = localStorage.getItem("token") || "";
   const idUser = localStorage.getItem("idUser") || "";
@@ -178,14 +179,30 @@ const BookDetailPage = () => {
               </div>
             </div>
 
+            {/* Card mô tả và đánh giá */}
             <div className="w-full md:w-2/3 flex flex-col gap-6">
               <div className="bg-white rounded-2xl shadow-xl p-6 animate-fade-in-up">
                 <h3 className="text-xl font-semibold mb-2 text-[#1A4E46]">
                   Mô tả sách
                 </h3>
-                <p className="text-gray-700 text-base leading-relaxed">
+                <div
+                  className={`text-gray-700 text-base leading-relaxed relative ${
+                    showFullDesc ? "" : "max-h-[100px] overflow-y-auto pr-2"
+                  }`}
+                  style={{ transition: "max-height 0.3s" }}
+                >
                   {bookDetail.describe}
-                </p>
+                </div>
+                {bookDetail.describe && bookDetail.describe.length > 300 && (
+                  <div className="flex justify-end mt-2">
+                    <button
+                      className="text-blue-600 hover:underline text-sm font-medium"
+                      onClick={() => setShowFullDesc((v) => !v)}
+                    >
+                      {showFullDesc ? "Thu gọn" : "Xem thêm"}
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="bg-white rounded-2xl shadow-xl p-6 animate-fade-in-up">
@@ -374,10 +391,3 @@ const BookDetailPage = () => {
 };
 
 export default BookDetailPage;
-
-// Tailwind CSS animation utilities
-// Thêm vào global.css nếu chưa có:
-// .animate-fade-in { animation: fadeIn 0.7s; }
-// .animate-fade-in-up { animation: fadeInUp 0.7s; }
-// @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-// @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px);} to { opacity: 1; transform: none; } }
