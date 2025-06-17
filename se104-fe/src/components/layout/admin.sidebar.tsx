@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FaHome,
   FaUsers,
@@ -8,12 +8,12 @@ import {
   FaChartPie,
   FaComments,
   FaSignOutAlt,
-  FaUserCircle,
   FaBars,
+  FaNewspaper,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useCurrentApp } from "../context/app.context";
-import { authenticateAPI } from "@/services/api";
+import { authenticateAPI, getPermissionsByRoleAPI } from "@/services/api";
 
 interface AdminSidebarProps {
   open: boolean;
@@ -23,44 +23,78 @@ interface AdminSidebarProps {
 const AppSidebar: React.FC<AdminSidebarProps> = ({ open, setOpen }) => {
   const navigate = useNavigate();
   const { setIsAuthenticated, user, setUser } = useCurrentApp();
-
+  const [permissions, setPermissions] = useState<string[]>([]);
   const handleLogout = () => {
     localStorage.removeItem("token");
     setUser(null);
     setIsAuthenticated(false);
     navigate("/signin");
   };
+  useEffect(() => {
+    const fetchPermissions = async () => {
+      if (user?.roleName) {
+        try {
+          const res = await getPermissionsByRoleAPI(user.roleName);
+          console.log(res);
+          const names = res.map((p: any) => p.permissionName);
+          setPermissions(names);
+        } catch (err) {
+          console.error("Lỗi khi tải quyền:", err);
+        }
+      }
+    };
+
+    fetchPermissions();
+  }, [user?.roleName]);
 
   const menuItems = [
     {
       icon: <FaHome size={20} />,
       label: "Trang chủ",
       onClick: () => navigate("/manager"),
+      permission: null,
     },
     {
       icon: <FaUsers size={20} />,
       label: "Danh sách",
       onClick: () => navigate("/manager/list"),
+      permission: "manageUsers",
     },
     {
       icon: <FaPlus size={20} />,
       label: "Thêm độc giả/tác giả",
       onClick: () => navigate("/manager/add"),
+      permission: "viewLists",
     },
     {
       icon: <FaBoxOpen size={20} />,
       label: "Tiếp nhận sách",
       onClick: () => navigate("/manager/receive"),
+      permission: "receiveBooks",
     },
     {
       icon: <FaClipboardList size={20} />,
       label: "Mượn trả sách",
       onClick: () => navigate("/manager/borrow"),
+      permission: "borrowBooks",
     },
     {
       icon: <FaComments size={20} />,
       label: "Trò chuyện",
       onClick: () => navigate("/manager/chat"),
+      permission: "chat",
+    },
+    {
+      icon: <FaNewspaper size={20} />,
+      label: "Sửa luật",
+      onClick: () => navigate("/manager/parameter"),
+      permission: "parameter",
+    },
+    {
+      icon: <FaChartPie size={20} />,
+      label: "Báo cáo trả trễ",
+      onClick: () => navigate("/manager/report"),
+      permission: "viewReports",
     },
   ];
 
@@ -105,29 +139,33 @@ const AppSidebar: React.FC<AdminSidebarProps> = ({ open, setOpen }) => {
       {/* Navigation Items - Scrollable area */}
       <div className="flex-1 overflow-y-auto py-4">
         <ul className="space-y-2">
-          {menuItems.map((item, index) => (
-            <li key={index}>
-              <button
-                onClick={item.onClick}
-                className="w-full flex items-center gap-3 px-3 py-2 hover:bg-white/10 rounded-md transition-colors duration-300 relative group"
-              >
-                <div className="flex justify-center w-6">{item.icon}</div>
-                <span
-                  className={`${
-                    !open ? "opacity-0 w-0" : "opacity-100"
-                  } transition-all duration-300 truncate text-sm`}
+          {menuItems
+            .filter(
+              (item) =>
+                !item.permission || permissions.includes(item.permission)
+            )
+            .map((item, index) => (
+              <li key={index}>
+                <button
+                  onClick={item.onClick}
+                  className="w-full flex items-center gap-3 px-3 py-2 hover:bg-white/10 rounded-md transition-colors duration-300 relative group"
                 >
-                  {item.label}
-                </span>
-                {/* Tooltip khi sidebar đóng */}
-                {!open && (
-                  <span className="absolute left-12 bg-white text-gray-800 text-sm px-3 py-1 rounded-md shadow-lg z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                  <div className="flex justify-center w-6">{item.icon}</div>
+                  <span
+                    className={`${
+                      !open ? "opacity-0 w-0" : "opacity-100"
+                    } transition-all duration-300 truncate text-sm`}
+                  >
                     {item.label}
                   </span>
-                )}
-              </button>
-            </li>
-          ))}
+                  {!open && (
+                    <span className="absolute left-12 bg-white text-gray-800 text-sm px-3 py-1 rounded-md shadow-lg z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                      {item.label}
+                    </span>
+                  )}
+                </button>
+              </li>
+            ))}
         </ul>
       </div>
 

@@ -7,16 +7,27 @@ import {
   getPermissionsByRoleAPI,
   deleteRolePermissionAPI,
 } from "@/services/api";
-import { message, Button, Input, Select, Checkbox, Modal } from "antd";
+import {
+  message,
+  Button,
+  Input,
+  Select,
+  Checkbox,
+  Modal,
+  Card,
+  Divider,
+} from "antd";
 
 const { Option } = Select;
 
 const ALL_PERMISSIONS = [
-  "receiveBooks",
+  "receiveBooks", //
   "manageUsers",
-  "borrowBooks",
-  "viewLists",
-  "viewReports",
+  "borrowBooks", //
+  "viewLists", //
+  "viewReports", //
+  "parameter",
+  "chat",
 ];
 
 const RolePermissionUI = () => {
@@ -40,8 +51,9 @@ const RolePermissionUI = () => {
   const fetchPermissions = async (roleName: string) => {
     try {
       const res = await getPermissionsByRoleAPI(roleName);
-      const data = Array.isArray(res) ? res : [];
-      const permissionNames = data.map((p: any) => p.permissionName);
+      const permissionNames = (Array.isArray(res) ? res : []).map(
+        (p: any) => p.permissionName
+      );
       setCurrentPermissions(permissionNames);
       setEditPermissions(permissionNames);
     } catch (err) {
@@ -67,7 +79,7 @@ const RolePermissionUI = () => {
 
   const handleDelete = async (roleName: string) => {
     Modal.confirm({
-      title: `Xóa vai trò ${roleName}?`,
+      title: `Xóa vai trò "${roleName}"?`,
       onOk: async () => {
         try {
           await deleteRoleAPI(roleName);
@@ -84,10 +96,10 @@ const RolePermissionUI = () => {
     if (!selectedRole) return;
     try {
       const added = editPermissions.filter(
-        (perm) => !currentPermissions.includes(perm)
+        (p) => !currentPermissions.includes(p)
       );
       const removed = currentPermissions.filter(
-        (perm) => !editPermissions.includes(perm)
+        (p) => !editPermissions.includes(p)
       );
 
       for (const perm of added) {
@@ -110,36 +122,40 @@ const RolePermissionUI = () => {
   }, []);
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <h2 className="text-xl font-bold mb-4">Quản lý Vai Trò</h2>
+    <div className="p-6 max-w-5xl mx-auto bg-white shadow-md rounded-md space-y-6">
+      <h2 className="text-2xl font-bold text-center">
+        Quản lý Vai Trò và Quyền
+      </h2>
 
-      <div className="mb-4">
+      <Card title="Tạo Vai Trò Mới" bordered={false}>
         <Input
-          placeholder="Tên vai trò mới"
+          placeholder="Tên vai trò"
           value={newRoleName}
           onChange={(e) => setNewRoleName(e.target.value)}
-          className="mb-2"
+          style={{ marginBottom: "8px" }}
         />
         <Input.TextArea
           placeholder="Mô tả"
           value={newDescription}
           onChange={(e) => setNewDescription(e.target.value)}
+          style={{ marginBottom: "8px" }}
           rows={2}
-          className="mb-2"
         />
         <Checkbox.Group
           options={ALL_PERMISSIONS}
           value={newRolePermissions}
           onChange={(val) => setNewRolePermissions(val as string[])}
         />
-        <Button type="primary" onClick={handleAddRole} className="mt-2">
-          Thêm Vai Trò
-        </Button>
-      </div>
+        <div className="mt-4">
+          <Button type="primary" onClick={handleAddRole}>
+            Thêm Vai Trò
+          </Button>
+        </div>
+      </Card>
 
-      <div className="mb-6">
+      <Card title="Cập Nhật Quyền">
         <Select
-          placeholder="Chọn vai trò để xem quyền"
+          placeholder="Chọn vai trò"
           style={{ width: "100%" }}
           onChange={(val) => {
             setSelectedRole(val);
@@ -152,39 +168,41 @@ const RolePermissionUI = () => {
             </Option>
           ))}
         </Select>
-      </div>
 
-      {selectedRole && (
-        <div>
-          <h3 className="font-semibold mb-2">Quyền hiện tại:</h3>
-          <Checkbox.Group
-            options={ALL_PERMISSIONS}
-            value={editPermissions}
-            onChange={(val) => setEditPermissions(val as string[])}
-          />
-          <Button
-            type="primary"
-            onClick={handleUpdatePermissions}
-            className="mt-2"
-          >
-            Lưu Quyền
-          </Button>
-        </div>
-      )}
+        {selectedRole && (
+          <div className="mt-4">
+            <h4 className="mb-2 font-medium">Danh sách quyền:</h4>
+            <Checkbox.Group
+              options={ALL_PERMISSIONS}
+              value={editPermissions}
+              onChange={(val) => setEditPermissions(val as string[])}
+            />
+            <div className="mt-3">
+              <Button type="primary" onClick={handleUpdatePermissions}>
+                Lưu Quyền
+              </Button>
+            </div>
+          </div>
+        )}
+      </Card>
 
-      <div className="mt-8">
-        <h3 className="font-semibold mb-2">Danh sách Vai Trò:</h3>
-        <ul>
+      {/* Danh sách vai trò */}
+      <Card title="Danh Sách Vai Trò" bordered={false}>
+        <ul className="divide-y">
           {roles.map((r) => (
-            <li key={r.id} className="flex justify-between items-center py-1">
+            <li key={r.id} className="flex justify-between py-2">
               <span>{r.roleName}</span>
-              <Button danger onClick={() => handleDelete(r.roleName)}>
+              <Button
+                danger
+                size="small"
+                onClick={() => handleDelete(r.roleName)}
+              >
                 Xóa
               </Button>
             </li>
           ))}
         </ul>
-      </div>
+      </Card>
     </div>
   );
 };

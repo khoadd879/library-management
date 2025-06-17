@@ -339,3 +339,24 @@ export const deleteRolePermissionAPI = async (
     },
   });
 };
+export const addOverdueReportAPI = async (createdDate: string) => {
+  const res = await axios.post("/api/OverdueReport/add_overdue_report", {
+    createdDate,
+  });
+  return res;
+};
+export const updateParameterAPI = async (
+  idParameter: string,
+  data: { nameParameter: string; valueParameter: number }
+) => {
+  const res = await axios.put(
+    `/api/Parameter/update_parameter/${idParameter}`,
+    data
+  );
+  return res;
+};
+export const getAllParametersAPI = async () => {
+  const res = await axios.get("/api/Parameter/getallparameter");
+  return res;
+};
+export const getBookStatsByGenreAPI = async () => {};
