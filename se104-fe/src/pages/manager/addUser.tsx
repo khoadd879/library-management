@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   addAuthorAPI,
   addReaderAPI,
@@ -28,7 +28,8 @@ const AddUser = () => {
   const [typeReaderOptions, setTypeReaderOptions] = useState<
     ITypeReaderOption[]
   >([]);
-
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const fileInputRef1 = useRef<HTMLInputElement | null>(null);
   const [authorForm, setAuthorForm] = useState({
     IdTypeBook: "",
     NameAuthor: "",
@@ -76,11 +77,12 @@ const AddUser = () => {
     const fetchTypes = async () => {
       try {
         const res = await getTypeBooksAPI();
+        console.log(res);
         const unique = Array.from(
           new Map(res?.map((item: any) => [item.idTypeBook, item])).values()
         ).map((item: any) => ({
           value: item.idTypeBook,
-          label: item.typeBook,
+          label: item.nameTypeBook,
         }));
 
         setTypeBookOptions(unique);
@@ -171,7 +173,7 @@ const AddUser = () => {
 
       const res = await addReaderAPI(formData);
       console.log(res);
-      if (res) {
+      if (res && res.statusCode === 201) {
         setReaderForm({
           NameReader: "",
           Email: "",
@@ -186,7 +188,7 @@ const AddUser = () => {
         setReaderAvatarPreview(null);
         message.success("Thêm độc giả thành công!");
       } else {
-        message.error("Lỗi");
+        message.error(res.data.message || "Vui lòng điền đầy đủ thông tin");
       }
     } catch (err) {
       console.error(err);
@@ -233,6 +235,7 @@ const AddUser = () => {
           setPreview={setAuthorAvatarPreview}
           typeBookOptions={typeBookOptions}
           isLoading={isLoading}
+          fileInputRef={fileInputRef}
         />
       )}
       {activeTab === "docgia" && (
@@ -244,6 +247,7 @@ const AddUser = () => {
           setPreview={setReaderAvatarPreview}
           typeReaderOptions={typeReaderOptions}
           isLoading={isLoading}
+          fileInputRef1={fileInputRef1}
         />
       )}
     </div>

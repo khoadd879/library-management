@@ -7,8 +7,10 @@ import {
 } from "@/services/api";
 import UpdateReaderModal from "../user/UpdateReaderModal";
 import { message, Modal } from "antd";
-
-const ReaderList = () => {
+interface Props {
+  keyword: string;
+}
+const ReaderList = ({ keyword }: Props) => {
   const [readers, setReaders] = useState<IReader[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
@@ -24,7 +26,6 @@ const ReaderList = () => {
       try {
         const res = await getListReader();
         const fil = res.filter((r) => r.role === "Reader");
-        console.log(fil);
         setReaders(fil);
       } catch (err) {
         console.error("Lỗi khi tải độc giả:", err);
@@ -103,7 +104,9 @@ const ReaderList = () => {
   const pendingReader = readers.find((r) => r.idReader === pendingDeleteId);
 
   if (loading) return <div className="p-4">Đang tải danh sách độc giả...</div>;
-
+  const filteredReaders = readers.filter((reader) =>
+    reader.nameReader?.toLowerCase().includes(keyword.toLowerCase())
+  );
   return (
     <div className="bg-white rounded-xl shadow overflow-hidden">
       <table className="w-full text-sm text-left">
@@ -119,7 +122,7 @@ const ReaderList = () => {
           </tr>
         </thead>
         <tbody>
-          {readers.map((reader) => (
+          {filteredReaders.map((reader) => (
             <tr key={reader.idReader} className="border-t hover:bg-gray-50">
               <td className="px-4 py-2">
                 {reader.urlAvatar ? (

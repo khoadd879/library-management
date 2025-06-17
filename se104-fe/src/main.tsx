@@ -11,7 +11,7 @@ import UserPage from "./pages/manager/list";
 import AddUser from "./pages/manager/addUser";
 import BorrowBook from "./pages/manager/borrow";
 import ReceiveBook from "./pages/manager/receive";
-import Report from "./pages/manager/report";
+
 import Chat from "./pages/manager/chat";
 import UserLayout from "./userLayout";
 import Favorite from "./pages/client/favorite";
@@ -71,7 +71,6 @@ const router = createBrowserRouter([
           { path: "add", element: <AddUser /> },
           { path: "borrow", element: <BorrowBook /> },
           { path: "receive", element: <ReceiveBook /> },
-          { path: "report", element: <Report /> },
           { path: "chat", element: <Chat /> },
           { path: "profile", element: <Profile /> },
         ],
@@ -79,12 +78,17 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path: "admin",
-    element: <AdminLayout />,
+    path: "/admin",
+    element: <ProtectedRoute />,
     children: [
-      { index: true, element: <RolePermissionUI /> },
-      { path: "roles", element: <RolePermissionUI /> },
-      { path: "users", element: <UserList /> },
+      {
+        path: "/admin",
+        element: <AdminLayout />,
+        children: [
+          { index: true, element: <RolePermissionUI /> },
+          { path: "users", element: <UserList /> },
+        ],
+      },
     ],
   },
   { path: "/signin", element: <SignIn /> },

@@ -10,6 +10,7 @@ interface ReaderFormProps {
   setPreview: (url: string | null) => void;
   typeReaderOptions: { value: string; label: string }[];
   isLoading: boolean;
+  fileInputRef1: React.RefObject<HTMLInputElement | null>;
 }
 
 const ReaderForm = ({
@@ -20,6 +21,7 @@ const ReaderForm = ({
   setPreview,
   typeReaderOptions,
   isLoading,
+  fileInputRef1,
 }: ReaderFormProps) => {
   return (
     <form
@@ -43,6 +45,8 @@ const ReaderForm = ({
         <input
           type="file"
           accept="image/*"
+          style={{ display: "none" }}
+          ref={fileInputRef1}
           onChange={(e) => {
             const file = e.target.files?.[0];
             if (file) {
@@ -52,6 +56,13 @@ const ReaderForm = ({
           }}
           className="text-sm"
         />
+        <button
+          type="button"
+          onClick={() => fileInputRef1.current?.click()}
+          className="px-4 py-2 bg-[#153D36] text-white rounded hover:bg-gray-700 text-sm font-medium transition"
+        >
+          Chọn ảnh độc giả
+        </button>
       </div>
 
       <select

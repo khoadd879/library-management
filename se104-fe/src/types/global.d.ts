@@ -261,6 +261,7 @@ declare global {
     borrowDate: string; // ISO date string: "2025-05-29T00:00:00"
     returnDate: string; // ISO date string
     fineAmount: number;
+    nameBook: string;
   }
   export interface IGetStarByIdBook {
     star: number;

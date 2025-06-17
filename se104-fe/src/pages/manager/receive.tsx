@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { message, Spin } from "antd";
 import { addBookAPI, getListAuthor, getTypeBooksAPI } from "@/services/api";
 
@@ -13,6 +13,7 @@ const ReceiveBook = () => {
     { value: string; label: string }[]
   >([]);
   const [isLoading, setIsLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [form, setForm] = useState({
     nameHeaderBook: "",
@@ -82,20 +83,25 @@ const ReceiveBook = () => {
 
       if (bookImage) formData.append("BookImage", bookImage);
 
-      await addBookAPI(formData);
-      setForm({
-        nameHeaderBook: "",
-        describeBook: "",
-        idTypeBook: "",
-        idAuthors: [],
-        publisher: "",
-        reprintYear: new Date().getFullYear(),
-        valueOfBook: "",
-      });
-      setBookImage(null);
-      setPreviewImage(null);
+      const res = await addBookAPI(formData);
+      console.log(res);
+      if (res && res.statusCode === 201) {
+        setForm({
+          nameHeaderBook: "",
+          describeBook: "",
+          idTypeBook: "",
+          idAuthors: [],
+          publisher: "",
+          reprintYear: new Date().getFullYear(),
+          valueOfBook: "",
+        });
+        setBookImage(null);
+        setPreviewImage(null);
 
-      message.success("Thêm sách thành công!");
+        message.success("Thêm sách thành công!");
+      } else {
+        message.error(res.data.message || "Vui lòng điền đầy đủ thông tin");
+      }
     } catch (err) {
       console.error(err);
       message.error("Thêm sách thất bại!");
@@ -106,14 +112,7 @@ const ReceiveBook = () => {
 
   return (
     <div className="w-full min-h-screen bg-[#f4f7f9]">
-      <div className="bg-[#153D36] px-12 py-4 flex justify-between items-center">
-        <input
-          type="text"
-          placeholder="Search..."
-          className="w-[400px] px-4 py-2 rounded-full outline-none text-sm text-black bg-white border border-black"
-        />
-        <div className="text-xl text-white">🔔</div>
-      </div>
+      <div className="bg-[#153D36] px-12 py-4 flex justify-between items-center"></div>
 
       <div className="px-12 py-8">
         <h2 className="text-2xl font-bold text-[#153D36] text-center mb-6">
@@ -281,7 +280,7 @@ const ReceiveBook = () => {
               </label>
               <input
                 type="file"
-                name="BookImage"
+                ref={fileInputRef}
                 accept="image/*"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
@@ -290,8 +289,15 @@ const ReceiveBook = () => {
                     setPreviewImage(URL.createObjectURL(file));
                   }
                 }}
-                className="text-sm"
+                style={{ display: "none" }}
               />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="px-4 py-2 bg-[#27AE60] text-white rounded hover:bg-gray-700 text-sm font-medium transition"
+              >
+                Chọn ảnh bìa
+              </button>
             </div>
 
             <div className="text-center pt-4">

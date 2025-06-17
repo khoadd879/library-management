@@ -23,14 +23,7 @@ const BorrowBook = () => {
 
   return (
     <div className="w-full min-h-screen bg-[#f4f7f9]">
-      <div className="bg-[#153D36] px-6 py-4 flex justify-between items-center">
-        <input
-          type="text"
-          placeholder="Search..."
-          className="w-[400px] px-4 py-2 rounded-full text-sm bg-white text-black border"
-        />
-        <div className="text-xl text-white">🔔</div>
-      </div>
+      <div className="bg-[#153D36] px-6 py-4 flex justify-between items-center"></div>
 
       <div className="flex gap-2 px-6 mt-6">
         <button

@@ -34,12 +34,13 @@ const BorrowForm = () => {
     setIsLoading(true);
     try {
       const res = await addLoanBookAPI(idReader, idTheBook);
-      if (res?.EC === 0 || res === true) {
+      console.log(res);
+      if (res && res.statusCode === 200) {
         setIdReader("");
         setIdTheBook("");
         message.success("Thêm phiếu mượn thành công!");
       } else {
-        message.error(res?.message || "Thêm phiếu mượn thất bại!");
+        message.error(res?.data.message || "Thêm phiếu mượn thất bại!");
       }
     } catch (err) {
       console.error(err);

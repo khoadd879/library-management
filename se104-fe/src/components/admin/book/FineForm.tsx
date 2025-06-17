@@ -33,12 +33,12 @@ const FineForm = () => {
     setIsLoading(true);
     const res = await addPenaltyAPI(selectedReaderId, amountCollected);
     console.log(res);
-    if (res?.status === 200) {
+    if (res?.statusCode === 200) {
       message.success("Xuất phiếu thu tiền phạt thành công!");
       setSelectedReaderId("");
       setAmountCollected(undefined);
     } else {
-      message.error("Xuất phiếu thất bại!");
+      message.error(res.data.message || "Xuất phiếu thất bại!");
     }
 
     setIsLoading(false);

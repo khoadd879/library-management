@@ -128,10 +128,7 @@ export const listReaderAPI = (searchKey: string) => {
   return axios.post<IBackendRes<any>>(urlBackend, { searchKey });
 };
 export const addReaderAPI = (formData: FormData) => {
-  return axios.post<IBackendRes<any>>(
-    "/api/reader/Reader/add_reader",
-    formData
-  );
+  return axios.post<any>("/api/reader/Reader/add_reader", formData);
 };
 
 export const updateReaderAPI = (idReader: string, formData: FormData) => {

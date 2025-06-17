@@ -8,8 +8,10 @@ import {
   updateBookAPI,
 } from "@/services/api";
 import UpdateBookModal from "../user/UpdateBookModal";
-
-const BookList = () => {
+interface Props {
+  keyword: string;
+}
+const BookList = ({ keyword }: Props) => {
   const [books, setBooks] = useState<IBook[]>([]);
   const [loading, setLoading] = useState(true);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
@@ -98,7 +100,9 @@ const BookList = () => {
   const pendingBook = books.find((b) => b.idBook === pendingDeleteId);
 
   if (loading) return <div className="p-4">Đang tải sách...</div>;
-
+  const filteredBooks = books.filter((book) =>
+    book.nameBook.toLowerCase().includes(keyword.toLowerCase())
+  );
   return (
     <div className="bg-white rounded-xl shadow overflow-hidden">
       <table className="w-full text-sm text-left">
@@ -114,7 +118,7 @@ const BookList = () => {
           </tr>
         </thead>
         <tbody>
-          {books.map((book) => (
+          {filteredBooks.map((book) => (
             <tr key={book.idBook} className="border-t hover:bg-gray-50">
               <td className="px-4 py-2">
                 {book.image ? (

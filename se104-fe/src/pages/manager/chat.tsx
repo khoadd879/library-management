@@ -57,14 +57,7 @@ const Chat = () => {
 
   return (
     <div className="flex flex-col justify-between h-screen bg-[#f4f7f9]">
-      <div className="bg-[#153D36] px-6 py-4 flex justify-between items-center">
-        <input
-          type="text"
-          placeholder="Search..."
-          className="w-[400px] px-4 py-2 rounded-full outline-none text-sm text-black bg-white"
-        />
-        <div className="text-white text-xl">🔔</div>
-      </div>
+      <div className="bg-[#153D36] px-6 py-4 flex justify-between items-center"></div>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {messages.map((msg, i) => {
