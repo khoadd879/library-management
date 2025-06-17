@@ -34,6 +34,8 @@ import AuthorInfo from "./pages/client/authorInfo";
 import AdminLayout from "./adminLayout";
 import RolePermissionUI from "./pages/admin/userprofile";
 import UserList from "./pages/admin/userList";
+import Report from "./pages/manager/report";
+import Parameter from "./pages/manager/parameter";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -73,6 +75,8 @@ const router = createBrowserRouter([
           { path: "receive", element: <ReceiveBook /> },
           { path: "chat", element: <Chat /> },
           { path: "profile", element: <Profile /> },
+          { path: "report", element: <Report /> },
+          { path: "parameter", element: <Parameter /> },
         ],
       },
     ],
