@@ -4,7 +4,6 @@ import {
   getAllReadersAPI,
   getAllBooksAndCommentsAPI,
   addSlipBookAPI,
-  deleteLoanSlipBookAPI,
 } from "@/services/api";
 import { message } from "antd";
 
@@ -18,12 +17,34 @@ const ListBorrow = () => {
   const [readers, setReaders] = useState<IReaderSimple[]>([]);
   const [books, setBooks] = useState<IBook[]>([]);
   const [keyword, setKeyword] = useState("");
+  const [returnedIds, setReturnedIds] = useState<Set<string>>(new Set());
 
   const getReaderName = (id: string) =>
     readers.find((r) => r.idReader === id)?.nameReader || "(Không rõ)";
 
   const getBookInfo = (id: string) =>
     books.find((b) => b.idBook === id) || { nameBook: "(Không rõ)" };
+
+  const fetchData = async () => {
+    try {
+      const [loanRes, readerRes, bookRes] = await Promise.all([
+        getAllLoanSlipsAPI(),
+        getAllReadersAPI(),
+        getAllBooksAndCommentsAPI(),
+      ]);
+
+      setLoans(Array.isArray(loanRes) ? loanRes : []);
+      setReaders(Array.isArray(readerRes) ? readerRes : []);
+      setBooks(Array.isArray(bookRes) ? bookRes : []);
+    } catch (err) {
+      console.error(err);
+      message.error("Lỗi khi tải dữ liệu!");
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const handleReturn = async (item: ILoanSlip) => {
     try {
@@ -34,15 +55,9 @@ const ListBorrow = () => {
       );
 
       if (res.statusCode === 200) {
-        await deleteLoanSlipBookAPI(item.idLoanSlipBook);
         message.success("Trả sách thành công!");
-
-        const updatedLoans = loans.filter(
-          (loan) => loan.idLoanSlipBook !== item.idLoanSlipBook
-        );
-        setLoans(updatedLoans);
-      } else {
-        message.error("Trả sách thất bại!");
+        setReturnedIds((prev) => new Set(prev).add(item.idLoanSlipBook));
+        await fetchData();
       }
     } catch (error) {
       console.error("Lỗi trả sách:", error);
@@ -50,30 +65,11 @@ const ListBorrow = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [loanRes, readerRes, bookRes] = await Promise.all([
-          getAllLoanSlipsAPI(),
-          getAllReadersAPI(),
-          getAllBooksAndCommentsAPI(),
-        ]);
-
-        setLoans(Array.isArray(loanRes) ? loanRes : []);
-        setReaders(Array.isArray(readerRes) ? readerRes : []);
-        setBooks(Array.isArray(bookRes) ? bookRes : []);
-      } catch (err) {
-        console.error(err);
-        message.error("Lỗi khi tải dữ liệu!");
-      }
-    };
-
-    fetchData();
-  }, []);
   const filteredLoans = loans.filter((item) => {
     const readerName = getReaderName(item.idReader);
     return readerName?.toLowerCase().includes(keyword.toLowerCase());
   });
+
   return (
     <div className="min-h-screen bg-[#f0fdf4] px-4 md:px-10 py-6">
       <h2 className="text-2xl font-bold mb-6 text-center text-[#14532d]">
@@ -97,6 +93,8 @@ const ListBorrow = () => {
               <th className="px-4 py-3">Tên sách</th>
               <th className="px-4 py-3">Ngày mượn</th>
               <th className="px-4 py-3">Ngày trả</th>
+              <th className="px-4 py-3">Số ngày mượn</th>
+              <th className="px-4 py-3">Tiền phạt</th>
               <th className="px-4 py-3 text-center">Hành động</th>
             </tr>
           </thead>
@@ -104,7 +102,6 @@ const ListBorrow = () => {
             {filteredLoans.length > 0 ? (
               filteredLoans.map((item) => {
                 const readerName = getReaderName(item.idReader);
-
                 return (
                   <tr
                     key={item.idLoanSlipBook}
@@ -118,20 +115,35 @@ const ListBorrow = () => {
                     <td className="px-4 py-3 text-sm">
                       {new Date(item.returnDate).toLocaleDateString()}
                     </td>
+                    <td className="px-4 py-3 text-sm text-center">
+                      {item.loanPeriod}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-center">
+                      {item.fineAmount?.toLocaleString("vi-VN", {
+                        style: "currency",
+                        currency: "VND",
+                      })}
+                    </td>
                     <td className="px-4 py-3 text-center">
-                      <button
-                        onClick={() => handleReturn(item)}
-                        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-                      >
-                        Trả sách
-                      </button>
+                      {returnedIds.has(item.idLoanSlipBook) ? (
+                        <span className="text-green-700 font-semibold">
+                          Đã trả
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleReturn(item)}
+                          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                        >
+                          Trả sách
+                        </button>
+                      )}
                     </td>
                   </tr>
                 );
               })
             ) : (
               <tr>
-                <td colSpan={5} className="text-center py-4 text-gray-500">
+                <td colSpan={7} className="text-center py-4 text-gray-500">
                   Không có dữ liệu mượn sách.
                 </td>
               </tr>

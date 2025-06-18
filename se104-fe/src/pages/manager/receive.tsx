@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { message, Spin } from "antd";
-import { addBookAPI, getListAuthor, getTypeBooksAPI } from "@/services/api";
+import {
+  addBookAPI,
+  getListAuthor,
+  getTypeBooksAPI,
+  getAllHeaderBooksAPI,
+} from "@/services/api";
 
 const ReceiveBook = () => {
   const [today, setToday] = useState("");
@@ -12,8 +17,10 @@ const ReceiveBook = () => {
   const [typeBooks, setTypeBooks] = useState<
     { value: string; label: string }[]
   >([]);
+  const [headerBooks, setHeaderBooks] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [selectedHeaderId, setSelectedHeaderId] = useState("");
 
   const [form, setForm] = useState({
     nameHeaderBook: "",
@@ -32,8 +39,12 @@ const ReceiveBook = () => {
         const formatted = current.toISOString().slice(0, 10);
         setToday(formatted);
 
-        const authorRes = await getListAuthor();
-        console.log(authorRes);
+        const [authorRes, typeBookRes, headerRes] = await Promise.all([
+          getListAuthor(),
+          getTypeBooksAPI(),
+          getAllHeaderBooksAPI(),
+        ]);
+
         if (authorRes) {
           const mappedAuthors = authorRes.map((a: any) => ({
             id: a.idAuthor,
@@ -42,8 +53,6 @@ const ReceiveBook = () => {
           setAuthors(mappedAuthors);
         }
 
-        const typeBookRes = await getTypeBooksAPI();
-        console.log(typeBookRes);
         const unique = Array.from(
           new Map(
             typeBookRes.map((item: any) => [item.idTypeBook, item])
@@ -53,6 +62,8 @@ const ReceiveBook = () => {
           label: item.nameTypeBook,
         }));
         setTypeBooks(unique);
+        console.log(headerRes);
+        setHeaderBooks(headerRes);
       } catch (err) {
         console.error("Lỗi khi lấy dữ liệu", err);
         message.error("Không thể tải dữ liệu tác giả hoặc thể loại sách.");
@@ -84,7 +95,6 @@ const ReceiveBook = () => {
       if (bookImage) formData.append("BookImage", bookImage);
 
       const res = await addBookAPI(formData);
-      console.log(res);
       if (res && res.statusCode === 201) {
         setForm({
           nameHeaderBook: "",
@@ -112,8 +122,6 @@ const ReceiveBook = () => {
 
   return (
     <div className="w-full min-h-screen bg-[#f4f7f9]">
-      <div className="bg-[#153D36] px-12 py-4 flex justify-between items-center"></div>
-
       <div className="px-12 py-8">
         <h2 className="text-2xl font-bold text-[#153D36] text-center mb-6">
           THÔNG TIN SÁCH
@@ -135,6 +143,48 @@ const ReceiveBook = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="w-1/2 space-y-4">
+            <div>
+              <label className="block text-sm font-semibold mb-1">
+                Chọn đầu sách
+              </label>
+              <select
+                value={selectedHeaderId}
+                className="w-full px-4 py-2 border rounded outline-none text-sm"
+                onChange={(e) => {
+                  const value = e.target.value;
+
+                  setSelectedHeaderId(value);
+
+                  const selected = headerBooks.find(
+                    (h) => h.nameBook === value
+                  );
+
+                  if (selected) {
+                    setForm((prev) => ({
+                      ...prev,
+                      nameHeaderBook: selected.nameBook,
+                      describeBook: selected.describe,
+                      idTypeBook: selected.idTypeBook,
+                    }));
+                  } else {
+                    setForm((prev) => ({
+                      ...prev,
+                      nameHeaderBook: "",
+                      describeBook: "",
+                      idTypeBook: "",
+                    }));
+                  }
+                }}
+              >
+                <option value="">-- Không chọn đầu sách --</option>
+                {headerBooks.map((hb) => (
+                  <option key={hb.idHeaderBook} value={hb.idHeaderBook}>
+                    {hb.nameBook}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div>
               <label className="block text-sm font-semibold mb-1">
                 Tên sách

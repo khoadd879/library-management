@@ -362,10 +362,18 @@ export const getAllParametersAPI = async () => {
   const res = await axios.get("/api/Parameter/getallparameter");
   return res;
 };
-export const getBookStatsByGenreAPI = async () => {};
-
+export const getAmountByTypeBookAPI = async (month: number) => {
+  const res = await axios.get("/api/LoanSlipBook/getAmountByTypeBook", {
+    params: { month },
+  });
+  return res;
+};
 export const findBooksByNameAPI = async (namebook: string) => {
   const url = `/api/Book/findBooks${encodeURIComponent(namebook)}`;
   const res = await axios.get<IBook[]>(url);
+  return res;
+};
+export const getAllHeaderBooksAPI = async () => {
+  const res = await axios.get<IHeaderBook[]>("/api/Book/getallheaderbooks");
   return res;
 };

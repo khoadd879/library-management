@@ -29,7 +29,6 @@ import VerificationCodePage from "./pages/client/auth/verification";
 import NewPasswordPage from "./pages/client/auth/newPass";
 import ProtectedRoute from "@/components/auth/protected";
 import Profile from "./pages/client/profile";
-import UserProfile from "./pages/admin/userprofile";
 import AuthorInfo from "./pages/client/authorInfo";
 import AdminLayout from "./adminLayout";
 import RolePermissionUI from "./pages/admin/userprofile";
