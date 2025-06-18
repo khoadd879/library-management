@@ -25,6 +25,7 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
     setUser(null);
     setIsAuthenticated(false);
     navigate("/signin");

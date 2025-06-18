@@ -5,7 +5,7 @@ import {
   loginGoogleRedirectAPI,
 } from "@/services/api";
 import { message, Spin } from "antd";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const SignIn = () => {
@@ -14,7 +14,13 @@ const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { setIsAuthenticated, setUser } = useCurrentApp();
+  const { setIsAuthenticated, setUser, isAuthenticated } = useCurrentApp();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/home");
+    }
+  }, [isAuthenticated, navigate]);
   const handleGoogleLogin = () => {
     const popup = window.open(
       "https://librarymanagement-api-840378105403.asia-southeast1.run.app/api/Authentication/login-google",
@@ -55,7 +61,7 @@ const SignIn = () => {
     setLoading(true);
     try {
       const res = await loginAPI(username, password);
-      console.log(res);
+
       if (res && res.token) {
         localStorage.setItem("token", res.token);
         localStorage.setItem("idUser", res.iduser);

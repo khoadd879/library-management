@@ -15,7 +15,7 @@ const ProtectedRoute = () => {
         subTitle="Bạn vui lòng đăng nhập để sử dụng tính năng này."
         extra={
           <Button type="primary">
-            <Link to="/login">Đăng nhập</Link>
+            <Link to="/signin">Đăng nhập</Link>
           </Button>
         }
       />
