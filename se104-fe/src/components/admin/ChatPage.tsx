@@ -1,19 +1,30 @@
 import React, { useEffect, useState } from "react";
 import { getChatHistoryAPI, sendMessageAPI } from "@/services/api";
-import { message as antdMessage } from "antd";
+import { message as antdMessage, message } from "antd";
+interface ChatProps {
+  receiverId: string;
+}
 
-const Chat = () => {
+const Chat = ({ receiverId }: ChatProps) => {
   const [messages, setMessages] = useState<IChatMessage[]>([]);
   const [input, setInput] = useState("");
 
-  const receiverId = "rd00025"; // thủ thư
   const senderId = localStorage.getItem("idUser") ?? "";
 
   useEffect(() => {
+    let interval: any;
+
     const fetchMessages = async () => {
       try {
         const res = await getChatHistoryAPI(receiverId);
         if (Array.isArray(res)) {
+          if (res.length > messages.length) {
+            const lastMessage = res[res.length - 1];
+            if (lastMessage.senderId !== senderId) {
+              message.info(" Bạn có tin nhắn mới!");
+            }
+          }
+
           setMessages(res);
         } else {
           antdMessage.error("Không lấy được tin nhắn.");
@@ -25,7 +36,10 @@ const Chat = () => {
     };
 
     fetchMessages();
-  }, [senderId]);
+    interval = setInterval(fetchMessages, 5000);
+
+    return () => clearInterval(interval);
+  }, [receiverId, senderId, messages.length]);
 
   const sendMessage = async () => {
     if (!input.trim()) return;

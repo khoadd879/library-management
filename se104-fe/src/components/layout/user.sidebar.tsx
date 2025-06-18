@@ -11,7 +11,7 @@ import {
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useCurrentApp } from "../context/app.context";
-import { getListReader } from "../../services/api";
+import { getListReader, logoutAPI } from "../../services/api";
 
 interface UserSidebarProps {
   open: boolean;
@@ -23,7 +23,9 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
   const { setIsAuthenticated, user, setUser } = useCurrentApp();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const refreshToken = localStorage.getItem("refreshToken");
+    await logoutAPI(refreshToken!);
     localStorage.removeItem("token");
     localStorage.removeItem("refreshToken");
     setUser(null);

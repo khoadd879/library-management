@@ -14,7 +14,7 @@ import {
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useCurrentApp } from "../context/app.context";
-import { authenticateAPI, getPermissionsByRoleAPI } from "@/services/api";
+import { getPermissionsByRoleAPI, logoutAPI } from "@/services/api";
 
 interface AdminSidebarProps {
   open: boolean;
@@ -25,7 +25,9 @@ const AppSidebar: React.FC<AdminSidebarProps> = ({ open, setOpen }) => {
   const navigate = useNavigate();
   const { setIsAuthenticated, user, setUser } = useCurrentApp();
   const [permissions, setPermissions] = useState<string[]>([]);
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const refreshToken = localStorage.getItem("refreshToken");
+    await logoutAPI(refreshToken!);
     localStorage.removeItem("token");
     localStorage.removeItem("refreshToken");
     setUser(null);

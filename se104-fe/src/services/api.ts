@@ -377,3 +377,10 @@ export const getAllHeaderBooksAPI = async () => {
   const res = await axios.get<IHeaderBook[]>("/api/Book/getallheaderbooks");
   return res;
 };
+export const getChatUsersAPI = async () => {
+  const res = await axios.get("/api/Chat/getAllUserSentMessage");
+  return res;
+};
+export const logoutAPI = async (refreshToken: string) => {
+  return axios.post("/api/Authentication/logout", { refreshToken });
+};
