@@ -10,6 +10,7 @@ import {
   FaSignOutAlt,
   FaBars,
   FaNewspaper,
+  FaUserCircle,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useCurrentApp } from "../context/app.context";
@@ -95,6 +96,12 @@ const AppSidebar: React.FC<AdminSidebarProps> = ({ open, setOpen }) => {
       label: "Báo cáo trả trễ",
       onClick: () => navigate("/manager/report"),
       permission: "viewReports",
+    },
+    {
+      icon: <FaUserCircle size={20} />,
+      label: "Reader",
+      onClick: () => navigate("/user"), // Đổi route nếu cần
+      permission: null,
     },
   ];
 

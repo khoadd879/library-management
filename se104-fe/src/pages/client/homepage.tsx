@@ -5,6 +5,7 @@ import {
   getLoanSlipHistoryAPI,
   listAuthorAPI,
   addFavoriteBookAPI,
+  findBooksByNameAPI,
 } from "@/services/api";
 import { HeartOutlined, HeartFilled } from "@ant-design/icons";
 import { message, Spin } from "antd";
@@ -16,6 +17,8 @@ const UserHomepage = () => {
   const [latestBooks, setLatestBooks] = useState<IBook[]>([]);
   const [loanHistory, setLoanHistory] = useState<ILoanHistory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [searchBooks, setSearchBooks] = useState<IBook[] | null>(null);
   const hasFetchedData = useRef(false);
 
   const toggleLike = async (bookId: string) => {
@@ -34,6 +37,25 @@ const UserHomepage = () => {
       }
     } catch (err) {
       message.error("Lỗi khi yêu thích sách.");
+    }
+  };
+
+  const handleSearch = async (value: string) => {
+    setSearch(value);
+    if (!value) {
+      setSearchBooks(null);
+      return;
+    }
+    try {
+      const res = await findBooksByNameAPI(value);
+      if (Array.isArray(res)) {
+        setSearchBooks(res);
+      } else {
+        setSearchBooks([]);
+      }
+    } catch (err) {
+      setSearchBooks([]);
+      message.error("Lỗi khi tìm kiếm sách.");
     }
   };
 
@@ -60,10 +82,12 @@ const UserHomepage = () => {
 
         if (Array.isArray(booksResponse)) {
           setFeaturedBooks(booksResponse.slice(0, 5));
+          // Sắp xếp theo reprintYear gần nhất với hiện tại (năm hiện tại là 2025)
           const sorted = [...booksResponse].sort(
-            (a, b) => Number(b.reprintYear) - Number(a.reprintYear)
+            (a, b) =>
+              Math.abs(b.reprintYear - 2025) - Math.abs(a.reprintYear - 2025)
           );
-          setLatestBooks(sorted.slice(0, 5));
+          setLatestBooks(sorted.slice(0, 10));
         }
 
         if (Array.isArray(authorRes)) {
@@ -96,30 +120,37 @@ const UserHomepage = () => {
           <header className="bg-gradient-to-r from-[#153D36] to-[#1A4E46] px-6 py-4 shadow-lg">
             <div className="max-w-screen-xl mx-auto flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                        <img
-          src="https://cdn-icons-png.flaticon.com/512/29/29302.png"
-          alt="Library"
-          className="w-8 h-8 mx-auto filter invert"/>
-                <span className=" ml-2 text-white font-bold text-xl">Library</span>
+                <img
+                  src="https://cdn-icons-png.flaticon.com/512/29/29302.png"
+                  alt="Library"
+                  className="w-8 h-8 mx-auto filter invert"
+                />
+                <span className=" ml-2 text-white font-bold text-xl">
+                  Library
+                </span>
               </div>
-              
+
               <div className="relative w-full max-w-md mx-4">
                 <input
                   type="text"
-                  placeholder="Tìm kiếm sách, tác giả..."
+                  placeholder="Tìm kiếm sách..."
                   className="w-full px-4 py-2 rounded-full outline-none text-sm text-gray-800 bg-white shadow-sm focus:ring-2 focus:ring-[#1A4E46]"
+                  value={search}
+                  onChange={(e) => handleSearch(e.target.value)}
                 />
                 <button className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </button>
-              </div>
-              
-              <div className="flex items-center space-x-4">
-                <button className="text-white hover:text-gray-200">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
                   </svg>
                 </button>
               </div>
@@ -131,11 +162,16 @@ const UserHomepage = () => {
             {/* Hero Section */}
             <section className="mb-12 rounded-xl overflow-hidden shadow-lg bg-gradient-to-r from-[#1A4E46] to-[#2D7D6E] text-white p-8">
               <div className="max-w-2xl">
-                <h1 className="text-3xl md:text-4xl font-bold mb-4">Khám phá thế giới sách không giới hạn</h1>
-                <p className="text-lg mb-6">Hơn 10,000 đầu sách đang chờ bạn khám phá. Mượn sách dễ dàng, trả sách thuận tiện.</p>
-                <button 
+                <h1 className="text-3xl md:text-4xl font-bold mb-4">
+                  Khám phá thế giới sách không giới hạn
+                </h1>
+                <p className="text-lg mb-6">
+                  Hơn 10,000 đầu sách đang chờ bạn khám phá. Mượn sách dễ dàng,
+                  trả sách thuận tiện.
+                </p>
+                <button
                   className="bg-white text-[#1A4E46] px-6 py-2 rounded-full font-medium hover:bg-gray-100 transition"
-                  onClick={() => navigate("/books")}
+                  onClick={() => navigate("/featured")}
                 >
                   Xem tất cả sách
                 </button>
@@ -145,213 +181,308 @@ const UserHomepage = () => {
             {/* Featured Books */}
             <section className="mb-12">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">Sách nổi bật</h2>
-                <button 
-                  onClick={() => navigate("featured")}
-                  className="text-[#1A4E46] hover:underline flex items-center"
-                >
-                  Xem tất cả
-                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </div>
-              
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-                {featuredBooks.map((book) => (
-                  <div
-                    key={book.idBook}
-                    className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition cursor-pointer relative"
-                    onClick={() => navigate(`/detail/${book.idBook}`)}
+                <h2 className="text-2xl font-bold text-gray-800">
+                  {searchBooks !== null ? "Kết quả tìm kiếm" : "Sách nổi bật"}
+                </h2>
+                {searchBooks === null && (
+                  <button
+                    onClick={() => navigate("featured")}
+                    className="text-[#1A4E46] hover:underline flex items-center"
                   >
-<div
-  className="absolute top-3 right-3 z-10 cursor-pointer p-2 rounded-full bg-white/80 hover:bg-white transition-all duration-200 shadow-sm"
-  onClick={(e) => {
-    e.stopPropagation();
-    toggleLike(book.idBook);
-  }}
->
-  {book.isLiked ? (
-    <HeartFilled style={{ color: 'rgb(239 68 68)' }} className="text-lg" />
-  ) : (
-    <HeartOutlined className="text-lg text-gray-400 hover:text-red-400" />
-  )}
-</div>
-                    <div className="aspect-[2/3] bg-gray-100 relative">
-                      {book.image ? (
-                        <img
-                          src={book.image}
-                          alt={book.nameBook}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400">
-                          <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                          </svg>
-                        </div>
-                      )}
+                    Xem tất cả
+                    <svg
+                      className="w-4 h-4 ml-1"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                {(searchBooks !== null ? searchBooks : featuredBooks).map(
+                  (book) => (
+                    <div
+                      key={book.idBook}
+                      className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition cursor-pointer relative"
+                      onClick={() => navigate(`/detail/${book.idBook}`)}
+                    >
+                      <div
+                        className="absolute top-3 right-3 z-10 cursor-pointer p-2 rounded-full bg-white/80 hover:bg-white transition-all duration-200 shadow-sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleLike(book.idBook);
+                        }}
+                      >
+                        {book.isLiked ? (
+                          <HeartFilled
+                            style={{ color: "rgb(239 68 68)" }}
+                            className="text-lg"
+                          />
+                        ) : (
+                          <HeartOutlined className="text-lg text-gray-400 hover:text-red-400" />
+                        )}
+                      </div>
+                      <div className="aspect-[2/3] bg-gray-100 relative">
+                        {book.image ? (
+                          <img
+                            src={book.image}
+                            alt={book.nameBook}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400">
+                            <svg
+                              className="w-12 h-12"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={1}
+                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                              />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-semibold text-gray-800 line-clamp-2">
+                          {book.nameBook}
+                        </h3>
+                        <p className="text-sm text-gray-500 mt-1">
+                          {book.authors?.[0]?.nameAuthor || "Không rõ tác giả"}
+                        </p>
+                      </div>
                     </div>
-                    <div className="p-4">
-                      <h3 className="font-semibold text-gray-800 line-clamp-2">{book.nameBook}</h3>
-                      <p className="text-sm text-gray-500 mt-1">
-                        {book.authors?.[0]?.nameAuthor || "Không rõ tác giả"}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                  )
+                )}
               </div>
             </section>
 
-            {/* Two Columns Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Left Column - 2/3 width */}
-              <div className="lg:col-span-2 space-y-8">
-                {/* New Books */}
-                <section>
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800">Sách mới</h2>
-                    <button 
-                      onClick={() => navigate("/new-books")}
-                      className="text-[#1A4E46] hover:underline flex items-center"
-                    >
-                      Xem tất cả
-                      <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-                    {latestBooks.map((book) => (
-                      <div
-                        key={book.idBook}
-                        className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition cursor-pointer relative"
-                        onClick={() => navigate(`/detail/${book.idBook}`)}
+            {/* Ẩn các phần khác khi đang tìm kiếm */}
+            {searchBooks === null && (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Left Column - 2/3 width */}
+                <div className="lg:col-span-2 space-y-8">
+                  {/* New Books */}
+                  <section>
+                    <div className="flex justify-between items-center mb-6">
+                      <h2 className="text-2xl font-bold text-gray-800">
+                        Sách mới
+                      </h2>
+                      <button
+                        onClick={() => navigate("/new-books")}
+                        className="text-[#1A4E46] hover:underline flex items-center"
                       >
-<div
-  className="absolute top-3 right-3 z-10 cursor-pointer p-2 rounded-full bg-white/80 hover:bg-white transition-all duration-200 shadow-sm"
-  onClick={(e) => {
-    e.stopPropagation();
-    toggleLike(book.idBook);
-  }}
->
-  {book.isLiked ? (
-    <HeartFilled style={{ color: 'rgb(239 68 68)' }} className="text-lg" />
-  ) : (
-    <HeartOutlined className="text-lg text-gray-400 hover:text-red-400" />
-  )}
-</div>
-                        <div className="aspect-[2/3] bg-gray-100 relative">
-                          {book.image ? (
+                        Xem tất cả
+                        <svg
+                          className="w-4 h-4 ml-1"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                      {latestBooks.map((book) => (
+                        <div
+                          key={book.idBook}
+                          className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition cursor-pointer relative"
+                          onClick={() => navigate(`/detail/${book.idBook}`)}
+                        >
+                          <div
+                            className="absolute top-3 right-3 z-10 cursor-pointer p-2 rounded-full bg-white/80 hover:bg-white transition-all duration-200 shadow-sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleLike(book.idBook);
+                            }}
+                          >
+                            {book.isLiked ? (
+                              <HeartFilled
+                                style={{ color: "rgb(239 68 68)" }}
+                                className="text-lg"
+                              />
+                            ) : (
+                              <HeartOutlined className="text-lg text-gray-400 hover:text-red-400" />
+                            )}
+                          </div>
+                          <div className="aspect-[2/3] bg-gray-100 relative">
+                            {book.image ? (
+                              <img
+                                src={book.image}
+                                alt={book.nameBook}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                <svg
+                                  className="w-12 h-12"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={1}
+                                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                                  />
+                                </svg>
+                              </div>
+                            )}
+                          </div>
+                          <div className="p-4">
+                            <h3 className="font-semibold text-gray-800 line-clamp-2">
+                              {book.nameBook}
+                            </h3>
+                            <p className="text-sm text-gray-500 mt-1">
+                              {book.authors?.[0]?.nameAuthor ||
+                                "Không rõ tác giả"}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                </div>
+
+                {/* Right Column - 1/3 width */}
+                <div className="space-y-8">
+                  {/* Authors Section */}
+                  <section className="bg-white rounded-xl shadow-md p-6">
+                    <div className="flex justify-between items-center mb-6">
+                      <h2 className="text-2xl font-bold text-gray-800">
+                        Tác giả
+                      </h2>
+                      <button
+                        onClick={() => navigate("/author")}
+                        className="text-[#1A4E46] hover:underline flex items-center"
+                      >
+                        Xem tất cả
+                        <svg
+                          className="w-4 h-4 ml-1"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      {authors.map((author) => (
+                        <div
+                          key={author.idAuthor}
+                          className="flex flex-col items-center text-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition cursor-pointer"
+                          onClick={() =>
+                            navigate(`/authorInfo/${author.idAuthor}`)
+                          }
+                        >
+                          {author.urlAvatar ? (
                             <img
-                              src={book.image}
-                              alt={book.nameBook}
-                              className="w-full h-full object-cover"
+                              src={author.urlAvatar}
+                              alt={author.nameAuthor}
+                              className="w-16 h-16 rounded-full object-cover mb-3"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-gray-400">
-                              <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                              </svg>
+                            <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#1A4E46] to-[#2D7D6E] flex items-center justify-center text-white font-bold text-xl mb-3">
+                              {author.nameAuthor.charAt(0)}
                             </div>
                           )}
+                          <h3 className="font-medium text-gray-800">
+                            {author.nameAuthor}
+                          </h3>
+                          <span className="text-xs text-[#1A4E46] mt-1">
+                            Xem chi tiết
+                          </span>
                         </div>
-                        <div className="p-4">
-                          <h3 className="font-semibold text-gray-800 line-clamp-2">{book.nameBook}</h3>
-                          <p className="text-sm text-gray-500 mt-1">
-                            {book.authors?.[0]?.nameAuthor || "Không rõ tác giả"}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              </div>
+                      ))}
+                    </div>
+                  </section>
 
-              {/* Right Column - 1/3 width */}
-              <div className="space-y-8">
-                {/* Authors Section */}
-                <section className="bg-white rounded-xl shadow-md p-6">
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800">Tác giả</h2>
-                    <button
-                      onClick={() => navigate("/author")}
-                      className="text-[#1A4E46] hover:underline flex items-center"
-                    >
-                      Xem tất cả
-                      <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
-                  </div>
-                 
-                  <div className="grid grid-cols-2 gap-4">
-                    {authors.map((author) => (
-                      <div
-                        key={author.idAuthor}
-                        className="flex flex-col items-center text-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition cursor-pointer"
-                        onClick={() => navigate(`/authorInfo/${author.idAuthor}`)}
+                  {/* Borrowing History */}
+                  <section className="bg-white rounded-xl shadow-md p-6">
+                    <div className="flex justify-between items-center mb-6">
+                      <h2 className="text-2xl font-bold text-gray-800">
+                        Lịch sử mượn sách
+                      </h2>
+                      <button
+                        onClick={() => navigate("/history")}
+                        className="text-[#1A4E46] hover:underline flex items-center"
                       >
-                        {author.urlAvatar ? (
-                          <img
-                            src={author.urlAvatar}
-                            alt={author.nameAuthor}
-                            className="w-16 h-16 rounded-full object-cover mb-3"
+                        Xem tất cả
+                        <svg
+                          className="w-4 h-4 ml-1"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
                           />
-                        ) : (
-                          <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#1A4E46] to-[#2D7D6E] flex items-center justify-center text-white font-bold text-xl mb-3">
-                            {author.nameAuthor.charAt(0)}
+                        </svg>
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      {loanHistory.map((item) => (
+                        <div
+                          key={item.idBook}
+                          className="flex gap-4 items-center p-3 hover:bg-gray-50 rounded-lg transition cursor-pointer"
+                          onClick={() => navigate(`/detail/${item.idBook}`)}
+                        >
+                          {item.avatarUrl ? (
+                            <img
+                              src={item.avatarUrl}
+                              alt={item.nameBook}
+                              className="w-16 h-16 object-cover rounded"
+                            />
+                          ) : (
+                            <div className="w-16 h-16 flex-shrink-0 bg-gray-200 rounded"></div>
+                          )}
+                          <div>
+                            <h3 className="font-medium text-gray-800">
+                              {item.nameBook}
+                            </h3>
+                            <p className="text-sm text-gray-500">
+                              {item.genre}
+                            </p>
                           </div>
-                        )}
-                        <h3 className="font-medium text-gray-800">{author.nameAuthor}</h3>
-                        <span className="text-xs text-[#1A4E46] mt-1">Xem chi tiết</span>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-
-                {/* Borrowing History */}
-                <section className="bg-white rounded-xl shadow-md p-6">
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800">Lịch sử mượn sách</h2>
-                    <button 
-                      onClick={() => navigate("/history")}
-                      className="text-[#1A4E46] hover:underline flex items-center"
-                    >
-                      Xem tất cả
-                      <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    {loanHistory.map((item) => (
-                      <div 
-                        key={item.idBook} 
-                        className="flex gap-4 items-center p-3 hover:bg-gray-50 rounded-lg transition cursor-pointer"
-                        onClick={() => navigate(`/detail/${item.idBook}`)}
-                      >
-                        {item.avatarUrl ? (
-                          <img
-                            src={item.avatarUrl}
-                            alt={item.nameBook}
-                            className="w-16 h-16 object-cover rounded"
-                          />
-                        ) : (
-                          <div className="w-16 h-16 flex-shrink-0 bg-gray-200 rounded"></div>
-                        )}
-                        <div>
-                          <h3 className="font-medium text-gray-800">{item.nameBook}</h3>
-                          <p className="text-sm text-gray-500">{item.genre}</p>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
+                      ))}
+                    </div>
+                  </section>
+                </div>
               </div>
-            </div>
+            )}
           </main>
         </>
       )}

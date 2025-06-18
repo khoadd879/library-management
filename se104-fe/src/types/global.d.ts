@@ -91,6 +91,7 @@ declare global {
     image: string;
     isLiked: boolean;
     evaluations: any[];
+    reprintYear: number;
     authors: {
       idAuthor: string;
       idTypeBook: {
@@ -288,7 +289,7 @@ declare global {
     phone: string | null;
     reader_username: string;
     reader_password: string;
-    avatar: File | null;
+    avatar: string | null;
   }
   export interface ITypeReader {
     idTypeReader: string;

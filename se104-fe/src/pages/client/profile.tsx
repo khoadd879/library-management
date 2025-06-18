@@ -1,7 +1,11 @@
 import { UserOutlined, EditOutlined } from "@ant-design/icons";
 import { useState, useRef, useEffect } from "react";
-import { getTypeReadersAPI, updateReaderAPI } from "@/services/api";
-import { message } from "antd";
+import {
+  getTypeReadersAPI,
+  updateReaderAPI,
+  getListReader,
+} from "@/services/api";
+import { message, Modal } from "antd";
 
 const ProfilePage = () => {
   const [userData, setUserData] = useState<IUserProfileRequest | null>(null);
@@ -11,9 +15,14 @@ const ProfilePage = () => {
   >([]);
   const [selectedTypeReader, setSelectedTypeReader] = useState<string>("");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [password, setPassword] = useState("");
   const [dob, setDob] = useState("");
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const formatDate = (isoDate: string): string => {
+    return isoDate.split("T")[0];
+  };
 
   const [formData, setFormData] = useState({
     nameReader: "",
@@ -54,9 +63,46 @@ const ProfilePage = () => {
     fetchTypeReaders();
   }, [userData]);
 
+  // Fetch thông tin người dùng
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const idUser = localStorage.getItem("idUser");
+      if (!idUser) {
+        console.error("Không tìm thấy idUser trong localStorage.");
+        return;
+      }
+
+      try {
+        const res = await getListReader();
+        const user = res.find((reader: IReader) => reader.idReader === idUser);
+        if (user) {
+          setUserData({
+            idTypeReader: user.idTypeReader.idTypeReader,
+            nameReader: user.nameReader,
+            sex: user.sex,
+            address: user.address,
+            email: user.email,
+            dob: formatDate(user.dob),
+            phone: user.phone,
+            reader_username: user.readerAccount,
+            reader_password: "", // Mật khẩu không được hiển thị
+            avatar: user.urlAvatar,
+          });
+        } else {
+          console.error("Không tìm thấy thông tin người dùng.");
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy thông tin người dùng:", error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
   // Click chỉnh sửa
   const handleEditClick = () => {
     setIsEditing(true);
+
     setFormData({
       nameReader: userData?.nameReader || "",
       gender: userData?.sex || "",
@@ -68,7 +114,7 @@ const ProfilePage = () => {
       dob: userData?.dob || "",
       idTypeReader: userData?.idTypeReader || "",
     });
-    setDob(userData?.dob || "");
+    setDob(userData?.dob ? formatDate(userData.dob) : "");
   };
 
   const handleCancelClick = () => {
@@ -77,12 +123,10 @@ const ProfilePage = () => {
 
   // Lưu thông tin
   const handleSaveClick = async () => {
-    //if (!userData) return;
     if (!idUSer) {
       console.error("Không tìm thấy idUser trong localStorage.");
       return;
     }
-
     try {
       const form = new FormData();
       form.append("nameReader", formData.nameReader || "");
@@ -90,36 +134,35 @@ const ProfilePage = () => {
       form.append("address", formData.address || "");
       form.append("email", formData.email || "");
       form.append("phone", formData.phone || "");
-      form.append("dob", dob || "");
+      form.append("dob", dob ? new Date(dob).toISOString() : "");
       form.append("idTypeReader", selectedTypeReader);
-
       if (password) {
         form.append("reader_password", password);
       }
-
       if (avatarFile) {
-        form.append("avatar", avatarFile);
+        form.append("AvatarImage", avatarFile); // Đúng key backend yêu cầu
       }
-
-      const res = await updateReaderAPI(idUSer, form);
-      console.log("Cập nhật thành công:", res.data);
+      await updateReaderAPI(idUSer, form);
       message.success("Cập nhật thông tin thành công!");
-
-      setUserData((prev) => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          nameReader: formData.nameReader,
-          sex: formData.gender,
-          address: formData.address,
-          email: formData.email,
-          phone: formData.phone,
-          dob: formData.dob,
-          idTypeReader: selectedTypeReader,
-          avatar: avatarFile ?? prev.avatar,
-        };
-      });
-
+      // Lấy lại thông tin user mới nhất từ backend
+      const res = await getListReader();
+      const user = res.find((reader: IReader) => reader.idReader === idUSer);
+      if (user) {
+        setUserData({
+          idTypeReader: user.idTypeReader.idTypeReader,
+          nameReader: user.nameReader,
+          sex: user.sex,
+          address: user.address,
+          email: user.email,
+          dob: formatDate(user.dob),
+          phone: user.phone,
+          reader_username: user.readerAccount,
+          reader_password: "",
+          avatar: user.urlAvatar,
+        });
+        setAvatarFile(null);
+        setAvatarPreview(null);
+      }
       setIsEditing(false);
     } catch (error) {
       message.error("Cập nhật thất bại. Vui lòng thử lại.");
@@ -140,6 +183,8 @@ const ProfilePage = () => {
   const handleAvatarClick = () => {
     if (isEditing && fileInputRef.current) {
       fileInputRef.current.click();
+    } else if (!isEditing && (avatarPreview || userData?.avatar)) {
+      setShowAvatarModal(true);
     }
   };
 
@@ -147,6 +192,7 @@ const ProfilePage = () => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setAvatarFile(file);
+      setAvatarPreview(URL.createObjectURL(file));
     }
   };
 
@@ -179,28 +225,28 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto bg-[#f4f7f9] min-h-screen">
-      <div className="flex flex-col md:flex-row gap-8 bg-white p-8 rounded-xl shadow-lg">
+    <div className="p-6 max-w-4xl mx-auto bg-gradient-to-br from-[#f4f7f9] to-[#e0f7fa] min-h-screen animate-fade-in">
+      <div className="flex flex-col md:flex-row gap-8 bg-white p-8 rounded-2xl shadow-2xl animate-fade-in-up">
         {/* Avatar */}
         <div className="flex flex-col items-center w-full md:w-1/3 space-y-4">
           <div className="relative group">
-            {avatarFile ? (
+            {avatarPreview ? (
               <img
-                src={URL.createObjectURL(avatarFile)}
+                src={avatarPreview}
                 alt="User Avatar"
-                className="w-40 h-40 rounded-full object-cover border-4 border-white shadow-lg transition-all duration-300 group-hover:opacity-80 cursor-pointer"
+                className="w-40 h-40 rounded-full object-cover border-4 border-gradient-to-br from-blue-400 to-purple-400 shadow-xl transition-all duration-300 group-hover:scale-105 cursor-pointer"
                 onClick={handleAvatarClick}
               />
             ) : userData?.avatar && typeof userData.avatar === "string" ? (
               <img
                 src={userData.avatar}
                 alt="User Avatar"
-                className="w-40 h-40 rounded-full object-cover border-4 border-white shadow-lg transition-all duration-300 group-hover:opacity-80 cursor-pointer"
+                className="w-40 h-40 rounded-full object-cover border-4 border-gradient-to-br from-blue-400 to-purple-400 shadow-xl transition-all duration-300 group-hover:scale-105 cursor-pointer"
                 onClick={handleAvatarClick}
               />
             ) : (
               <div
-                className="w-40 h-40 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center border-4 border-white shadow-lg cursor-pointer"
+                className="w-40 h-40 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center border-4 border-gradient-to-br from-blue-400 to-purple-400 shadow-xl cursor-pointer group-hover:scale-105 transition-all duration-300"
                 onClick={handleAvatarClick}
               >
                 <UserOutlined className="text-5xl text-gray-500" />
@@ -222,6 +268,35 @@ const ProfilePage = () => {
               className="hidden"
             />
           </div>
+          {/* Avatar Modal */}
+          <Modal
+            open={showAvatarModal}
+            onCancel={() => setShowAvatarModal(false)}
+            footer={null}
+            centered
+            bodyStyle={{ padding: 0, background: "transparent" }}
+            width={400}
+            className="avatar-modal"
+          >
+            <div className="flex flex-col items-center justify-center p-4">
+              {avatarPreview || userData?.avatar ? (
+                <img
+                  src={
+                    avatarPreview ||
+                    (typeof userData?.avatar === "string"
+                      ? userData.avatar
+                      : undefined)
+                  }
+                  alt="Avatar lớn"
+                  className="w-80 h-80 object-cover rounded-full border-4 border-gradient-to-br from-blue-400 to-purple-400 shadow-2xl bg-white"
+                />
+              ) : (
+                <div className="w-80 h-80 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center border-4 border-gradient-to-br from-blue-400 to-purple-400 shadow-2xl">
+                  <UserOutlined className="text-7xl text-gray-400" />
+                </div>
+              )}
+            </div>
+          </Modal>
 
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-800">
