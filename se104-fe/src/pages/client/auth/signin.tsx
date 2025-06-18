@@ -18,7 +18,7 @@ const SignIn = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/home");
+      navigate("/");
     }
   }, [isAuthenticated, navigate]);
   const handleGoogleLogin = () => {
@@ -64,6 +64,7 @@ const SignIn = () => {
 
       if (res && res.token) {
         localStorage.setItem("token", res.token);
+        localStorage.setItem("refreshToken", res.refreshToken);
         localStorage.setItem("idUser", res.iduser);
         const userRes = await authenticateAPI(res.token);
         setUser(userRes);

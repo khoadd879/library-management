@@ -27,6 +27,7 @@ const AppSidebar: React.FC<AdminSidebarProps> = ({ open, setOpen }) => {
   const [permissions, setPermissions] = useState<string[]>([]);
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
     setUser(null);
     setIsAuthenticated(false);
     navigate("/signin");

@@ -8,7 +8,7 @@ const ChatUser = () => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
 
-  const receiverId = "rd00002"; // thủ thư
+  const receiverId = "rd00025"; // thủ thư
   const senderId = localStorage.getItem("idReader") ?? "";
 
   useEffect(() => {

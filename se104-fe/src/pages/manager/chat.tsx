@@ -6,7 +6,7 @@ const Chat = () => {
   const [messages, setMessages] = useState<IChatMessage[]>([]);
   const [input, setInput] = useState("");
 
-  const receiverId = "rd00002"; // thủ thư
+  const receiverId = "rd00028"; // thủ thư
   const senderId = localStorage.getItem("idReader") ?? "";
 
   useEffect(() => {
