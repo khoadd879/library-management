@@ -5,11 +5,13 @@ import Chat from "@/components/admin/ChatPage";
 const ChatDashboard = () => {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [chatUsers, setChatUsers] = useState<
-    { receiveUserId: string; receiveUserName: string }[]
+    { receiveUserId: string; receiveUserName: string; avatarUrl: string }[]
   >([]);
 
   const myId = localStorage.getItem("idUser");
-
+  const selectedUser = chatUsers.find(
+    (u) => u.receiveUserId === selectedUserId
+  );
   useEffect(() => {
     const fetchUsers = async () => {
       if (!myId) return;
@@ -48,8 +50,12 @@ const ChatDashboard = () => {
       </div>
 
       <div className="flex-1">
-        {selectedUserId ? (
-          <Chat receiverId={selectedUserId} />
+        {selectedUser ? (
+          <Chat
+            receiverId={selectedUser.receiveUserId}
+            receiveUserName={selectedUser.receiveUserName}
+            avatarUrl={selectedUser.avatarUrl}
+          />
         ) : (
           <div className="flex items-center justify-center h-full text-gray-500">
             Chọn một người để xem cuộc trò chuyện

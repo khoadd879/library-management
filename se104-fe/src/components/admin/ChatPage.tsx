@@ -3,9 +3,11 @@ import { getChatHistoryAPI, sendMessageAPI } from "@/services/api";
 import { message as antdMessage, message } from "antd";
 interface ChatProps {
   receiverId: string;
+  receiveUserName: string;
+  avatarUrl: string;
 }
 
-const Chat = ({ receiverId }: ChatProps) => {
+const Chat = ({ receiverId, receiveUserName, avatarUrl }: ChatProps) => {
   const [messages, setMessages] = useState<IChatMessage[]>([]);
   const [input, setInput] = useState("");
 
@@ -18,13 +20,6 @@ const Chat = ({ receiverId }: ChatProps) => {
       try {
         const res = await getChatHistoryAPI(receiverId);
         if (Array.isArray(res)) {
-          if (res.length > messages.length) {
-            const lastMessage = res[res.length - 1];
-            if (lastMessage.senderId !== senderId) {
-              message.info(" Bạn có tin nhắn mới!");
-            }
-          }
-
           setMessages(res);
         } else {
           antdMessage.error("Không lấy được tin nhắn.");
@@ -85,7 +80,7 @@ const Chat = ({ receiverId }: ChatProps) => {
             >
               {!isSender && (
                 <img
-                  src="https://i.imgur.com/1Q8ZQqX.png"
+                  src={avatarUrl}
                   alt="avatar"
                   className="w-8 h-8 rounded-full mr-2"
                 />
@@ -98,7 +93,7 @@ const Chat = ({ receiverId }: ChatProps) => {
                       : "text-red-600 italic"
                   }`}
                 >
-                  {isSender ? "Bạn" : "Thủ thư"}
+                  {isSender ? "Bạn" : receiveUserName}
                 </p>
                 <div className="bg-white rounded-full px-4 py-2 shadow text-sm italic font-semibold">
                   {msg.content.data}

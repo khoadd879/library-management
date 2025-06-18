@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { getChatHistoryAPI, sendMessageAPI } from "@/services/api";
 import { message as antdMessage } from "antd";
+import { useCurrentApp } from "@/components/context/app.context";
 
 const Chat = () => {
   const [messages, setMessages] = useState<IChatMessage[]>([]);
   const [input, setInput] = useState("");
+  const { user } = useCurrentApp();
 
-  const receiverId = "rd00025"; // thủ thư
+  const receiverId = "rd00025";
   const senderId = localStorage.getItem("idUser") ?? "";
 
   useEffect(() => {
+    let interval: any;
+
     const fetchMessages = async () => {
       try {
         const res = await getChatHistoryAPI(receiverId);
@@ -25,7 +29,10 @@ const Chat = () => {
     };
 
     fetchMessages();
-  }, [senderId]);
+    interval = setInterval(fetchMessages, 3000);
+
+    return () => clearInterval(interval);
+  }, [receiverId, senderId, messages.length]);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -71,7 +78,7 @@ const Chat = () => {
             >
               {!isSender && (
                 <img
-                  src="https://i.imgur.com/1Q8ZQqX.png"
+                  src="https://thumbs.dreamstime.com/b/man-people-admin-avatar-icon-272321203.jpg"
                   alt="avatar"
                   className="w-8 h-8 rounded-full mr-2"
                 />
@@ -92,7 +99,7 @@ const Chat = () => {
               </div>
               {isSender && (
                 <img
-                  src="https://i.imgur.com/1Q8ZQqX.png"
+                  src={user?.avatarUrl}
                   alt="avatar"
                   className="w-8 h-8 rounded-full ml-2"
                 />

@@ -384,3 +384,8 @@ export const getChatUsersAPI = async () => {
 export const logoutAPI = async (refreshToken: string) => {
   return axios.post("/api/Authentication/logout", { refreshToken });
 };
+export const getReaderByIdAPI = async (idreader: string) => {
+  const url = `/api/reader/Reader/getReaderBy${idreader}`;
+  const res = await axios.get(url);
+  return res;
+};

@@ -39,6 +39,7 @@ declare global {
     readerUsername: string;
     typeReader: any;
     roleName: string;
+    avatarUrl: string;
   }
 
   interface ISignIn {
