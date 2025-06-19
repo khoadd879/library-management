@@ -119,11 +119,18 @@ const AppSidebar: React.FC<AdminSidebarProps> = ({ open, setOpen }) => {
       <div className="px-4 py-4 flex justify-between items-center border-b border-white/20">
         <button
           className="hover:bg-white/10 rounded-md transition-colors w-full overflow-hidden"
-          onClick={() => navigate("/admin/profile")}
+          onClick={() => navigate("/profile")}
         >
           <div className={`flex items-center gap-4 ${!open && "hidden"}`}>
-            {/* Avatar with fixed size */}
-            <div className="w-10 h-10 bg-gray-300 rounded-full overflow-hidden flex-shrink-0"></div>
+            {user?.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt="avatar"
+                className="w-12 h-12 rounded-full object-cover flex-shrink-0 border border-white"
+              />
+            ) : (
+              <div className="w-12 h-12 bg-gray-300 rounded-full overflow-hidden flex-shrink-0" />
+            )}
             {/* Text container with constrained width */}
             <div className="flex-1 min-w-0 overflow-hidden">
               <p className="font-medium text-left text-lg truncate">
