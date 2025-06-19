@@ -98,33 +98,36 @@ const UserReturns = () => {
                   Đang tải dữ liệu...
                 </td>
               </tr>
-            ) : returns.length > 0 ? (
-              returns.map((item, index) => (
-                <tr
-                  key={item.idLoanSlipBook}
-                  className="border-b hover:bg-[#dcfce7] transition duration-200"
-                >
-                  <td className="px-4 py-3 text-sm">{index + 1}</td>
-                  <td className="px-4 py-3 text-sm">{item.idBook}</td>
-                  <td className="px-4 py-3 text-sm">{item.nameBook}</td>
-                  <td className="px-4 py-3 text-sm">
-                    {item.borrowDate?.slice(0, 10)}
-                  </td>
-                  <td className="px-4 py-3 text-sm">
-                    {item.returnDate?.slice(0, 10)}
-                  </td>
-                  <td className="px-4 py-3 text-sm">{item.loanPeriod}</td>
-                  <td className="px-4 py-3 text-sm">{item.fineAmount}</td>
-                  <td className="px-4 py-3 text-sm">
-                    <button
-                      onClick={() => showModal(item)}
-                      className="text-[#14532d] hover:text-[#22c55e] transition duration-200"
-                    >
-                      <FaInfoCircle className="text-lg" />
-                    </button>
-                  </td>
-                </tr>
-              ))
+            ) : returns.filter((item) => item.isReturned === true).length >
+              0 ? (
+              returns
+                .filter((item) => item.isReturned === true)
+                .map((item, index) => (
+                  <tr
+                    key={item.idLoanSlipBook}
+                    className="border-b hover:bg-[#dcfce7] transition duration-200"
+                  >
+                    <td className="px-4 py-3 text-sm">{index + 1}</td>
+                    <td className="px-4 py-3 text-sm">{item.idBook}</td>
+                    <td className="px-4 py-3 text-sm">{item.nameBook}</td>
+                    <td className="px-4 py-3 text-sm">
+                      {item.borrowDate?.slice(0, 10)}
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      {item.returnDate?.slice(0, 10)}
+                    </td>
+                    <td className="px-4 py-3 text-sm">{item.loanPeriod}</td>
+                    <td className="px-4 py-3 text-sm">{item.fineAmount}</td>
+                    <td className="px-4 py-3 text-sm">
+                      <button
+                        onClick={() => showModal(item)}
+                        className="text-[#14532d] hover:text-[#22c55e] transition duration-200"
+                      >
+                        <FaInfoCircle className="text-lg" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
             ) : (
               <tr>
                 <td colSpan={8} className="text-center py-4 text-gray-500">

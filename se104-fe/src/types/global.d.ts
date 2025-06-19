@@ -296,7 +296,7 @@ declare global {
     idTypeReader: string;
     nameTypeReader: string;
   }
-    export interface IPenalty {
+  export interface IPenalty {
     createdDate: string;
     totalDebit: number;
     amountCollected: number;
@@ -312,5 +312,6 @@ declare global {
     returnDate: string;
     loanPeriod: number;
     fineAmount: number;
+    isReturned: boolean;
   }
 }

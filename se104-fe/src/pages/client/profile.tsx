@@ -44,7 +44,6 @@ const ProfilePage = () => {
     const fetchTypeReaders = async () => {
       try {
         const res = await getTypeReadersAPI();
-        console.log("Loại độc giả:", res);
         const arr = Array.isArray(res) ? res : res.data?.data || [];
         const options = arr.map((item: any) => ({
           value: item.idTypeReader,
@@ -149,20 +148,21 @@ const ProfilePage = () => {
     }
     try {
       const form = new FormData();
-      form.append("nameReader", formData.nameReader || "");
-      form.append("sex", formData.gender || "");
-      form.append("address", formData.address || "");
-      form.append("email", formData.email || "");
-      form.append("phone", formData.phone || "");
-      form.append("dob", dob ? new Date(dob).toISOString() : "");
-      form.append("idTypeReader", selectedTypeReader || "");
+      form.append("IdTypeReader", selectedTypeReader || "");
+      form.append("NameReader", formData.nameReader || "");
+      form.append("Sex", formData.gender || "");
+      form.append("Address", formData.address || "");
+      form.append("Email", formData.email || "");
+      form.append("Dob", dob ? new Date(dob).toISOString() : "");
+      form.append("Phone", formData.phone || "");
       if (formData.password) {
-        form.append("reader_password", formData.password); // Chỉ gửi mật khẩu nếu có giá trị
+        form.append("ReaderPassword", formData.password);
       }
       if (avatarFile instanceof File) {
         form.append("AvatarImage", avatarFile);
       }
       await updateReaderAPI(idUSer, form);
+
       message.success("Cập nhật thông tin thành công!");
       // Lấy lại thông tin user mới nhất từ backend
       const res = await getListReader();
