@@ -4,6 +4,7 @@ import {
   getAllReadersAPI,
   getAllBooksAndCommentsAPI,
   addSlipBookAPI,
+  getBookStatusAPI,
 } from "@/services/api";
 import { message } from "antd";
 
@@ -18,6 +19,10 @@ const ListBorrow = () => {
   const [books, setBooks] = useState<IBook[]>([]);
   const [keyword, setKeyword] = useState("");
   const [returnedIds, setReturnedIds] = useState<Set<string>>(new Set());
+  const [bookStatusMap, setBookStatusMap] = useState<Record<string, string>>(
+    {}
+  );
+  const [isCheckingStatus, setIsCheckingStatus] = useState(false);
 
   const getReaderName = (id: string) =>
     readers.find((r) => r.idReader === id)?.nameReader || "(Không rõ)";
@@ -33,13 +38,35 @@ const ListBorrow = () => {
         getAllBooksAndCommentsAPI(),
       ]);
 
-      setLoans(Array.isArray(loanRes) ? loanRes : []);
+      const loanList = Array.isArray(loanRes) ? loanRes : [];
+      setLoans(loanList);
       setReaders(Array.isArray(readerRes) ? readerRes : []);
       setBooks(Array.isArray(bookRes) ? bookRes : []);
+      await fetchBookStatuses(loanList);
     } catch (err) {
       console.error(err);
       message.error("Lỗi khi tải dữ liệu!");
     }
+  };
+
+  const fetchBookStatuses = async (loans: ILoanSlip[]) => {
+    setIsCheckingStatus(true);
+    const statusMap: Record<string, string> = {};
+
+    for (const loan of loans) {
+      try {
+        const res = await getBookStatusAPI(loan.idTheBook);
+        const statusItem = res.find((s: any) => s.idTheBook === loan.idTheBook);
+        if (statusItem) {
+          statusMap[loan.idLoanSlipBook] = statusItem.isAvailable;
+        }
+      } catch (err) {
+        console.error("Lỗi lấy trạng thái sách:", err);
+      }
+    }
+
+    setBookStatusMap(statusMap);
+    setIsCheckingStatus(false);
   };
 
   useEffect(() => {
@@ -125,7 +152,11 @@ const ListBorrow = () => {
                       })}
                     </td>
                     <td className="px-4 py-3 text-center">
-                      {returnedIds.has(item.idLoanSlipBook) ? (
+                      {isCheckingStatus ? (
+                        <span className="text-gray-500 italic">
+                          Đang kiểm tra...
+                        </span>
+                      ) : bookStatusMap[item.idLoanSlipBook] === "Có sẵn" ? (
                         <span className="text-green-700 font-semibold">
                           Đã trả
                         </span>

@@ -390,8 +390,27 @@ export const getReaderByIdAPI = async (idreader: string) => {
   return res;
 };
 export const getPenaltiesByIdAPI = (idUser: string) => {
-  return axios.get<{ createdDate: string; totalDebit: number; amountCollected: number; amountRemaining: number }>(`/api/PenaltyTicket/getPenatiesById${idUser}`);
+  return axios.get<{
+    createdDate: string;
+    totalDebit: number;
+    amountCollected: number;
+    amountRemaining: number;
+  }>(`/api/PenaltyTicket/getPenatiesById${idUser}`);
 };
 export const getReceiptHistoryAPI = (idUser: string) => {
-  return axios.get<IReturn[]>(`/api/LoanSlipBook/GetReceiptHistory?idUser=${idUser}`);
+  return axios.get<IReturn[]>(
+    `/api/LoanSlipBook/GetReceiptHistory?idUser=${idUser}`
+  );
+};
+export const getBookStatusAPI = async (idThebook: string) => {
+  const res = await axios.get("/api/Book/GetTheBookStatus", {
+    params: {
+      idThebook,
+    },
+  });
+  return res;
+};
+export const getHeaderBookByTheBookIdAPI = async (thebookId: string) => {
+  const res = await axios.get(`/api/Book/getHeaderbookByThebokId${thebookId}`);
+  return res;
 };
