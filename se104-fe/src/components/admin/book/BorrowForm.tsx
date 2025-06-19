@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { addLoanBookAPI, getAllReadersAPI } from "@/services/api";
+import {
+  addLoanBookAPI,
+  getAllReadersAPI,
+  getHeaderBookByTheBookIdAPI,
+} from "@/services/api";
 import { message, Spin } from "antd";
 
 const BorrowForm = () => {
@@ -9,7 +13,9 @@ const BorrowForm = () => {
   const [readers, setReaders] = useState<
     { idReader: string; nameReader: string }[]
   >([]);
+  const [bookName, setBookName] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [checkingBook, setCheckingBook] = useState(false);
 
   useEffect(() => {
     const fetchReaders = async () => {
@@ -29,15 +35,41 @@ const BorrowForm = () => {
     fetchReaders();
   }, []);
 
+  useEffect(() => {
+    const checkBookName = async () => {
+      if (!idTheBook.trim()) {
+        setBookName(null);
+        return;
+      }
+
+      setCheckingBook(true);
+      try {
+        const res = await getHeaderBookByTheBookIdAPI(idTheBook.trim());
+        if (Array.isArray(res) && res.length > 0) {
+          setBookName(res[0].nameBook || "(Không rõ)");
+        } else {
+          setBookName(" Không tìm thấy sách");
+        }
+      } catch (err) {
+        console.error(err);
+        setBookName(" Không tìm thấy sách");
+      } finally {
+        setCheckingBook(false);
+      }
+    };
+
+    checkBookName();
+  }, [idTheBook]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
       const res = await addLoanBookAPI(idReader, idTheBook);
-      console.log(res);
       if (res && res.statusCode === 200) {
         setIdReader("");
         setIdTheBook("");
+        setBookName(null);
         message.success("Thêm phiếu mượn thành công!");
       } else {
         message.error(res?.data.message || "Thêm phiếu mượn thất bại!");
@@ -59,7 +91,17 @@ const BorrowForm = () => {
         <h2 className="text-2xl font-bold text-[#153D36] text-center mb-4">
           Phiếu mượn sách
         </h2>
-
+        <div>
+          <label className="block text-sm font-medium text-[#153D36]">
+            Ngày mượn
+          </label>
+          <input
+            type="date"
+            value={today}
+            readOnly
+            className="w-full px-4 py-2 border rounded outline-none text-sm bg-gray-100 cursor-not-allowed"
+          />
+        </div>
         <div>
           <label className="block text-sm font-medium text-[#153D36]">
             Độc giả
@@ -91,18 +133,9 @@ const BorrowForm = () => {
             className="w-full px-4 py-2 border rounded outline-none text-sm"
             required
           />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-[#153D36]">
-            Ngày mượn
-          </label>
-          <input
-            type="date"
-            value={today}
-            readOnly
-            className="w-full px-4 py-2 border rounded outline-none text-sm bg-gray-100 cursor-not-allowed"
-          />
+          <div className="text-sm mt-1 text-[#17966F] min-h-[24px]">
+            {checkingBook ? "Đang kiểm tra..." : bookName}
+          </div>
         </div>
 
         <button
