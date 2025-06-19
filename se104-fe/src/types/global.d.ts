@@ -296,4 +296,21 @@ declare global {
     idTypeReader: string;
     nameTypeReader: string;
   }
+    export interface IPenalty {
+    createdDate: string;
+    totalDebit: number;
+    amountCollected: number;
+    amountRemaining: number;
+  }
+  export interface IReturn {
+    idLoanSlipBook: string;
+    idTheBook: string;
+    idReader: string;
+    idBook: string;
+    nameBook: string;
+    borrowDate: string;
+    returnDate: string;
+    loanPeriod: number;
+    fineAmount: number;
+  }
 }
