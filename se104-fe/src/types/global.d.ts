@@ -313,5 +313,6 @@ declare global {
     returnDate: string;
     loanPeriod: number;
     fineAmount: number;
+    isReturned: boolean;
   }
 }
