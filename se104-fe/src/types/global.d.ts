@@ -264,6 +264,7 @@ declare global {
     fineAmount: number;
     nameBook: string;
     loanPeriod: number;
+    isReturned: boolean;
   }
   export interface IGetStarByIdBook {
     star: number;
@@ -296,7 +297,7 @@ declare global {
     idTypeReader: string;
     nameTypeReader: string;
   }
-    export interface IPenalty {
+  export interface IPenalty {
     createdDate: string;
     totalDebit: number;
     amountCollected: number;
