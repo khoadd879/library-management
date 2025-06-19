@@ -35,6 +35,7 @@ import RolePermissionUI from "./pages/admin/userprofile";
 import UserList from "./pages/admin/userList";
 import Report from "./pages/manager/report";
 import Parameter from "./pages/manager/parameter";
+import UserBorrowList from "./pages/client/UserBorrowList";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -56,6 +57,7 @@ const router = createBrowserRouter([
           { path: "detail/:id", element: <BookDetailPage /> },
           { path: "profile", element: <Profile /> },
           { path: "authorInfo/:id", element: <AuthorInfo /> },
+          { path: "borrow-list", element: <UserBorrowList /> },
         ],
       },
     ],

@@ -12,6 +12,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useCurrentApp } from "../context/app.context";
 import { getListReader, logoutAPI } from "../../services/api";
+import { FaList } from "react-icons/fa6";
+
 
 interface UserSidebarProps {
   open: boolean;
@@ -53,6 +55,11 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
       icon: <FaComments size={20} />,
       label: "Trò chuyện",
       onClick: () => navigate("/chat"),
+    },
+        {
+      icon: <FaList size={20} />,
+      label: "Danh sách mượn",
+      onClick: () => navigate("/borrow-list"),
     },
     ...(user?.roleName === "Manager" || user?.roleName === "Admin"
       ? [
