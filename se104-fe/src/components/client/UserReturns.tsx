@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Modal, message } from "antd";
-import { FaInfoCircle, FaUser, FaBook, FaCalendarAlt, FaMoneyBillWave } from "react-icons/fa";
+import {
+  FaInfoCircle,
+  FaUser,
+  FaBook,
+  FaCalendarAlt,
+  FaMoneyBillWave,
+} from "react-icons/fa";
 import { useCurrentApp } from "@/components/context/app.context";
 import { getReceiptHistoryAPI, getPenaltiesByIdAPI } from "@/services/api";
-
 
 const UserReturns = () => {
   const { user } = useCurrentApp();
@@ -23,6 +28,7 @@ const UserReturns = () => {
       }
       try {
         const res = await getReceiptHistoryAPI(user.idReader);
+        console.log("Receipt History:", res);
         setReturns(res || []);
       } catch (err) {
         message.error("Lỗi khi tải dữ liệu trả sách!");
@@ -45,7 +51,7 @@ const UserReturns = () => {
         let total = 0;
         if (Array.isArray(penalties) && penalties.length > 0) {
           total = penalties[0].totalDebit;
-        } else if (penalties && typeof penalties.totalDebit === 'number') {
+        } else if (penalties && typeof penalties.totalDebit === "number") {
           total = penalties.totalDebit;
         }
         setTotalDebt(total);
@@ -94,12 +100,19 @@ const UserReturns = () => {
               </tr>
             ) : returns.length > 0 ? (
               returns.map((item, index) => (
-                <tr key={item.idLoanSlipBook} className="border-b hover:bg-[#dcfce7] transition duration-200">
+                <tr
+                  key={item.idLoanSlipBook}
+                  className="border-b hover:bg-[#dcfce7] transition duration-200"
+                >
                   <td className="px-4 py-3 text-sm">{index + 1}</td>
                   <td className="px-4 py-3 text-sm">{item.idBook}</td>
                   <td className="px-4 py-3 text-sm">{item.nameBook}</td>
-                  <td className="px-4 py-3 text-sm">{item.borrowDate?.slice(0, 10)}</td>
-                  <td className="px-4 py-3 text-sm">{item.returnDate?.slice(0, 10)}</td>
+                  <td className="px-4 py-3 text-sm">
+                    {item.borrowDate?.slice(0, 10)}
+                  </td>
+                  <td className="px-4 py-3 text-sm">
+                    {item.returnDate?.slice(0, 10)}
+                  </td>
                   <td className="px-4 py-3 text-sm">{item.loanPeriod}</td>
                   <td className="px-4 py-3 text-sm">{item.fineAmount}</td>
                   <td className="px-4 py-3 text-sm">
@@ -197,18 +210,32 @@ const UserReturns = () => {
               <div className="pl-6 space-y-2">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Tiền phạt kỳ này:</span>
-                  <span className={`font-medium ${selectedReturn.fineAmount > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                  <span
+                    className={`font-medium ${
+                      selectedReturn.fineAmount > 0
+                        ? "text-red-600"
+                        : "text-green-600"
+                    }`}
+                  >
                     {selectedReturn.fineAmount?.toLocaleString()} VNĐ
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Tổng nợ:</span>
                   {debtLoading ? (
-                    <span className="font-medium text-gray-400">Đang tải...</span>
+                    <span className="font-medium text-gray-400">
+                      Đang tải...
+                    </span>
                   ) : debtError ? (
-                    <span className="font-medium text-red-600">{debtError}</span>
+                    <span className="font-medium text-red-600">
+                      {debtError}
+                    </span>
                   ) : (
-                    <span className={`font-medium ${totalDebt > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                    <span
+                      className={`font-medium ${
+                        totalDebt > 0 ? "text-red-600" : "text-green-600"
+                      }`}
+                    >
                       {totalDebt.toLocaleString()} VNĐ
                     </span>
                   )}

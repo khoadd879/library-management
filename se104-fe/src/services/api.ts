@@ -68,14 +68,9 @@ export const addAuthorAPI = (formData: FormData) => {
   });
 };
 
-export const listAuthorAPI = (token: string) => {
+export const listAuthorAPI = () => {
   const urlBackend = "/api/Author/list_author";
-  return axios.get<IBackendRes<IAddAuthor>>(urlBackend, {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  return axios.get<IAddAuthor[]>(urlBackend);
 };
 export const updateAuthorAPI = (idAuthor: string, formData: FormData) => {
   const urlBackend = `/api/Author/update_author/${idAuthor}`;
@@ -385,7 +380,7 @@ export const logoutAPI = async (refreshToken: string) => {
   return axios.post("/api/Authentication/logout", { refreshToken });
 };
 export const getReaderByIdAPI = async (idreader: string) => {
-  const url = `/api/reader/Reader/getReaderBy${idreader}`;
+  const url = `/api/reader/Reader/getReaderBy${idreader}?readerid=${idreader}`;
   const res = await axios.get(url);
   return res;
 };
@@ -397,9 +392,9 @@ export const getPenaltiesByIdAPI = (idUser: string) => {
     amountRemaining: number;
   }>(`/api/PenaltyTicket/getPenatiesById${idUser}`);
 };
-export const getReceiptHistoryAPI = (idUser: string) => {
+export const getReceiptHistoryAPI = (idReader: string) => {
   return axios.get<IReturn[]>(
-    `/api/LoanSlipBook/GetReceiptHistory?idUser=${idUser}`
+    `/api/LoanSlipBook/GetReceiptHistory?idReader=${idReader}`
   );
 };
 export const getBookStatusAPI = async (idThebook: string) => {

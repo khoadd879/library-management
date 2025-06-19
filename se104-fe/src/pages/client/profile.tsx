@@ -4,6 +4,7 @@ import {
   getTypeReadersAPI,
   updateReaderAPI,
   getListReader,
+  getReaderByIdAPI,
 } from "@/services/api";
 import { message, Modal } from "antd";
 
@@ -99,20 +100,39 @@ const ProfilePage = () => {
     fetchUserData();
   }, []);
 
+  // Fetch mật khẩu người dùng
+  useEffect(() => {
+    const fetchPassword = async () => {
+      const idUser = localStorage.getItem("idUser");
+      if (!idUser) {
+        console.error("Không tìm thấy idUser trong localStorage.");
+        return;
+      }
+
+      try {
+        const res = await getReaderByIdAPI(idUser);
+        setPassword(res.password || "");
+      } catch (error) {
+        console.error("Lỗi khi lấy thông tin mật khẩu người dùng:", error);
+      }
+    };
+
+    fetchPassword();
+  }, []);
+
   // Click chỉnh sửa
   const handleEditClick = () => {
     setIsEditing(true);
-
     setFormData({
-      nameReader: userData?.nameReader || "",
-      gender: userData?.sex || "",
-      address: userData?.address || "",
-      email: userData?.email || "",
-      phone: userData?.phone || "",
-      password: "",
-      sex: userData?.sex || "",
-      dob: userData?.dob || "",
-      idTypeReader: userData?.idTypeReader || "",
+      nameReader: userData?.nameReader ?? "",
+      gender: userData?.sex ?? "",
+      address: userData?.address ?? "",
+      email: userData?.email ?? "",
+      phone: userData?.phone ?? "",
+      password: userData?.reader_password ?? "", // Nếu mật khẩu null, hiển thị trường nhập rỗng
+      sex: userData?.sex ?? "",
+      dob: userData?.dob ?? "",
+      idTypeReader: userData?.idTypeReader ?? "",
     });
     setDob(userData?.dob ? formatDate(userData.dob) : "");
   };
@@ -135,12 +155,12 @@ const ProfilePage = () => {
       form.append("email", formData.email || "");
       form.append("phone", formData.phone || "");
       form.append("dob", dob ? new Date(dob).toISOString() : "");
-      form.append("idTypeReader", selectedTypeReader);
-      if (password) {
-        form.append("reader_password", password);
+      form.append("idTypeReader", selectedTypeReader || "");
+      if (formData.password) {
+        form.append("reader_password", formData.password); // Chỉ gửi mật khẩu nếu có giá trị
       }
-      if (avatarFile) {
-        form.append("AvatarImage", avatarFile); // Đúng key backend yêu cầu
+      if (avatarFile instanceof File) {
+        form.append("AvatarImage", avatarFile);
       }
       await updateReaderAPI(idUSer, form);
       message.success("Cập nhật thông tin thành công!");
@@ -149,16 +169,16 @@ const ProfilePage = () => {
       const user = res.find((reader: IReader) => reader.idReader === idUSer);
       if (user) {
         setUserData({
-          idTypeReader: user.idTypeReader.idTypeReader,
-          nameReader: user.nameReader,
-          sex: user.sex,
-          address: user.address,
-          email: user.email,
-          dob: formatDate(user.dob),
-          phone: user.phone,
-          reader_username: user.readerAccount,
-          reader_password: "",
-          avatar: user.urlAvatar,
+          idTypeReader: user.idTypeReader.idTypeReader ?? "",
+          nameReader: user.nameReader ?? "",
+          sex: user.sex ?? "",
+          address: user.address ?? "",
+          email: user.email ?? "",
+          dob: user.dob ? formatDate(user.dob) : "",
+          phone: user.phone ?? "",
+          reader_username: user.readerAccount ?? "",
+          reader_password: "", // Reset mật khẩu sau khi lưu
+          avatar: user.urlAvatar ?? "",
         });
         setAvatarFile(null);
         setAvatarPreview(null);
@@ -274,7 +294,7 @@ const ProfilePage = () => {
             onCancel={() => setShowAvatarModal(false)}
             footer={null}
             centered
-            bodyStyle={{ padding: 0, background: "transparent" }}
+            styles={{ body: { padding: 0, background: "transparent" } }}
             width={400}
             className="avatar-modal"
           >
@@ -445,21 +465,20 @@ const ProfilePage = () => {
               fullWidth
             />
 
-            {isEditing && (
-              <InfoItem
-                label="Mật khẩu"
-                value={
-                  <input
-                    type="password"
-                    name="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Nhập mật khẩu mới"
-                  />
-                }
-                fullWidth
-              />
+            {isEditing && password && (
+              <div className="space-y-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Mật khẩu
+                </label>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Nhập mật khẩu mới"
+                />
+              </div>
             )}
 
             <InfoItem

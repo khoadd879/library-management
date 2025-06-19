@@ -77,7 +77,7 @@ const UserHomepage = () => {
 
         const [booksResponse, authorRes] = await Promise.all([
           getAllBooksAndCommentsAPI(),
-          listAuthorAPI(token),
+          listAuthorAPI(),
         ]);
 
         if (Array.isArray(booksResponse)) {
