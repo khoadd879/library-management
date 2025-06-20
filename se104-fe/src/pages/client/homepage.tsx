@@ -170,7 +170,7 @@ const UserHomepage = () => {
                   trả sách thuận tiện.
                 </p>
                 <button
-                  className="bg-white text-[#1A4E46] px-6 py-2 rounded-full font-medium hover:bg-gray-100 transition"
+                  className="bg-white text-[#1A4E46] px-6 py-2 rounded-full font-medium hover:bg-gray-100 transition cursor-pointer shadow-md"
                   onClick={() => navigate("/featured")}
                 >
                   Xem tất cả sách
@@ -187,11 +187,11 @@ const UserHomepage = () => {
                 {searchBooks === null && (
                   <button
                     onClick={() => navigate("featured")}
-                    className="text-[#1A4E46] hover:underline flex items-center"
+                    className="bg-[#b2ebf2] text-[#0d47a1] rounded-full px-5 py-2 font-semibold flex items-center gap-1 shadow hover:bg-[#4dd0e1] transition cursor-pointer"
                   >
                     Xem tất cả
                     <svg
-                      className="w-4 h-4 ml-1"
+                      className="w-4 h-4 ml-1 text-[#0d47a1]"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -283,11 +283,11 @@ const UserHomepage = () => {
                       </h2>
                       <button
                         onClick={() => navigate("/new-books")}
-                        className="text-[#1A4E46] hover:underline flex items-center"
+                        className="bg-[#b2ebf2] text-[#0d47a1] rounded-full px-5 py-2 font-semibold flex items-center gap-1 shadow hover:bg-[#4dd0e1] transition cursor-pointer"
                       >
                         Xem tất cả
                         <svg
-                          className="w-4 h-4 ml-1"
+                          className="w-4 h-4 ml-1 text-[#0d47a1]"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -375,11 +375,11 @@ const UserHomepage = () => {
                       </h2>
                       <button
                         onClick={() => navigate("/author")}
-                        className="text-[#1A4E46] hover:underline flex items-center"
+                        className="bg-[#b2ebf2] text-[#0d47a1] rounded-full px-5 py-2 font-semibold flex items-center gap-1 shadow hover:bg-[#4dd0e1] transition cursor-pointer"
                       >
                         Xem tất cả
                         <svg
-                          className="w-4 h-4 ml-1"
+                          className="w-4 h-4 ml-1 text-[#0d47a1]"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -433,11 +433,11 @@ const UserHomepage = () => {
                       </h2>
                       <button
                         onClick={() => navigate("/history")}
-                        className="text-[#1A4E46] hover:underline flex items-center"
+                        className="bg-[#b2ebf2] text-[#0d47a1] rounded-full px-5 py-2 font-semibold flex items-center gap-1 shadow hover:bg-[#4dd0e1] transition cursor-pointer"
                       >
                         Xem tất cả
                         <svg
-                          className="w-4 h-4 ml-1"
+                          className="w-4 h-4 ml-1 text-[#0d47a1]"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
