@@ -6,6 +6,7 @@ import {
   listAuthorAPI,
   addFavoriteBookAPI,
   findBooksByNameAPI,
+  getStarByIdBookAPI,
 } from "@/services/api";
 import { HeartOutlined, HeartFilled } from "@ant-design/icons";
 import { message, Spin } from "antd";
@@ -81,7 +82,29 @@ const UserHomepage = () => {
         ]);
 
         if (Array.isArray(booksResponse)) {
-          setFeaturedBooks(booksResponse.slice(0, 5));
+          // Lấy số sao cho từng sách bằng cách gọi getStarByIdBookAPI
+          const booksWithStars = await Promise.all(
+            booksResponse.map(async (book: any) => {
+              try {
+                const res = await getStarByIdBookAPI(book.idBook);
+                // API trả về mảng, lấy phần tử đầu tiên nếu có
+                let star = 0;
+                if (
+                  Array.isArray(res) &&
+                  res.length > 0 &&
+                  typeof res[0].star === "number"
+                ) {
+                  star = res[0].star;
+                }
+                return { ...book, star };
+              } catch {
+                return { ...book, star: 0 };
+              }
+            })
+          );
+          // Sắp xếp giảm dần theo số sao và lấy 5 quyển đầu tiên
+          const sortedByStar = booksWithStars.sort((a, b) => b.star - a.star);
+          setFeaturedBooks(sortedByStar.slice(0, 5));
           // Sắp xếp theo reprintYear gần nhất với hiện tại (năm hiện tại là 2025)
           const sorted = [...booksResponse].sort(
             (a, b) =>
