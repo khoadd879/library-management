@@ -64,10 +64,11 @@ const ReaderList = ({ keyword }: Props) => {
     setIsSubmitting(true);
     try {
       formData.append("ReaderPassword", selectedReader.ReaderPassword);
-      await updateReaderAPI(selectedReader.idReader, formData);
+      const res1 = await updateReaderAPI(selectedReader.idReader, formData);
+      console.log(res1);
       const res = await getListReader();
-
-      setReaders(res);
+      const fil = res.filter((r) => r.role === "Reader");
+      setReaders(fil);
       setIsOpen(false);
       message.success("Cập nhật độc giả thành công!");
     } catch (err) {
