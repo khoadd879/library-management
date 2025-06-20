@@ -14,7 +14,6 @@ import { useCurrentApp } from "../context/app.context";
 import { getListReader, logoutAPI } from "../../services/api";
 import { FaList } from "react-icons/fa6";
 
-
 interface UserSidebarProps {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -56,7 +55,7 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
       label: "Trò chuyện",
       onClick: () => navigate("/chat"),
     },
-        {
+    {
       icon: <FaList size={20} />,
       label: "Danh sách mượn",
       onClick: () => navigate("/borrow-list"),
@@ -82,6 +81,19 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
   ];
 
   useEffect(() => {
+    // Nếu user context chưa có nhưng localStorage có idUser, fetch lại user và set vào context
+    if (!user) {
+      const idUser = localStorage.getItem("idUser");
+      if (idUser) {
+        getListReader().then((readers) => {
+          const found = Array.isArray(readers)
+            ? readers.find((r) => r.idReader === idUser)
+            : null;
+          if (found) setUser(found);
+        });
+      }
+    }
+    // Fetch avatar nếu user đã có
     const fetchAvatar = async () => {
       try {
         const readers = await getListReader();
@@ -94,7 +106,7 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
       }
     };
     if (user) fetchAvatar();
-  }, [user]);
+  }, [user, setUser]);
 
   return (
     <nav

@@ -77,16 +77,16 @@ const ProfilePage = () => {
         const user = res.find((reader: IReader) => reader.idReader === idUser);
         if (user) {
           setUserData({
-            idTypeReader: user.idTypeReader.idTypeReader,
-            nameReader: user.nameReader,
-            sex: user.sex,
-            address: user.address,
-            email: user.email,
-            dob: formatDate(user.dob),
-            phone: user.phone,
-            reader_username: user.readerAccount,
+            idTypeReader: user.idTypeReader?.idTypeReader ?? "",
+            nameReader: user.nameReader ?? "",
+            sex: user.sex ?? "",
+            address: user.address ?? "",
+            email: user.email ?? "",
+            dob: user.dob ? formatDate(user.dob) : "2005-06-20",
+            phone: user.phone ?? "",
+            reader_username: user.readerAccount ?? "",
             reader_password: "", // Mật khẩu không được hiển thị
-            avatar: user.urlAvatar,
+            avatar: user.urlAvatar ?? "",
           });
         } else {
           console.error("Không tìm thấy thông tin người dùng.");
@@ -110,6 +110,7 @@ const ProfilePage = () => {
 
       try {
         const res = await getReaderByIdAPI(idUser);
+        console.log("Mật khẩu người dùng:", res.password);
         setPassword(res.password || "");
       } catch (error) {
         console.error("Lỗi khi lấy thông tin mật khẩu người dùng:", error);
@@ -130,10 +131,10 @@ const ProfilePage = () => {
       phone: userData?.phone ?? "",
       password: userData?.reader_password ?? "", // Nếu mật khẩu null, hiển thị trường nhập rỗng
       sex: userData?.sex ?? "",
-      dob: userData?.dob ?? "",
+      dob: userData?.dob ? formatDate(userData.dob) : "2005-06-20",
       idTypeReader: userData?.idTypeReader ?? "",
     });
-    setDob(userData?.dob ? formatDate(userData.dob) : "");
+    setDob(userData?.dob ? formatDate(userData.dob) : "2005-06-20");
   };
 
   const handleCancelClick = () => {
@@ -174,7 +175,7 @@ const ProfilePage = () => {
           sex: user.sex ?? "",
           address: user.address ?? "",
           email: user.email ?? "",
-          dob: user.dob ? formatDate(user.dob) : "",
+          dob: user.dob ? formatDate(user.dob) : "2005-06-20",
           phone: user.phone ?? "",
           reader_username: user.readerAccount ?? "",
           reader_password: "", // Reset mật khẩu sau khi lưu
@@ -465,21 +466,24 @@ const ProfilePage = () => {
               fullWidth
             />
 
-            {isEditing && password && (
-              <div className="space-y-4">
-                <label className="block text-sm font-medium text-gray-700">
-                  Mật khẩu
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Nhập mật khẩu mới"
-                />
-              </div>
-            )}
+            {isEditing &&
+              password &&
+              typeof password === "string" &&
+              password.trim() !== "" && (
+                <div className="space-y-4">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Mật khẩu
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Nhập mật khẩu mới"
+                  />
+                </div>
+              )}
 
             <InfoItem
               label="Ngày sinh"
@@ -494,7 +498,10 @@ const ProfilePage = () => {
                     placeholder="YYYY-MM-DD"
                   />
                 ) : (
-                  renderReadOnlyField(userData?.dob ?? undefined, "Ngày sinh")
+                  renderReadOnlyField(
+                    userData?.dob ?? "2005-06-20",
+                    "Ngày sinh"
+                  )
                 )
               }
               fullWidth

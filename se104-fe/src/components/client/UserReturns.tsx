@@ -72,6 +72,17 @@ const UserReturns = () => {
     setDebtError(null);
   };
 
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return "-";
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-[#f0fdf4] px-4 md:px-10 py-6">
       <h2 className="text-2xl font-bold mb-6 text-center text-[#14532d]">
@@ -152,48 +163,54 @@ const UserReturns = () => {
         className="rounded-md max-w-md"
       >
         {selectedReturn && (
-          <div className="space-y-4 mt-4">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="flex items-center mb-3">
-                <FaUser className="text-[#14532d] mr-2" />
-                <h3 className="font-semibold">THÔNG TIN ĐỘC GIẢ</h3>
-              </div>
-              <p className="pl-6">{user?.nameReader || "Không xác định"}</p>
-            </div>
-
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="flex items-center mb-3">
-                <FaBook className="text-[#14532d] mr-2" />
-                <h3 className="font-semibold">THÔNG TIN SÁCH</h3>
-              </div>
-              <div className="pl-6 space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Mã sách:</span>
-                  <span className="font-medium">{selectedReturn.idBook}</span>
+          <div className="space-y-5 mt-2">
+            {/* Độc giả */}
+            <div className="bg-gray-50 p-4 rounded-lg flex items-center gap-3">
+              <FaUser className="text-[#14532d] text-xl" />
+              <div>
+                <div className="text-xs text-gray-500 font-medium mb-1">
+                  Độc giả
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Tên sách:</span>
-                  <span className="font-medium">{selectedReturn.nameBook}</span>
+                <div className="font-semibold text-gray-800">
+                  {user?.nameReader || "Không xác định"}
                 </div>
               </div>
             </div>
-
+            {/* Sách */}
+            <div className="bg-gray-50 p-4 rounded-lg flex items-center gap-3">
+              <FaBook className="text-[#14532d] text-xl" />
+              <div>
+                <div className="text-xs text-gray-500 font-medium mb-1">
+                  Sách
+                </div>
+                <div className="font-semibold text-gray-800">
+                  {selectedReturn.nameBook}
+                </div>
+                <div className="text-xs text-gray-500">
+                  Mã sách:{" "}
+                  <span className="font-medium text-gray-700">
+                    {selectedReturn.idBook}
+                  </span>
+                </div>
+              </div>
+            </div>
+            {/* Mượn trả */}
             <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="flex items-center mb-3">
+              <div className="flex items-center mb-2">
                 <FaCalendarAlt className="text-[#14532d] mr-2" />
-                <h3 className="font-semibold">THÔNG TIN MƯỢN TRẢ</h3>
+                <h3 className="font-semibold">Thông tin mượn trả</h3>
               </div>
-              <div className="pl-6 space-y-2">
+              <div className="pl-6 space-y-1 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Ngày mượn:</span>
                   <span className="font-medium">
-                    {selectedReturn.borrowDate}
+                    {formatDate(selectedReturn.borrowDate)}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Ngày trả:</span>
                   <span className="font-medium">
-                    {selectedReturn.returnDate}
+                    {formatDate(selectedReturn.returnDate)}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -204,13 +221,13 @@ const UserReturns = () => {
                 </div>
               </div>
             </div>
-
+            {/* Phạt */}
             <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="flex items-center mb-3">
+              <div className="flex items-center mb-2">
                 <FaMoneyBillWave className="text-[#14532d] mr-2" />
-                <h3 className="font-semibold">THÔNG TIN PHẠT</h3>
+                <h3 className="font-semibold">Thông tin phạt</h3>
               </div>
-              <div className="pl-6 space-y-2">
+              <div className="pl-6 space-y-1 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Tiền phạt kỳ này:</span>
                   <span
