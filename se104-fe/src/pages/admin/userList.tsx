@@ -10,6 +10,7 @@ import {
 import UpdateReaderModal from "@/components/admin/user/UpdateReaderModal";
 
 const UserList = () => {
+
   const [users, setUsers] = useState<IReader[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -115,7 +116,7 @@ const UserList = () => {
       dataIndex: "role",
       key: "role",
       render: (text: string) => (
-        <span className="text-blue-600 font-semibold">{text}</span>
+        <span className="text-[#27AE60] font-semibold">{text}</span>
       ),
     },
     {
@@ -125,7 +126,7 @@ const UserList = () => {
         <Space>
           <Button
             type="primary"
-            className="!bg-[#1677ff] !border-[#1677ff] hover:!bg-[#4096ff]"
+            className="!bg-[#27AE60] !border-[#2e7d32] hover:!bg-[#4caf50] hover:!border-[#4caf50]"
             onClick={() => handleEdit(record)}
           >
             Sửa
@@ -143,9 +144,9 @@ const UserList = () => {
   ];
 
   return (
-    <div className="p-6 min-h-screen bg-gradient-to-br from-[#f4f7f9] to-[#e0f7fa]">
-      <div className="bg-white rounded-xl shadow-xl p-6">
-        <h2 className="text-2xl font-bold mb-6 text-[#1677ff]">
+    <div className="p-6 min-h-screen bg-gradient-to-br from-[#f1f8e9] to-[#e8f5e9]">
+      <div className="bg-white rounded-xl shadow-lg p-6 border border-[#e0e0e0]">
+        <h2 className="text-2xl font-bold mb-6 text-[#27AE60]">
           Danh sách người dùng
         </h2>
         <Table
@@ -155,7 +156,11 @@ const UserList = () => {
           loading={false}
           bordered
           className="rounded-lg overflow-hidden"
-          pagination={{ pageSize: 8 }}
+          pagination={{
+            pageSize: 8,
+            showSizeChanger: false,
+            className: "px-4 py-2 bg-[#f5f5f5] rounded-b-lg"
+          }}
         />
       </div>
       {(loading || isSubmitting) && (
@@ -163,6 +168,7 @@ const UserList = () => {
           <Spin
             size="large"
             tip={loading ? "Đang tải dữ liệu..." : "Đang xử lý..."}
+            className="text-[#2e7d32]"
           />
         </div>
       )}
