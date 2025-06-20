@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Table, Space, message, Modal } from "antd";
+import { Button, Table, Space, message, Modal, Spin } from "antd";
 import { useNavigate } from "react-router-dom";
 import {
   deleteReaderAPI,
@@ -20,6 +20,7 @@ const UserList = () => {
   >([]);
 
   const fetchUsers = async () => {
+    setLoading(true);
     try {
       const res = await getListReader();
       setUsers(res);
@@ -74,6 +75,7 @@ const UserList = () => {
       okButtonProps: { danger: true },
       cancelText: "Huỷ",
       onOk: async () => {
+        setLoading(true);
         try {
           await deleteReaderAPI(id);
           message.success("Đã xoá người dùng.");
@@ -81,6 +83,8 @@ const UserList = () => {
         } catch (err) {
           console.error("Lỗi khi xoá:", err);
           message.error("Không thể xoá người dùng.");
+        } finally {
+          setLoading(false);
         }
       },
     });
@@ -96,24 +100,41 @@ const UserList = () => {
       title: "Tên",
       dataIndex: "nameReader",
       key: "nameReader",
+      render: (text: string) => (
+        <span className="font-medium text-gray-800">{text}</span>
+      ),
     },
     {
       title: "Email",
       dataIndex: "email",
       key: "email",
+      render: (text: string) => <span className="text-gray-600">{text}</span>,
     },
     {
       title: "Vai trò",
       dataIndex: "role",
       key: "role",
+      render: (text: string) => (
+        <span className="text-blue-600 font-semibold">{text}</span>
+      ),
     },
     {
       title: "Hành động",
       key: "actions",
       render: (_: any, record: IReader) => (
         <Space>
-          <Button onClick={() => handleEdit(record)}>Sửa</Button>
-          <Button danger onClick={() => handleDelete(record.idReader)}>
+          <Button
+            type="primary"
+            className="!bg-[#1677ff] !border-[#1677ff] hover:!bg-[#4096ff]"
+            onClick={() => handleEdit(record)}
+          >
+            Sửa
+          </Button>
+          <Button
+            danger
+            className="hover:!bg-red-600"
+            onClick={() => handleDelete(record.idReader)}
+          >
             Xoá
           </Button>
         </Space>
@@ -122,16 +143,29 @@ const UserList = () => {
   ];
 
   return (
-    <div className="p-6">
-      <h2 className="text-xl font-bold mb-4">Danh sách người dùng</h2>
-      <Table
-        columns={columns}
-        dataSource={users}
-        rowKey="idReader"
-        loading={loading}
-        bordered
-      />
-
+    <div className="p-6 min-h-screen bg-gradient-to-br from-[#f4f7f9] to-[#e0f7fa]">
+      <div className="bg-white rounded-xl shadow-xl p-6">
+        <h2 className="text-2xl font-bold mb-6 text-[#1677ff]">
+          Danh sách người dùng
+        </h2>
+        <Table
+          columns={columns}
+          dataSource={users}
+          rowKey="idReader"
+          loading={false}
+          bordered
+          className="rounded-lg overflow-hidden"
+          pagination={{ pageSize: 8 }}
+        />
+      </div>
+      {(loading || isSubmitting) && (
+        <div className="fixed inset-0 z-50 bg-white/70 flex items-center justify-center">
+          <Spin
+            size="large"
+            tip={loading ? "Đang tải dữ liệu..." : "Đang xử lý..."}
+          />
+        </div>
+      )}
       {selectedUser && (
         <UpdateReaderModal
           open={isOpen}

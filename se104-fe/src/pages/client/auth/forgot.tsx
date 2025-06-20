@@ -15,7 +15,7 @@ const ForgotPasswordPage = () => {
 
     try {
       const res = await forgotPassword(email);
-      if (res) {
+      if (res != null) {
         message.success("Gửi mã OTP thành công");
         navigate("/verification", {
           state: {
@@ -25,13 +25,13 @@ const ForgotPasswordPage = () => {
         });
       } else {
         message.error("Gửi mã OTP thất bại!");
+        console.error("OTP response error:", res.status);
       }
     } catch (error) {
       message.error("Thất bại");
       console.error("OTP error:", error);
     }
-  }
-
+  };
 
   return (
     <div className="min-h-screen bg-[#0a3d3f] flex items-center justify-center relative overflow-hidden p-4">
@@ -44,12 +44,14 @@ const ForgotPasswordPage = () => {
         <span className="hidden sm:inline">Library</span>
       </div>
 
-
       <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 sm:p-8 w-full max-w-md mx-auto z-10 shadow-xl transition-all duration-300 transform hover:scale-[1.01]">
         <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">Forgot Password</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+            Forgot Password
+          </h1>
           <p className="text-base sm:text-lg text-gray-200">
-            Please enter your email to receive a confirmation code to set a new password
+            Please enter your email to receive a confirmation code to set a new
+            password
           </p>
         </div>
 
