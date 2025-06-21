@@ -106,6 +106,23 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
       }
     };
     if (user) fetchAvatar();
+
+    // Lắng nghe event cập nhật profile để refresh user
+    const handleProfileUpdate = () => {
+      const idUser = localStorage.getItem("idUser");
+      if (idUser) {
+        getListReader().then((readers) => {
+          const found = Array.isArray(readers)
+            ? readers.find((r) => r.idReader === idUser)
+            : null;
+          if (found) setUser(found);
+        });
+      }
+    };
+    window.addEventListener("user-profile-updated", handleProfileUpdate);
+    return () => {
+      window.removeEventListener("user-profile-updated", handleProfileUpdate);
+    };
   }, [user, setUser]);
 
   return (
