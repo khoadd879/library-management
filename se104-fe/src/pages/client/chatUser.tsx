@@ -6,6 +6,7 @@ import { useCurrentApp } from "@/components/context/app.context";
 const Chat = () => {
   const [messages, setMessages] = useState<IChatMessage[]>([]);
   const [input, setInput] = useState("");
+  const [inputError, setInputError] = useState("");
   const { user } = useCurrentApp();
 
   const receiverId = "rd00025";
@@ -35,7 +36,11 @@ const Chat = () => {
   }, [receiverId, senderId, messages.length]);
 
   const sendMessage = async () => {
-    if (!input.trim()) return;
+    if (!input.trim()) {
+      setInputError("Chưa có nội dung để gửi");
+      return;
+    }
+    setInputError("");
 
     const payload = {
       receiverId,
@@ -108,22 +113,31 @@ const Chat = () => {
           );
         })}
       </div>
-
-      <div className="flex items-center px-6 py-4 bg-green-100">
-        <input
-          type="text"
-          placeholder="Nhập tin nhắn..."
-          className="flex-1 px-4 py-2 rounded-full bg-white outline-none"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-        />
-        <button
-          className="ml-2 bg-blue-500 hover:bg-blue-600 p-2 rounded-full text-white"
-          onClick={sendMessage}
-        >
-          ➤
-        </button>
+      <div className="flex flex-col px-6 py-4 bg-green-100">
+        <div className="flex items-center">
+          <input
+            type="text"
+            placeholder="Nhập tin nhắn..."
+            className="flex-1 px-4 py-2 rounded-full bg-white outline-none"
+            value={input}
+            onChange={(e) => {
+              setInput(e.target.value);
+              if (inputError) setInputError("");
+            }}
+            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          />
+          <button
+            className="ml-2 bg-blue-500 hover:bg-blue-600 p-2 rounded-full text-white"
+            onClick={sendMessage}
+          >
+            ➤
+          </button>
+        </div>
+        {inputError && (
+          <div className="text-red-500 text-sm mt-2 text-center">
+            {inputError}
+          </div>
+        )}
       </div>
     </div>
   );
