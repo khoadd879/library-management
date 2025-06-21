@@ -165,6 +165,7 @@ const ProfilePage = () => {
       await updateReaderAPI(idUSer, form);
 
       message.success("Cập nhật thông tin thành công!");
+      window.dispatchEvent(new Event("user-profile-updated"));
       // Lấy lại thông tin user mới nhất từ backend
       const res = await getListReader();
       const user = res.find((reader: IReader) => reader.idReader === idUSer);
