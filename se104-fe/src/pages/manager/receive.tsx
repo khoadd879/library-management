@@ -5,6 +5,7 @@ import {
   getListAuthor,
   getTypeBooksAPI,
   getAllHeaderBooksAPI,
+  addBookReceiptAPI,
 } from "@/services/api";
 
 const ReceiveBook = () => {
@@ -21,7 +22,7 @@ const ReceiveBook = () => {
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [selectedHeaderId, setSelectedHeaderId] = useState("");
-
+  const UserId = localStorage.getItem("idUser") ?? "";
   const [form, setForm] = useState({
     nameHeaderBook: "",
     describeBook: "",
@@ -30,6 +31,7 @@ const ReceiveBook = () => {
     publisher: "",
     reprintYear: new Date().getFullYear(),
     valueOfBook: "",
+    quantity: 1,
   });
 
   useEffect(() => {
@@ -76,6 +78,7 @@ const ReceiveBook = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+
     try {
       const formData = new FormData();
       formData.append("IdTypeBook", form.idTypeBook);
@@ -89,13 +92,55 @@ const ReceiveBook = () => {
       );
       formData.append(
         "bookCreateRequest.ValueOfBook",
-        Number(form.valueOfBook).toString()
+        form.valueOfBook.toString()
       );
-
       if (bookImage) formData.append("BookImage", bookImage);
 
-      const res = await addBookAPI(formData);
-      if (res && res.statusCode === 201) {
+      const res1 = await addBookAPI(formData);
+      if (res1?.statusCode !== 201) throw new Error("Tạo đầu sách thất bại");
+
+      const bookId = res1.data?.idBook;
+      const receiptFormData = new FormData();
+      receiptFormData.append("headerBook.IdTypeBook", form.idTypeBook);
+      receiptFormData.append("headerBook.NameHeaderBook", form.nameHeaderBook);
+      receiptFormData.append("headerBook.DescribeBook", form.describeBook);
+      form.idAuthors.forEach((id) =>
+        receiptFormData.append("headerBook.Authors", id)
+      );
+      if (bookImage) receiptFormData.append("headerBook.BookImage", bookImage);
+      receiptFormData.append(
+        "headerBook.bookCreateRequest.Publisher",
+        form.publisher
+      );
+      receiptFormData.append(
+        "headerBook.bookCreateRequest.ReprintYear",
+        form.reprintYear.toString()
+      );
+      receiptFormData.append(
+        "headerBook.bookCreateRequest.ValueOfBook",
+        form.valueOfBook.toString()
+      );
+
+      const listDetailsRequest = [
+        { idBook: bookId, quantity: form.quantity, price: form.valueOfBook },
+      ];
+
+      receiptFormData.append("IdReader", UserId);
+      listDetailsRequest.forEach((item, i) => {
+        receiptFormData.append(`listDetailsRequest[${i}].idBook`, item.idBook);
+        receiptFormData.append(
+          `listDetailsRequest[${i}].quantity`,
+          item.quantity.toString()
+        );
+        receiptFormData.append(
+          `listDetailsRequest[${i}].price`,
+          item.price.toString()
+        );
+      });
+
+      const res2 = await addBookReceiptAPI(receiptFormData);
+      console.log(res2);
+      if (res2?.statusCode === 201) {
         setForm({
           nameHeaderBook: "",
           describeBook: "",
@@ -104,22 +149,22 @@ const ReceiveBook = () => {
           publisher: "",
           reprintYear: new Date().getFullYear(),
           valueOfBook: "",
+          quantity: 1,
         });
         setBookImage(null);
         setPreviewImage(null);
-
-        message.success("Thêm sách thành công!");
+        setSelectedHeaderId("");
+        message.success("Đã thêm sách và phiếu nhận sách thành công!");
       } else {
-        message.error(res.data.message || "Vui lòng điền đầy đủ thông tin");
+        message.error("Tạo phiếu nhận sách thất bại.");
       }
     } catch (err) {
       console.error(err);
-      message.error("Thêm sách thất bại!");
+      message.error("Không thể tạo sách!");
     } finally {
       setIsLoading(false);
     }
   };
-
   return (
     <div className="w-full min-h-screen bg-[#f4f7f9]">
       <div className="px-12 py-8">
@@ -271,7 +316,22 @@ const ReceiveBook = () => {
                 className="w-full px-4 py-2 border rounded outline-none text-sm"
               />
             </div>
-
+            <div>
+              <label className="block text-sm font-semibold mb-1">
+                Số lượng
+              </label>
+              <input
+                type="number"
+                name="quantity"
+                min={1}
+                value={form.quantity}
+                onChange={(e) =>
+                  setForm({ ...form, quantity: parseInt(e.target.value) })
+                }
+                placeholder="Số lượng sách"
+                className="w-full px-4 py-2 border rounded outline-none text-sm"
+              />
+            </div>
             <div>
               <label className="block text-sm font-semibold mb-1">
                 Ngày nhận

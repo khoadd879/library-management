@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getChatHistoryAPI, sendMessageAPI } from "@/services/api";
 import { message as antdMessage, message } from "antd";
+import { useCurrentApp } from "../context/app.context";
 interface ChatProps {
   receiverId: string;
   receiveUserName: string;
@@ -10,7 +11,7 @@ interface ChatProps {
 const Chat = ({ receiverId, receiveUserName, avatarUrl }: ChatProps) => {
   const [messages, setMessages] = useState<IChatMessage[]>([]);
   const [input, setInput] = useState("");
-
+  const { user } = useCurrentApp();
   const senderId = localStorage.getItem("idUser") ?? "";
 
   useEffect(() => {
@@ -101,7 +102,7 @@ const Chat = ({ receiverId, receiveUserName, avatarUrl }: ChatProps) => {
               </div>
               {isSender && (
                 <img
-                  src="https://i.imgur.com/1Q8ZQqX.png"
+                  src={user?.avatarUrl}
                   alt="avatar"
                   className="w-8 h-8 rounded-full ml-2"
                 />
