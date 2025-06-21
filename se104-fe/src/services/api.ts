@@ -109,10 +109,7 @@ export const getBookAndCommentsByIdAPI = (token: string, idBook: string) => {
   });
 };
 //book receipt
-export const addBookReceiptAPI = (data: IAddBookReceiptPayload) => {
-  const urlBackend = "/api/BookReceipt/add_bookreceipt";
-  return axios.post<IBackendRes<any>>(urlBackend, data);
-};
+
 export const deleteBookReceiptAPI = (idBookReceipt: string) => {
   const urlBackend = `/api/BookReceipt/delete_bookreceipt/${idBookReceipt}`;
   return axios.delete<IBackendRes<any>>(urlBackend);
@@ -408,4 +405,11 @@ export const getBookStatusAPI = async (idThebook: string) => {
 export const getHeaderBookByTheBookIdAPI = async (thebookId: string) => {
   const res = await axios.get(`/api/Book/getHeaderbookByThebokId${thebookId}`);
   return res;
+};
+export const addBookReceiptAPI = (formData: FormData) => {
+  return axios.post("/api/BookReceipt/add_bookreceipt", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
 };

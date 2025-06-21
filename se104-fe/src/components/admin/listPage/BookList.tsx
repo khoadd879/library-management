@@ -140,7 +140,7 @@ const BookList = ({ keyword }: Props) => {
               <td className="px-4 py-2 text-gray-700">
                 {book.authors[0]?.idTypeBook?.nameTypeBook || "Không rõ"}
               </td>
-              <td className="px-4 py-2 text-gray-700 line-clamp-1">
+              <td className="px-4 py-2 text-gray-700 line-clamp-4">
                 {book.describe}
               </td>
               <td className="px-4 py-2 text-gray-700">{book.valueOfbook}đ</td>
