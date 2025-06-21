@@ -20,7 +20,9 @@ const ProfilePage = () => {
   const [password, setPassword] = useState("");
   const [dob, setDob] = useState("");
   const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
+
   const formatDate = (isoDate: string): string => {
     return isoDate.split("T")[0];
   };
@@ -38,6 +40,44 @@ const ProfilePage = () => {
   });
 
   const idUSer = localStorage.getItem("idUser");
+
+  // Validate form (tất cả trường bắt buộc trừ mật khẩu)
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!formData.nameReader.trim()) {
+      newErrors.nameReader = "Vui lòng nhập họ và tên";
+    }
+    
+    if (!selectedTypeReader) {
+      newErrors.idTypeReader = "Vui lòng chọn loại độc giả";
+    }
+    
+    if (!formData.email.trim()) {
+      newErrors.email = "Vui lòng nhập email";
+    } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
+      newErrors.email = "Email không hợp lệ";
+    }
+    
+    if (!formData.phone.trim()) {
+      newErrors.phone = "Vui lòng nhập số điện thoại";
+    }
+    
+    if (!formData.gender) {
+      newErrors.gender = "Vui lòng chọn giới tính";
+    }
+    
+    if (!dob) {
+      newErrors.dob = "Vui lòng chọn ngày sinh";
+    }
+    
+    if (!formData.address.trim()) {
+      newErrors.address = "Vui lòng nhập địa chỉ";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   // Fetch loại độc giả
   useEffect(() => {
@@ -85,7 +125,7 @@ const ProfilePage = () => {
             dob: user.dob ? formatDate(user.dob) : "2005-06-20",
             phone: user.phone ?? "",
             reader_username: user.readerAccount ?? "",
-            reader_password: "", // Mật khẩu không được hiển thị
+            reader_password: "",
             avatar: user.urlAvatar ?? "",
           });
         } else {
@@ -129,20 +169,26 @@ const ProfilePage = () => {
       address: userData?.address ?? "",
       email: userData?.email ?? "",
       phone: userData?.phone ?? "",
-      password: userData?.reader_password ?? "", // Nếu mật khẩu null, hiển thị trường nhập rỗng
+      password: "",
       sex: userData?.sex ?? "",
       dob: userData?.dob ? formatDate(userData.dob) : "2005-06-20",
       idTypeReader: userData?.idTypeReader ?? "",
     });
     setDob(userData?.dob ? formatDate(userData.dob) : "2005-06-20");
+    setErrors({});
   };
 
   const handleCancelClick = () => {
     setIsEditing(false);
+    setErrors({});
   };
 
   // Lưu thông tin
   const handleSaveClick = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
     if (!idUSer) {
       console.error("Không tìm thấy idUser trong localStorage.");
       return;
@@ -179,7 +225,7 @@ const ProfilePage = () => {
           dob: user.dob ? formatDate(user.dob) : "2005-06-20",
           phone: user.phone ?? "",
           reader_username: user.readerAccount ?? "",
-          reader_password: "", // Reset mật khẩu sau khi lưu
+          reader_password: "",
           avatar: user.urlAvatar ?? "",
         });
         setAvatarFile(null);
@@ -200,6 +246,14 @@ const ProfilePage = () => {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
   };
 
   const handleAvatarClick = () => {
@@ -221,17 +275,25 @@ const ProfilePage = () => {
   const renderEditableField = (
     name: string,
     value: string,
-    placeholder: string
+    placeholder: string,
+    required: boolean = false
   ) => {
     return (
-      <input
-        type="text"
-        name={name}
-        value={value}
-        onChange={handleInputChange}
-        className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        placeholder={placeholder}
-      />
+      <div>
+        <input
+          type={name === "password" ? "password" : "text"}
+          name={name}
+          value={value}
+          onChange={handleInputChange}
+          className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+            errors[name] ? "border-red-500" : ""
+          }`}
+          placeholder={placeholder}
+        />
+        {errors[name] && (
+          <p className="text-red-500 text-sm mt-1">{errors[name]}</p>
+        )}
+      </div>
     );
   };
 
@@ -323,14 +385,23 @@ const ProfilePage = () => {
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-800">
               {isEditing ? (
-                <input
-                  type="text"
-                  name="nameReader"
-                  value={formData.nameReader}
-                  onChange={handleInputChange}
-                  className="text-center border-b-2 border-blue-500 focus:outline-none"
-                  placeholder="Họ và tên"
-                />
+                <div>
+                  <input
+                    type="text"
+                    name="nameReader"
+                    value={formData.nameReader}
+                    onChange={handleInputChange}
+                    className={`text-center border-b-2 border-blue-500 focus:outline-none ${
+                      errors.nameReader ? "border-red-500" : ""
+                    }`}
+                    placeholder="Họ và tên"
+                  />
+                  {errors.nameReader && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.nameReader}
+                    </p>
+                  )}
+                </div>
               ) : (
                 renderReadOnlyField(
                   userData?.nameReader ?? undefined,
@@ -345,19 +416,37 @@ const ProfilePage = () => {
               <p className="text-sm text-gray-500">Loại độc giả</p>
               <p className="font-medium">
                 {isEditing ? (
-                  <select
-                    name="idTypeReader"
-                    value={selectedTypeReader}
-                    onChange={(e) => setSelectedTypeReader(e.target.value)}
-                    className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">Chọn loại độc giả</option>
-                    {typeReaderOptions.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
+                  <div>
+                    <select
+                      name="idTypeReader"
+                      value={selectedTypeReader}
+                      onChange={(e) => {
+                        setSelectedTypeReader(e.target.value);
+                        if (errors.idTypeReader) {
+                          setErrors((prev) => {
+                            const newErrors = { ...prev };
+                            delete newErrors.idTypeReader;
+                            return newErrors;
+                          });
+                        }
+                      }}
+                      className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                        errors.idTypeReader ? "border-red-500" : ""
+                      }`}
+                    >
+                      <option value="">Chọn loại độc giả</option>
+                      {typeReaderOptions.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.idTypeReader && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.idTypeReader}
+                      </p>
+                    )}
+                  </div>
                 ) : (
                   typeReaderOptions.find(
                     (opt) => opt.value === selectedTypeReader
@@ -402,48 +491,41 @@ const ProfilePage = () => {
           <div className="space-y-5">
             <InfoItem
               label="Email"
-              value={
-                isEditing
-                  ? renderEditableField("email", formData.email, "Email")
-                  : renderReadOnlyField(userData?.email ?? undefined, "Email")
-              }
+              value={renderEditableField("email", formData.email, "Email", true)}
               fullWidth
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <InfoItem
                 label="Số điện thoại"
-                value={
-                  isEditing
-                    ? renderEditableField(
-                        "phone",
-                        formData.phone,
-                        "Số điện thoại"
-                      )
-                    : renderReadOnlyField(
-                        userData?.phone ?? undefined,
-                        "Số điện thoại"
-                      )
-                }
+                value={renderEditableField(
+                  "phone",
+                  formData.phone,
+                  "Số điện thoại",
+                  true
+                )}
               />
 
               <InfoItem
                 label="Giới tính"
                 value={
-                  isEditing ? (
+                  <div>
                     <select
                       name="gender"
                       value={formData.gender}
                       onChange={handleInputChange}
-                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                        errors.gender ? "border-red-500" : ""
+                      }`}
                     >
                       <option value="">Chọn giới tính</option>
                       <option value="Nam">Nam</option>
                       <option value="Nữ">Nữ</option>
                     </select>
-                  ) : (
-                    renderReadOnlyField(userData?.sex ?? undefined, "Giới tính")
-                  )
+                    {errors.gender && (
+                      <p className="text-red-500 text-sm mt-1">{errors.gender}</p>
+                    )}
+                  </div>
                 }
               />
             </div>
@@ -452,14 +534,21 @@ const ProfilePage = () => {
               label="Địa chỉ"
               value={
                 isEditing ? (
-                  <textarea
-                    name="address"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    rows={2}
-                    className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Địa chỉ"
-                  />
+                  <div>
+                    <textarea
+                      name="address"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      rows={2}
+                      className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                        errors.address ? "border-red-500" : ""
+                      }`}
+                      placeholder="Địa chỉ"
+                    />
+                    {errors.address && (
+                      <p className="text-red-500 text-sm mt-1">{errors.address}</p>
+                    )}
+                  </div>
                 ) : (
                   renderReadOnlyField(userData?.address ?? undefined, "Địa chỉ")
                 )
@@ -467,37 +556,46 @@ const ProfilePage = () => {
               fullWidth
             />
 
-            {isEditing &&
-              password &&
-              typeof password === "string" &&
-              password.trim() !== "" && (
-                <div className="space-y-4">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Mật khẩu
-                  </label>
-                  <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Nhập mật khẩu mới"
-                  />
-                </div>
-              )}
+            {isEditing && (
+              <InfoItem
+                label="Mật khẩu (để trống nếu không đổi)"
+                value={renderEditableField(
+                  "password",
+                  formData.password,
+                  "Nhập mật khẩu mới"
+                )}
+                fullWidth
+              />
+            )}
 
             <InfoItem
               label="Ngày sinh"
               value={
                 isEditing ? (
-                  <input
-                    type="date"
-                    name="dob"
-                    value={dob}
-                    onChange={(e) => setDob(e.target.value)}
-                    className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="YYYY-MM-DD"
-                  />
+                  <div>
+                    <input
+                      type="date"
+                      name="dob"
+                      value={dob}
+                      onChange={(e) => {
+                        setDob(e.target.value);
+                        if (errors.dob) {
+                          setErrors((prev) => {
+                            const newErrors = { ...prev };
+                            delete newErrors.dob;
+                            return newErrors;
+                          });
+                        }
+                      }}
+                      className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                        errors.dob ? "border-red-500" : ""
+                      }`}
+                      placeholder="YYYY-MM-DD"
+                    />
+                    {errors.dob && (
+                      <p className="text-red-500 text-sm mt-1">{errors.dob}</p>
+                    )}
+                  </div>
                 ) : (
                   renderReadOnlyField(
                     userData?.dob ?? "2005-06-20",
