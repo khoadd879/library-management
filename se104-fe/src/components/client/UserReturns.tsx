@@ -1,14 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Modal, message } from "antd";
-import {
-  FaInfoCircle,
-  FaUser,
-  FaBook,
-  FaCalendarAlt,
-  FaMoneyBillWave,
-} from "react-icons/fa";
+import { FaInfoCircle, FaUser, FaBook, FaCalendarAlt } from "react-icons/fa";
 import { useCurrentApp } from "@/components/context/app.context";
-import { getReceiptHistoryAPI, getPenaltiesByIdAPI } from "@/services/api";
+import { getReceiptHistoryAPI } from "@/services/api";
 
 const UserReturns = () => {
   const { user } = useCurrentApp();
@@ -16,9 +10,6 @@ const UserReturns = () => {
   const [loading, setLoading] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedReturn, setSelectedReturn] = useState<IReturn | null>(null);
-  const [totalDebt, setTotalDebt] = useState<number>(0);
-  const [debtLoading, setDebtLoading] = useState(false);
-  const [debtError, setDebtError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,37 +30,14 @@ const UserReturns = () => {
     fetchData();
   }, [user]);
 
-  const showModal = async (returnItem: IReturn) => {
+  const showModal = (returnItem: IReturn) => {
     setSelectedReturn(returnItem);
     setIsModalVisible(true);
-    setDebtLoading(true);
-    setDebtError(null);
-    setTotalDebt(0);
-    if (user?.idReader) {
-      try {
-        const penalties = await getPenaltiesByIdAPI(user.idReader);
-        let total = 0;
-        if (Array.isArray(penalties) && penalties.length > 0) {
-          total = penalties[0].totalDebit;
-        } else if (penalties && typeof penalties.totalDebit === "number") {
-          total = penalties.totalDebit;
-        }
-        setTotalDebt(total);
-      } catch (err) {
-        setDebtError("Lỗi khi tải tổng nợ!");
-      } finally {
-        setDebtLoading(false);
-      }
-    } else {
-      setDebtLoading(false);
-    }
   };
 
   const handleCancel = () => {
     setIsModalVisible(false);
     setSelectedReturn(null);
-    setTotalDebt(0);
-    setDebtError(null);
   };
 
   const formatDate = (dateStr?: string) => {
@@ -218,47 +186,6 @@ const UserReturns = () => {
                   <span className="font-medium">
                     {selectedReturn.loanPeriod} ngày
                   </span>
-                </div>
-              </div>
-            </div>
-            {/* Phạt */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="flex items-center mb-2">
-                <FaMoneyBillWave className="text-[#14532d] mr-2" />
-                <h3 className="font-semibold">Thông tin phạt</h3>
-              </div>
-              <div className="pl-6 space-y-1 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Tiền phạt kỳ này:</span>
-                  <span
-                    className={`font-medium ${
-                      selectedReturn.fineAmount > 0
-                        ? "text-red-600"
-                        : "text-green-600"
-                    }`}
-                  >
-                    {selectedReturn.fineAmount?.toLocaleString()} VNĐ
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Tổng nợ:</span>
-                  {debtLoading ? (
-                    <span className="font-medium text-gray-400">
-                      Đang tải...
-                    </span>
-                  ) : debtError ? (
-                    <span className="font-medium text-red-600">
-                      {debtError}
-                    </span>
-                  ) : (
-                    <span
-                      className={`font-medium ${
-                        totalDebt > 0 ? "text-red-600" : "text-green-600"
-                      }`}
-                    >
-                      {totalDebt.toLocaleString()} VNĐ
-                    </span>
-                  )}
                 </div>
               </div>
             </div>
