@@ -44,37 +44,37 @@ const ProfilePage = () => {
   // Validate form (tất cả trường bắt buộc trừ mật khẩu)
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!formData.nameReader.trim()) {
       newErrors.nameReader = "Vui lòng nhập họ và tên";
     }
-    
+
     if (!selectedTypeReader) {
       newErrors.idTypeReader = "Vui lòng chọn loại độc giả";
     }
-    
+
     if (!formData.email.trim()) {
       newErrors.email = "Vui lòng nhập email";
     } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
       newErrors.email = "Email không hợp lệ";
     }
-    
+
     if (!formData.phone.trim()) {
       newErrors.phone = "Vui lòng nhập số điện thoại";
     }
-    
+
     if (!formData.gender) {
       newErrors.gender = "Vui lòng chọn giới tính";
     }
-    
+
     if (!dob) {
       newErrors.dob = "Vui lòng chọn ngày sinh";
     }
-    
+
     if (!formData.address.trim()) {
       newErrors.address = "Vui lòng nhập địa chỉ";
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -208,30 +208,33 @@ const ProfilePage = () => {
       if (avatarFile instanceof File) {
         form.append("AvatarImage", avatarFile);
       }
-      await updateReaderAPI(idUSer, form);
-
-      message.success("Cập nhật thông tin thành công!");
-      window.dispatchEvent(new Event("user-profile-updated"));
-      // Lấy lại thông tin user mới nhất từ backend
-      const res = await getListReader();
-      const user = res.find((reader: IReader) => reader.idReader === idUSer);
-      if (user) {
-        setUserData({
-          idTypeReader: user.idTypeReader.idTypeReader ?? "",
-          nameReader: user.nameReader ?? "",
-          sex: user.sex ?? "",
-          address: user.address ?? "",
-          email: user.email ?? "",
-          dob: user.dob ? formatDate(user.dob) : "2005-06-20",
-          phone: user.phone ?? "",
-          reader_username: user.readerAccount ?? "",
-          reader_password: "",
-          avatar: user.urlAvatar ?? "",
-        });
-        setAvatarFile(null);
-        setAvatarPreview(null);
+      const res1 = await updateReaderAPI(idUSer, form);
+      if (res1.statusCode === 201) {
+        message.success("Cập nhật thông tin thành công!");
+        window.dispatchEvent(new Event("user-profile-updated"));
+        // Lấy lại thông tin user mới nhất từ backend
+        const res = await getListReader();
+        const user = res.find((reader: IReader) => reader.idReader === idUSer);
+        if (user) {
+          setUserData({
+            idTypeReader: user.idTypeReader.idTypeReader ?? "",
+            nameReader: user.nameReader ?? "",
+            sex: user.sex ?? "",
+            address: user.address ?? "",
+            email: user.email ?? "",
+            dob: user.dob ? formatDate(user.dob) : "2005-06-20",
+            phone: user.phone ?? "",
+            reader_username: user.readerAccount ?? "",
+            reader_password: "",
+            avatar: user.urlAvatar ?? "",
+          });
+          setAvatarFile(null);
+          setAvatarPreview(null);
+        }
+        setIsEditing(false);
+      } else {
+        message.error(res1.data.message || res1.message);
       }
-      setIsEditing(false);
     } catch (error) {
       message.error("Cập nhật thất bại. Vui lòng thử lại.");
       console.error("Lỗi khi cập nhật thông tin:", error);
@@ -491,7 +494,12 @@ const ProfilePage = () => {
           <div className="space-y-5">
             <InfoItem
               label="Email"
-              value={renderEditableField("email", formData.email, "Email", true)}
+              value={renderEditableField(
+                "email",
+                formData.email,
+                "Email",
+                true
+              )}
               fullWidth
             />
 
@@ -523,7 +531,9 @@ const ProfilePage = () => {
                       <option value="Nữ">Nữ</option>
                     </select>
                     {errors.gender && (
-                      <p className="text-red-500 text-sm mt-1">{errors.gender}</p>
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.gender}
+                      </p>
                     )}
                   </div>
                 }
@@ -546,7 +556,9 @@ const ProfilePage = () => {
                       placeholder="Địa chỉ"
                     />
                     {errors.address && (
-                      <p className="text-red-500 text-sm mt-1">{errors.address}</p>
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.address}
+                      </p>
                     )}
                   </div>
                 ) : (

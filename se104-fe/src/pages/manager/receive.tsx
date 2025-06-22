@@ -80,26 +80,6 @@ const ReceiveBook = () => {
     setIsLoading(true);
 
     try {
-      const formData = new FormData();
-      formData.append("IdTypeBook", form.idTypeBook);
-      formData.append("NameHeaderBook", form.nameHeaderBook);
-      formData.append("DescribeBook", form.describeBook);
-      form.idAuthors.forEach((id) => formData.append("Authors", id));
-      formData.append("bookCreateRequest.Publisher", form.publisher);
-      formData.append(
-        "bookCreateRequest.ReprintYear",
-        form.reprintYear.toString()
-      );
-      formData.append(
-        "bookCreateRequest.ValueOfBook",
-        form.valueOfBook.toString()
-      );
-      if (bookImage) formData.append("BookImage", bookImage);
-
-      const res1 = await addBookAPI(formData);
-      if (res1?.statusCode !== 201) throw new Error("Tạo đầu sách thất bại");
-
-      const bookId = res1.data?.idBook;
       const receiptFormData = new FormData();
       receiptFormData.append("headerBook.IdTypeBook", form.idTypeBook);
       receiptFormData.append("headerBook.NameHeaderBook", form.nameHeaderBook);
@@ -143,7 +123,7 @@ const ReceiveBook = () => {
         setBookImage(null);
         setPreviewImage(null);
         setSelectedHeaderId("");
-        message.success("Đã thêm sách và phiếu nhận sách thành công!");
+        message.success("Đã thêm phiếu nhận sách thành công!");
       } else {
         message.error("Tạo phiếu nhận sách thất bại.");
       }
