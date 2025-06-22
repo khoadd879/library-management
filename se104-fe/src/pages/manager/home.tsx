@@ -48,7 +48,7 @@ const HomePage = () => {
               reader: reader?.nameReader || "Không rõ",
               cost:
                 loan.fineAmount > 0
-                  ? loan.fineAmount.toLocaleString("vi-VN") + "000đ"
+                  ? loan.fineAmount.toLocaleString("vi-VN") + "đ"
                   : "0đ",
             };
           });
@@ -125,7 +125,6 @@ const HomePage = () => {
           </ResponsiveContainer>
         </div>
 
-        {/* Bảng thống kê thể loại */}
         <div className="bg-white rounded-xl shadow p-4 w-full max-w-md">
           <h3 className="text-center font-semibold text-lg mb-4">
             Thống kê mượn sách theo thể loại
