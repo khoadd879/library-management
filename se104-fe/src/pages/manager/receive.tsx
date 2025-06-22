@@ -121,22 +121,11 @@ const ReceiveBook = () => {
         form.valueOfBook.toString()
       );
 
-      const listDetailsRequest = [
-        { idBook: bookId, quantity: form.quantity, price: form.valueOfBook },
-      ];
-
       receiptFormData.append("IdReader", UserId);
-      listDetailsRequest.forEach((item, i) => {
-        receiptFormData.append(`listDetailsRequest[${i}].idBook`, item.idBook);
-        receiptFormData.append(
-          `listDetailsRequest[${i}].quantity`,
-          item.quantity.toString()
-        );
-        receiptFormData.append(
-          `listDetailsRequest[${i}].price`,
-          item.price.toString()
-        );
-      });
+      receiptFormData.append(
+        "detailsRequest.Quantity",
+        form.quantity.toString()
+      );
 
       const res2 = await addBookReceiptAPI(receiptFormData);
       console.log(res2);
