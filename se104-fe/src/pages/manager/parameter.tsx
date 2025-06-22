@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getAllParametersAPI, updateParameterAPI } from "@/services/api";
-import { Table, InputNumber, Button, message } from "antd";
+import { Table, InputNumber, Button, message, Switch } from "antd";
 
 interface IParameter {
   idParameter: string;
@@ -58,17 +58,34 @@ const Parameter = () => {
         pagination={false}
         loading={loading}
         columns={[
-          { title: "Tên luật", dataIndex: "nameParameter" },
+          {
+            title: "Tên luật",
+            dataIndex: "nameParameter",
+          },
           {
             title: "Giá trị",
-            render: (_, record) => (
-              <InputNumber
-                value={editing[record.idParameter]}
-                onChange={(val) =>
-                  setEditing({ ...editing, [record.idParameter]: val || 0 })
-                }
-              />
-            ),
+            render: (_, record) =>
+              record.nameParameter === "LateReturnPenaltyPolicy" ? (
+                <Switch
+                  checked={editing[record.idParameter] === 1}
+                  onChange={(checked) =>
+                    setEditing({
+                      ...editing,
+                      [record.idParameter]: checked ? 1 : 0,
+                    })
+                  }
+                />
+              ) : (
+                <InputNumber
+                  value={editing[record.idParameter]}
+                  onChange={(val) =>
+                    setEditing({
+                      ...editing,
+                      [record.idParameter]: val || 0,
+                    })
+                  }
+                />
+              ),
           },
           {
             title: "Hành động",
