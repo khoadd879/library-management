@@ -5,6 +5,7 @@ import {
   updateReaderAPI,
   getListReader,
   getReaderByIdAPI,
+  getPenaltiesByIdAPI,
 } from "@/services/api";
 import { message, Modal } from "antd";
 
@@ -38,6 +39,10 @@ const ProfilePage = () => {
     dob: "",
     idTypeReader: "",
   });
+
+  const [totalDebt, setTotalDebt] = useState<number>(0);
+  const [debtLoading, setDebtLoading] = useState(false);
+  const [debtError, setDebtError] = useState<string | null>(null);
 
   const idUSer = localStorage.getItem("idUser");
 
@@ -127,7 +132,8 @@ const ProfilePage = () => {
             reader_username: user.readerAccount ?? "",
             reader_password: "",
             avatar: user.urlAvatar ?? "",
-          });
+            createDate: user.createDate ?? "", // thêm trường này
+          } as IUserProfileRequest & { createDate?: string });
         } else {
           console.error("Không tìm thấy thông tin người dùng.");
         }
@@ -159,6 +165,29 @@ const ProfilePage = () => {
 
     fetchPassword();
   }, []);
+
+  // Fetch tổng nợ (lấy từ getListReader thay vì getPenaltiesByIdAPI)
+  useEffect(() => {
+    const fetchDebt = async () => {
+      if (!idUSer) return;
+      setDebtLoading(true);
+      setDebtError(null);
+      try {
+        const res = await getListReader();
+        const user = res.find((reader: IReader) => reader.idReader === idUSer);
+        if (user && typeof user.totalDebt === "number") {
+          setTotalDebt(user.totalDebt);
+        } else {
+          setTotalDebt(0);
+        }
+      } catch (err) {
+        setDebtError("Lỗi khi tải tổng nợ!");
+      } finally {
+        setDebtLoading(false);
+      }
+    };
+    fetchDebt();
+  }, [idUSer]);
 
   // Click chỉnh sửa
   const handleEditClick = () => {
@@ -208,34 +237,30 @@ const ProfilePage = () => {
       if (avatarFile instanceof File) {
         form.append("AvatarImage", avatarFile);
       }
-      const res1 = await updateReaderAPI(idUSer, form);
-      console.log(res1);
-      if (res1.statusCode === 200) {
-        message.success("Cập nhật thông tin thành công!");
-        window.dispatchEvent(new Event("user-profile-updated"));
-        // Lấy lại thông tin user mới nhất từ backend
-        const res = await getListReader();
-        const user = res.find((reader: IReader) => reader.idReader === idUSer);
-        if (user) {
-          setUserData({
-            idTypeReader: user.idTypeReader.idTypeReader ?? "",
-            nameReader: user.nameReader ?? "",
-            sex: user.sex ?? "",
-            address: user.address ?? "",
-            email: user.email ?? "",
-            dob: user.dob ? formatDate(user.dob) : "2005-06-20",
-            phone: user.phone ?? "",
-            reader_username: user.readerAccount ?? "",
-            reader_password: "",
-            avatar: user.urlAvatar ?? "",
-          });
-          setAvatarFile(null);
-          setAvatarPreview(null);
-        }
-        setIsEditing(false);
-      } else {
-        message.error(res1.data.message || res1.message);
+      await updateReaderAPI(idUSer, form);
+
+      message.success("Cập nhật thông tin thành công!");
+      window.dispatchEvent(new Event("user-profile-updated"));
+      // Lấy lại thông tin user mới nhất từ backend
+      const res = await getListReader();
+      const user = res.find((reader: IReader) => reader.idReader === idUSer);
+      if (user) {
+        setUserData({
+          idTypeReader: user.idTypeReader.idTypeReader ?? "",
+          nameReader: user.nameReader ?? "",
+          sex: user.sex ?? "",
+          address: user.address ?? "",
+          email: user.email ?? "",
+          dob: user.dob ? formatDate(user.dob) : "2005-06-20",
+          phone: user.phone ?? "",
+          reader_username: user.readerAccount ?? "",
+          reader_password: "",
+          avatar: user.urlAvatar ?? "",
+        });
+        setAvatarFile(null);
+        setAvatarPreview(null);
       }
+      setIsEditing(false);
     } catch (error) {
       message.error("Cập nhật thất bại. Vui lòng thử lại.");
       console.error("Lỗi khi cập nhật thông tin:", error);
@@ -458,6 +483,27 @@ const ProfilePage = () => {
                 )}
               </p>
             </div>
+            {/* Thông tin bổ sung dưới loại độc giả */}
+            <div className="flex flex-col gap-2 mt-2">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-500">Ngày lập thẻ:</span>
+                <span className="font-medium">
+                  {userData && (userData as any).createDate
+                    ? formatDate((userData as any).createDate as string)
+                    : "-"}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-500">Tổng nợ:</span>
+                <span className="font-medium">
+                  {debtLoading
+                    ? "Đang tải..."
+                    : debtError
+                    ? debtError
+                    : `${totalDebt.toLocaleString()} VNĐ`}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -495,48 +541,58 @@ const ProfilePage = () => {
           <div className="space-y-5">
             <InfoItem
               label="Email"
-              value={renderEditableField(
-                "email",
-                formData.email,
-                "Email",
-                true
-              )}
+              value={
+                isEditing
+                  ? renderEditableField("email", formData.email, "Email", true)
+                  : renderReadOnlyField(userData?.email ?? undefined, "Email")
+              }
               fullWidth
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <InfoItem
                 label="Số điện thoại"
-                value={renderEditableField(
-                  "phone",
-                  formData.phone,
-                  "Số điện thoại",
-                  true
-                )}
+                value={
+                  isEditing
+                    ? renderEditableField(
+                        "phone",
+                        formData.phone,
+                        "Số điện thoại",
+                        true
+                      )
+                    : renderReadOnlyField(
+                        userData?.phone ?? undefined,
+                        "Số điện thoại"
+                      )
+                }
               />
 
               <InfoItem
                 label="Giới tính"
                 value={
-                  <div>
-                    <select
-                      name="gender"
-                      value={formData.gender}
-                      onChange={handleInputChange}
-                      className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                        errors.gender ? "border-red-500" : ""
-                      }`}
-                    >
-                      <option value="">Chọn giới tính</option>
-                      <option value="Nam">Nam</option>
-                      <option value="Nữ">Nữ</option>
-                    </select>
-                    {errors.gender && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.gender}
-                      </p>
-                    )}
-                  </div>
+                  isEditing ? (
+                    <div>
+                      <select
+                        name="gender"
+                        value={formData.gender}
+                        onChange={handleInputChange}
+                        className={`w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                          errors.gender ? "border-red-500" : ""
+                        }`}
+                      >
+                        <option value="">Chọn giới tính</option>
+                        <option value="Nam">Nam</option>
+                        <option value="Nữ">Nữ</option>
+                      </select>
+                      {errors.gender && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.gender}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    renderReadOnlyField(userData?.sex ?? undefined, "Giới tính")
+                  )
                 }
               />
             </div>
@@ -639,9 +695,7 @@ const InfoItem = ({
     <label className="block text-sm font-medium text-gray-700 mb-1">
       {label}
     </label>
-    <div className="bg-gray-50 p-3 rounded-lg text-gray-800 break-words">
-      {value}
-    </div>
+    <div className="bg-gray-50 p-3 rounded-lg border">{value}</div>
   </div>
 );
 
