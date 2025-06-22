@@ -90,7 +90,7 @@ const AppSidebar: React.FC<AdminSidebarProps> = ({ open, setOpen }) => {
     },
     {
       icon: <FaNewspaper size={20} />,
-      label: "Sửa luật",
+      label: "Thay đổi quy định",
       onClick: () => navigate("/manager/parameter"),
       permission: "parameter",
     },

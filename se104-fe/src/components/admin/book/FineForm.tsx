@@ -5,6 +5,7 @@ import { getAllReadersAPI, addPenaltyAPI } from "@/services/api";
 interface IReaderSimple {
   idReader: string;
   nameReader: string;
+  totalDebt: number;
 }
 
 const FineForm = () => {
@@ -14,19 +15,26 @@ const FineForm = () => {
     undefined
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [debt, setDebt] = useState<number>(0);
 
   useEffect(() => {
     const fetchReaders = async () => {
       try {
         const res = await getAllReadersAPI();
-        if (Array.isArray(res)) setReaders(res);
+
+        if (Array.isArray(res)) {
+          setReaders(res);
+        }
       } catch (err) {
         message.error("Lỗi khi tải danh sách độc giả");
       }
     };
     fetchReaders();
   }, []);
-
+  useEffect(() => {
+    const selectedReader = readers.find((r) => r.idReader === selectedReaderId);
+    setDebt(selectedReader?.totalDebt ?? 0);
+  }, [selectedReaderId, readers]);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedReaderId || amountCollected === undefined) return;
@@ -72,7 +80,11 @@ const FineForm = () => {
             ))}
           </select>
         </div>
-
+        {selectedReaderId && (
+          <p className="text-sm text-red-600">
+            Tổng tiền nợ: {debt.toLocaleString()} VND
+          </p>
+        )}
         <div>
           <label className="block text-sm font-medium text-[#153D36] mb-1">
             Số tiền thu

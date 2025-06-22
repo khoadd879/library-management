@@ -147,9 +147,9 @@ export const addLoanBookAPI = (idReader: string, idTheBook: string) => {
   return axios.post(urlBackend, { idReader, idTheBook });
 };
 export const getAllReadersAPI = () => {
-  return axios.get<{ idReader: string; nameReader: string }[]>(
-    "/api/reader/Reader/list_reader"
-  );
+  return axios.get<
+    { idReader: string; nameReader: string; totalDebt: number }[]
+  >("/api/reader/Reader/list_reader");
 };
 export const addSlipBookAPI = (
   idLoanSlipBook: string,
@@ -412,4 +412,33 @@ export const addBookReceiptAPI = (formData: FormData) => {
       "Content-Type": "multipart/form-data",
     },
   });
+};
+export const addTypeBookAPI = (nameTypeBook: string) => {
+  return axios.post("/api/TypeBook/add_typebook", {
+    nameTypeBook,
+  });
+};
+export const addTypeReaderAPI = (nameTypeReader: string) => {
+  return axios.post("/api/TypeReader/add_typereader", {
+    nameTypeReader,
+  });
+};
+export const updateTypeBookAPI = (idTypeBook: string, nameTypeBook: string) => {
+  return axios.put(`/api/TypeBook/update_typebook/${idTypeBook}`, {
+    nameTypeBook,
+  });
+};
+export const updateTypeReaderAPI = (
+  idTypeReader: string,
+  nameTypeReader: string
+) => {
+  return axios.put(`/api/TypeReader/update_typereader/${idTypeReader}`, {
+    nameTypeReader,
+  });
+};
+export const deleteTypeBookAPI = (idTypeBook: string) => {
+  return axios.delete(`/api/TypeBook/delete_typebook/${idTypeBook}`);
+};
+export const deleteTypeReaderAPI = (idTypeReader: string) => {
+  return axios.delete(`/api/TypeReader/delete_typereader/${idTypeReader}`);
 };
