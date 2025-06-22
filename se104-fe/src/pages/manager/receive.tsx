@@ -125,7 +125,9 @@ const ReceiveBook = () => {
         setSelectedHeaderId("");
         message.success("Đã thêm phiếu nhận sách thành công!");
       } else {
-        message.error(res2.data.message || res2.message);
+        message.error(
+          res2.data.message || res2.message || "Bạn chưa nhập đầy đủ thông tin"
+        );
       }
     } catch (err) {
       console.error(err);
