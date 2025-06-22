@@ -209,7 +209,8 @@ const ProfilePage = () => {
         form.append("AvatarImage", avatarFile);
       }
       const res1 = await updateReaderAPI(idUSer, form);
-      if (res1.statusCode === 201) {
+      console.log(res1);
+      if (res1.statusCode === 200) {
         message.success("Cập nhật thông tin thành công!");
         window.dispatchEvent(new Event("user-profile-updated"));
         // Lấy lại thông tin user mới nhất từ backend
