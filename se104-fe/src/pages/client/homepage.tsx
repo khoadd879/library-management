@@ -231,8 +231,73 @@ const UserHomepage = () => {
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-                {(searchBooks !== null ? searchBooks : featuredBooks).map(
-                  (book) => (
+                {searchBooks !== null ? (
+                  searchBooks.length === 0 ? (
+                    <div className="col-span-full text-center text-gray-500 py-8 text-lg font-medium">
+                      Không có sách mà bạn tìm kiếm
+                    </div>
+                  ) : (
+                    searchBooks.map((book) => (
+                      <div
+                        key={book.idBook}
+                        className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition cursor-pointer relative"
+                        onClick={() => navigate(`/detail/${book.idBook}`)}
+                      >
+                        <div
+                          className="absolute top-3 right-3 z-10 cursor-pointer p-2 rounded-full bg-white/80 hover:bg-white transition-all duration-200 shadow-sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleLike(book.idBook);
+                          }}
+                        >
+                          {book.isLiked ? (
+                            <HeartFilled
+                              style={{ color: "rgb(239 68 68)" }}
+                              className="text-lg"
+                            />
+                          ) : (
+                            <HeartOutlined className="text-lg text-gray-400 hover:text-red-400" />
+                          )}
+                        </div>
+                        <div className="aspect-[2/3] bg-gray-100 relative">
+                          {book.image ? (
+                            <img
+                              src={book.image}
+                              alt={book.nameBook}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                              <svg
+                                className="w-12 h-12"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={1}
+                                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                                />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-4">
+                          <h3 className="font-semibold text-gray-800 line-clamp-2">
+                            {book.nameBook}
+                          </h3>
+                          <p className="text-sm text-gray-500 mt-1">
+                            {book.authors?.[0]?.nameAuthor ||
+                              "Không rõ tác giả"}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  )
+                ) : (
+                  featuredBooks.map((book) => (
                     <div
                       key={book.idBook}
                       className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition cursor-pointer relative"
@@ -288,7 +353,7 @@ const UserHomepage = () => {
                         </p>
                       </div>
                     </div>
-                  )
+                  ))
                 )}
               </div>
             </section>
