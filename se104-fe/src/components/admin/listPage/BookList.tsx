@@ -28,6 +28,7 @@ const BookList = ({ keyword }: Props) => {
     setLoading(true);
     try {
       const res = await getAllBooksAndCommentsAPI();
+      console.log(res);
       setBooks(res);
     } catch (error) {
       console.error("Lỗi khi tải danh sách sách:", error);
@@ -111,7 +112,6 @@ const BookList = ({ keyword }: Props) => {
             <th className="px-4 py-3">Ảnh sách</th>
             <th className="px-4 py-3">Tên sách</th>
             <th className="px-4 py-3">Tác giả</th>
-            <th className="px-4 py-3">Thể loại</th>
             <th className="px-4 py-3">Mô tả</th>
             <th className="px-4 py-3">Trị giá</th>
             <th className="px-4 py-3 text-center">Tuỳ chỉnh</th>
@@ -137,9 +137,7 @@ const BookList = ({ keyword }: Props) => {
               <td className="px-4 py-2 text-gray-700">
                 {book.authors.map((a) => a.nameAuthor).join(", ")}
               </td>
-              <td className="px-4 py-2 text-gray-700">
-                {book.authors[0]?.idTypeBook?.nameTypeBook || "Không rõ"}
-              </td>
+
               <td className="px-4 py-2 text-gray-700 line-clamp-4">
                 {book.describe}
               </td>
