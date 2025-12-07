@@ -1,9 +1,10 @@
 import axios from "services/axios.customize";
 
-export const loginAPI = (username: string, password: string) => {
-  const urlBackend = "/api/Authentication/SignIn";
-  return axios.post<ISignIn>(urlBackend, { username, password });
+export const loginAPI = (email: string, password: string) => {
+  const urlBackend = "/api/Authentication/login";
+  return axios.post<any>(urlBackend, { email, password });
 };
+
 export const signUpSendOtpAPI = (
   email: string,
   password: string,

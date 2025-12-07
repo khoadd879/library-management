@@ -60,8 +60,8 @@ const SignIn = () => {
 
     setLoading(true);
     try {
-      const res = await loginAPI(username, password);
-
+      let res = await loginAPI(username, password);
+      res = res.data
       if (res && res.token) {
         localStorage.setItem("token", res.token);
         localStorage.setItem("refreshToken", res.refreshToken);
