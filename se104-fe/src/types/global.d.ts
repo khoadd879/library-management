@@ -42,11 +42,17 @@ declare global {
     avatarUrl: string;
   }
 
-  interface ISignIn {
+  export interface ISignIn {
+  success: boolean;
+  message: string;
+  statusCode: number;
+  data: {
     token: string;
     refreshToken: string;
     iduser: string;
-  }
+  };
+}
+
 
   export interface IGetAuthor {
     idAuthor: string;
@@ -217,6 +223,12 @@ declare global {
     urlAvatar: string | null;
   }
 
+  export interface IAuthorResponse {
+  success: boolean;
+  message: string;
+  statusCode: number;
+  data: IAuthor[];
+}
   export interface IEvaluation {}
 
   export interface IBook {

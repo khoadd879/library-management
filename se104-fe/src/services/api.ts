@@ -2,7 +2,7 @@ import axios from "services/axios.customize";
 
 export const loginAPI = (email: string, password: string) => {
   const urlBackend = "/api/Authentication/login";
-  return axios.post<any>(urlBackend, { email, password });
+  return axios.post<ISignIn>(urlBackend, { email, password });
 };
 
 export const signUpSendOtpAPI = (
@@ -27,7 +27,7 @@ export const signUpWithOtpAPI = (email: string, otp: string) => {
 
 export const authenticateAPI = (token: string | null) => {
   return axios.post(
-    "/api/Authentication/Authentication",
+    "/api/Authentication/authentication",
     JSON.stringify(token),
     {
       headers: {
@@ -70,9 +70,10 @@ export const addAuthorAPI = (formData: FormData) => {
 };
 
 export const listAuthorAPI = () => {
-  const urlBackend = "/api/Author/list_author";
-  return axios.get<IAddAuthor[]>(urlBackend);
+  const urlBackend = "/api/Author/list-author";
+  return axios.get<IAuthorResponse>(urlBackend);
 };
+
 export const updateAuthorAPI = (idAuthor: string, formData: FormData) => {
   const urlBackend = `/api/Author/update_author/${idAuthor}`;
   return axios.patch<IBackendRes<any>>(urlBackend, formData, {
@@ -83,7 +84,7 @@ export const updateAuthorAPI = (idAuthor: string, formData: FormData) => {
 };
 
 export const getAuthorByID = (token: string, idAuthor: string) => {
-  const urlBackend = `/api/Author/getauthorbyid${idAuthor}`;
+  const urlBackend = `/api/Author/inf-author${idAuthor}`;
   return axios.get<IGetAuthor>(urlBackend, {
     headers: {
       "Content-Type": "application/json",

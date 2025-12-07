@@ -60,13 +60,12 @@ const SignIn = () => {
 
     setLoading(true);
     try {
-      let res = await loginAPI(username, password);
-      res = res.data
-      if (res && res.token) {
-        localStorage.setItem("token", res.token);
-        localStorage.setItem("refreshToken", res.refreshToken);
-        localStorage.setItem("idUser", res.iduser);
-        const userRes = await authenticateAPI(res.token);
+      const res = await loginAPI(username, password);
+      if (res && res.data.token) {
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("refreshToken", res.data.refreshToken);
+        localStorage.setItem("idUser", res.data.iduser);
+        const userRes = await authenticateAPI(res.data.token);
         setUser(userRes);
         setIsAuthenticated(true);
         setIsAuthenticated(true);
