@@ -60,7 +60,7 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
       label: "Danh sách mượn",
       onClick: () => navigate("/borrow-list"),
     },
-    ...(user?.roleName === "Manager" || user?.roleName === "Admin"
+    ...(user?.data.roleName === "Manager" || user?.data.roleName === "Admin"
       ? [
           {
             icon: <FaUserCircle size={20} />,
@@ -69,7 +69,7 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
           },
         ]
       : []),
-    ...(user?.roleName === "Admin"
+    ...(user?.data.roleName === "Admin"
       ? [
           {
             icon: <FaUserCircle size={20} />,
@@ -98,7 +98,7 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
       try {
         const readers = await getListReader();
         const found = Array.isArray(readers)
-          ? readers.find((r) => r.idReader === user?.idReader)
+          ? readers.find((r) => r.idReader === user?.data.idReader)
           : null;
         setAvatarUrl(found?.urlAvatar || null);
       } catch (e) {
@@ -152,10 +152,10 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
             {/* Text container with constrained width */}
             <div className="flex-1 ">
               <p className="font-medium text-left text-md ">
-                {user?.nameReader}
+                {user?.data.nameReader}
               </p>
               <span className="text-sm text-left opacity-80 ">
-                {user?.email}
+                {user?.data.email}
               </span>
             </div>
           </div>

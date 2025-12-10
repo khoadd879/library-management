@@ -13,7 +13,12 @@ const NewBooks = () => {
     const fetchBooks = async () => {
       setLoading(true);
       try {
-        const res = await getAllBooksAndCommentsAPI();
+         const idUser = localStorage.getItem("idUser");
+      if(!idUser){
+        message.warning("Không có User");
+        return;
+      }
+        const res = await getAllBooksAndCommentsAPI(idUser);
         if (Array.isArray(res)) {
           // Lọc sách có reprintYear là 2024 hoặc 2025
           const currentYear = 2025;

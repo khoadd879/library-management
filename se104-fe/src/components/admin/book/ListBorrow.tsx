@@ -28,10 +28,15 @@ const ListBorrow = () => {
 
   const fetchData = async () => {
     try {
+      const idUser = localStorage.getItem("idUser");
+      if(!idUser){
+        message.warning("Không có User");
+        return;
+      }
       const [loanRes, readerRes, bookRes] = await Promise.all([
         getAllLoanSlipsAPI(),
         getAllReadersAPI(),
-        getAllBooksAndCommentsAPI(),
+        getAllBooksAndCommentsAPI(idUser),
       ]);
 
       const loanList = Array.isArray(loanRes) ? loanRes : [];

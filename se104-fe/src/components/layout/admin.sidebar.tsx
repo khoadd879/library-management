@@ -36,9 +36,9 @@ const AppSidebar: React.FC<AdminSidebarProps> = ({ open, setOpen }) => {
   };
   useEffect(() => {
     const fetchPermissions = async () => {
-      if (user?.roleName) {
+      if (user?.data.roleName) {
         try {
-          const res = await getPermissionsByRoleAPI(user.roleName);
+          const res = await getPermissionsByRoleAPI(user.data.roleName);
           console.log(res);
           const names = res.map((p: any) => p.permissionName);
           setPermissions(names);
@@ -49,7 +49,7 @@ const AppSidebar: React.FC<AdminSidebarProps> = ({ open, setOpen }) => {
     };
 
     fetchPermissions();
-  }, [user?.roleName]);
+  }, [user?.data.roleName]);
 
   const menuItems = [
     {
@@ -122,9 +122,9 @@ const AppSidebar: React.FC<AdminSidebarProps> = ({ open, setOpen }) => {
           onClick={() => navigate("/profile")}
         >
           <div className={`flex items-center gap-4 ${!open && "hidden"}`}>
-            {user?.avatarUrl ? (
+            {user?.data.avatarUrl ? (
               <img
-                src={user.avatarUrl}
+                src={user.data.avatarUrl}
                 alt="avatar"
                 className="w-12 h-12 rounded-full object-cover flex-shrink-0 border border-white"
               />
@@ -134,10 +134,10 @@ const AppSidebar: React.FC<AdminSidebarProps> = ({ open, setOpen }) => {
             {/* Text container with constrained width */}
             <div className="flex-1 min-w-0 overflow-hidden">
               <p className="font-medium text-left text-lg truncate">
-                {user?.nameReader}
+                {user?.data.nameReader}
               </p>
               <span className="text-sm text-left opacity-80 truncate">
-                {user?.email}
+                {user?.data.email}
               </span>
             </div>
           </div>

@@ -5,7 +5,8 @@ import { Button, Result } from "antd";
 const ProtectedRoute = () => {
   const { isAuthenticated, user } = useCurrentApp();
   const location = useLocation();
-  const role = user?.roleName;
+  const role = user?.data.roleName;
+  console.log(role)
 
   if (!isAuthenticated) {
     return (

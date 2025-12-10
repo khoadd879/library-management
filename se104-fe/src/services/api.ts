@@ -1,64 +1,70 @@
 import axios from "services/axios.customize";
 
+//fixed
 export const loginAPI = (email: string, password: string) => {
   const urlBackend = "/api/Authentication/login";
   return axios.post<ISignIn>(urlBackend, { email, password });
 };
 
+//fixed
 export const signUpSendOtpAPI = (
   email: string,
   password: string,
   confirmPassword: string
 ) => {
-  const urlBackend = "/api/Authentication/SignUpSendOtp";
+  const urlBackend = "/api/Authentication/register-send-otp";
   return axios.post<any>(urlBackend, {
     email,
     password,
     confirmPassword,
   });
 };
+
+//fixed
 export const signUpWithOtpAPI = (email: string, otp: string) => {
-  const urlBackend = "/api/Authentication/SignUpWithReceivedOtp";
+  const urlBackend = "/api/Authentication/register-confirm-otp";
   return axios.post<any>(urlBackend, {
     email,
     otp,
   });
 };
 
+//fixed
 export const authenticateAPI = (token: string | null) => {
-  return axios.post(
+  return axios.post<any>(
     "/api/Authentication/authentication",
-    JSON.stringify(token),
-    {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
+    {token}
   );
 };
 
+//fixed
 export const refreshTokenAPI = (refreshToken: string) => {
-  const urlBackend = "/api/Authentication/RefreshToken";
+  const urlBackend = "/api/Authentication/register-confirm-otp";
   return axios.post<any>(urlBackend, { refreshToken });
 };
 
+//fixed
 export const forgotPassword = (email: string) => {
-  const urlBackend = "/api/ForgotPassword/send_otp";
+  const urlBackend = "/api/ForgotPassword/forgot-password-send-otp";
   return axios.post<any>(urlBackend, { email });
 };
 
+//fixed
 export const verifyOTP = (email: string, otp: String) => {
-  const urlBackend = "/api/ForgotPassword/verify_otp";
+  const urlBackend = "/api/ForgotPassword/forgot-password-confirm-otp";
   return axios.post<any>(urlBackend, { email, otp });
 };
+
+//fixed
 export const changePassword = (
   email: string,
   newPassword: String,
   repeatPassword: String
 ) => {
-  const urlBackend = "/api/ForgotPassword/change_password";
+  const urlBackend = "/api/ForgotPassword/change-password";
   return axios.post<any>(urlBackend, { email, newPassword, repeatPassword });
 };
+
 //author api
 export const addAuthorAPI = (formData: FormData) => {
   const urlBackend = "/api/Author/add_author";
@@ -102,7 +108,7 @@ export const addBookAPI = (formData: FormData) => {
 };
 
 export const getBookAndCommentsByIdAPI = (token: string, idBook: string) => {
-  const urlBackend = `/api/Book/getbooksindetailbyid${idBook}`;
+  const urlBackend = `/api/Book/books-in-detail${idBook}`;
   return axios.get<IBackendRes<IGetAllBookAndComment>>(urlBackend, {
     headers: {
       "Content-Type": "application/json",
@@ -167,16 +173,16 @@ export const addSlipBookAPI = (
 };
 
 export const getTypeReadersAPI = () => {
-  return axios.get("/api/TypeReader/getAllTypeReader");
+  return axios.get("/api/TypeReader/get-all-typereader");
 };
 export const getListAuthor = () => {
-  return axios.get<IAddAuthor[]>("/api/Author/list_author");
+  return axios.get<IAddAuthor[]>("/api/Author/list-author");
 };
 export const getListReader = () => {
-  return axios.get<IReader[]>("/api/reader/Reader/list_reader");
+  return axios.get<IManyReader>("/api/reader/Reader/list-reader");
 };
-export const getAllBooksAndCommentsAPI = () => {
-  return axios.get<IBook[]>("/api/Book/getbooksindetail");
+export const getAllBooksAndCommentsAPI = (idUser: string) => {
+  return axios.get<IBook[]>(`/api/Book/books-in-detail?idUser=${idUser}`);
 };
 export const getLoanSlipHistoryAPI = (idUser: string) => {
   const url = `/api/LoanSlipBook/getloansliphistory?idUser=${idUser}`;
@@ -243,6 +249,7 @@ export const getStarByIdBookAPI = async (idBook: string) => {
   const url = `/api/Book/getStarById${idBook}`;
   return await axios.get<IGetStarByIdBook[]>(url);
 };
+
 export const updateBookAPI = (idBook: string, formData: FormData) => {
   return axios.patch<IBackendRes<any>>(
     `/api/Book/update_book/${idBook}`,
@@ -292,22 +299,26 @@ export const addRolePermissionAPI = (
   roleName: string,
   permissionName: string
 ) => {
-  return axios.post("/api/RolePermission/add_role_permission", {
+  return axios.post("/api/RolePermission/add-role-permission", {
     roleName,
     permissionName,
   });
 };
 export const getAllRolesAPI = async () => {
-  return axios.get("/api/roles/Role/getAllRoles");
+  return axios.get("/api/roles/Role/get-all-permisson-by-role");
 };
 export const getPermissionsByRoleAPI = async (roleName: string) => {
-  return axios.get(`/api/roles/Role/getAllPermissonByRole`, {
+  return axios.get(`/api/roles/Role/get-all-permisson-by-role`, {
     params: { rolename: roleName },
   });
 };
-export const deleteRoleAPI = async (roleName: string) => {
+export const deleteRoleAPI = async (roleName: string, permissionName: string) => {
   return axios.delete(
-    `/api/roles/Role/delete_role/${encodeURIComponent(roleName)}`
+    `/api/RolePermission/delete-role-permission`,
+    {data:{
+      roleName,
+      permissionName
+    } }
   );
 };
 export const updateRolePermissionAPI = async (
@@ -316,7 +327,7 @@ export const updateRolePermissionAPI = async (
   newRoleName: string,
   newPermissionName: string
 ) => {
-  const res = await axios.patch("/api/RolePermission/update_role_permission", {
+  const res = await axios.patch("/api/RolePermission/update-role-permission", {
     oldRoleName,
     oldPermissionName,
     newRoleName,
@@ -379,7 +390,7 @@ export const logoutAPI = async (refreshToken: string) => {
   return axios.post("/api/Authentication/logout", { refreshToken });
 };
 export const getReaderByIdAPI = async (idreader: string) => {
-  const url = `/api/reader/Reader/getReaderBy${idreader}?readerid=${idreader}`;
+  const url = `/api/reader/Reader/get-reader-by-id?idReader=${idreader}`;
   const res = await axios.get(url);
   return res;
 };

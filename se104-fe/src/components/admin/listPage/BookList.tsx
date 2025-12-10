@@ -27,7 +27,12 @@ const BookList = ({ keyword }: Props) => {
   const fetchBooks = async () => {
     setLoading(true);
     try {
-      const res = await getAllBooksAndCommentsAPI();
+       const idUser = localStorage.getItem("idUser");
+            if(!idUser){
+              message.warning("Không có User");
+              return;
+            }
+      const res = await getAllBooksAndCommentsAPI(idUser);
       console.log(res);
       setBooks(res);
     } catch (error) {

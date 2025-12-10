@@ -27,7 +27,11 @@ declare global {
     id: string;
   }
   export interface IFetchUser {
-    idReader: string;
+    success: boolean,
+    message: string,
+    statusCode: number,
+    data:{
+      idReader: string;
     idTypeReader: string;
     nameReader: string | null;
     sex: string | null;
@@ -40,6 +44,7 @@ declare global {
     typeReader: any;
     roleName: string;
     avatarUrl: string;
+    }
   }
 
   export interface ISignIn {
@@ -190,6 +195,14 @@ declare global {
     biography: string;
     urlAvatar: string | null;
   }
+
+  export interface IManyReader{
+    success: boolean;
+  message: string;
+  statusCode: number;
+  data: IReader[]
+  }
+
   export interface IReader {
     idReader: string;
     nameReader: string;
@@ -209,6 +222,7 @@ declare global {
     };
     role: string;
   }
+
   export interface ITypeBook {
     idTypeBook: string;
     nameTypeBook: string;

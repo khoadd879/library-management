@@ -17,16 +17,22 @@ const FeaturedBooks = () => {
       setLoading(true);
       try {
         const token = localStorage.getItem("token");
+        const idUser = localStorage.getItem("idUser");
         if (!token) {
           message.warning("Vui lòng đăng nhập.");
           setLoading(false);
           return;
         }
-        const res = await getAllBooksAndCommentsAPI();
+        if(!idUser){
+           message.warning("Không có User");
+          setLoading(false);
+          return;
+        }
+        const res = await getAllBooksAndCommentsAPI(idUser);
         if (Array.isArray(res)) {
           setBooks(res);
         } else {
-          message.error("Dữ liệu sách không hợp lệ.");
+          message.error("Không có dữ liệu sách");
         }
       } catch (err) {
         console.error("Lỗi khi tải sách:", err);
