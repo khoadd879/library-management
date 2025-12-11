@@ -5,7 +5,6 @@ import {
   updateReaderAPI,
   getListReader,
   getReaderByIdAPI,
-  getPenaltiesByIdAPI,
 } from "@/services/api";
 import { message, Modal } from "antd";
 
@@ -18,7 +17,6 @@ const ProfilePage = () => {
   const [selectedTypeReader, setSelectedTypeReader] = useState<string>("");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [password, setPassword] = useState("");
   const [dob, setDob] = useState("");
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -146,25 +144,6 @@ const ProfilePage = () => {
     fetchUserData();
   }, []);
 
-  // Fetch mật khẩu người dùng
-  useEffect(() => {
-    const fetchPassword = async () => {
-      const idUser = localStorage.getItem("idUser");
-      if (!idUser) {
-        console.error("Không tìm thấy idUser trong localStorage.");
-        return;
-      }
-
-      try {
-        const res = await getReaderByIdAPI(idUser);
-        setPassword(res.password || "");
-      } catch (error) {
-        console.error("Lỗi khi lấy thông tin mật khẩu người dùng:", error);
-      }
-    };
-
-    fetchPassword();
-  }, []);
 
   // Fetch tổng nợ (lấy từ getListReader thay vì getPenaltiesByIdAPI)
   useEffect(() => {

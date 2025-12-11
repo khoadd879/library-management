@@ -9,7 +9,6 @@ const AdminLayout = () => {
   const primaryColor = '#153D36';
   const lightPrimary = '#E8F5F2';
   const secondaryColor = '#27AE60';
-  const hoverColor = '#3BD376';
 
   const navs = [
     {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getTypeReadersAPI, deleteTypeReaderAPI } from "@/services/api";
 import { Spin, message, Modal } from "antd";
 import AddTypeReaderModal from "./AddTypeReaderModal";

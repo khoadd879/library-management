@@ -24,7 +24,12 @@ const UserHomepage = () => {
 
   const toggleLike = async (bookId: string) => {
     try {
-      const res = await addFavoriteBookAPI(bookId);
+      const idUser = localStorage.getItem('idUser');
+        if(!idUser){
+          message.error('User not found')
+          return;
+        }
+      const res = await addFavoriteBookAPI(idUser, bookId);
       if (res) {
         const updateLikedState = (books: IBook[]) =>
           books.map((book) =>
@@ -33,6 +38,7 @@ const UserHomepage = () => {
 
         setFeaturedBooks((prev) => updateLikedState(prev));
         setLatestBooks((prev) => updateLikedState(prev));
+        message.success("Cập nhập yêu thích thành công");
       } else {
         message.error("Không thể cập nhật trạng thái yêu thích.");
       }
@@ -76,11 +82,12 @@ const UserHomepage = () => {
           setLoanHistory(historyRes.slice(0, 5));
         }
 
-        const [booksResponse, authorRes] = await Promise.all([
+        const [data, authorRes] = await Promise.all([
           getAllBooksAndCommentsAPI(idUser),
           listAuthorAPI(),
         ]);
 
+        const booksResponse = data.data
         if (Array.isArray(booksResponse)) {
           // Lấy số sao cho từng sách bằng cách gọi getStarByIdBookAPI
           const booksWithStars = await Promise.all(

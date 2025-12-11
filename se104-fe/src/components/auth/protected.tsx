@@ -6,8 +6,6 @@ const ProtectedRoute = () => {
   const { isAuthenticated, user } = useCurrentApp();
   const location = useLocation();
   const role = user?.data.roleName;
-  console.log(role)
-
   if (!isAuthenticated) {
     return (
       <Result

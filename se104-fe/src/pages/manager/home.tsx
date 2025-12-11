@@ -32,13 +32,19 @@ const HomePage = () => {
           getAllReadersAPI(),
         ]);
 
-        setGenreData(Array.isArray(genreRes) ? genreRes : []);
+        const genreList = genreRes.data || (Array.isArray(genreRes) ? genreRes : []);
+        setGenreData(genreList);
 
         const today = new Date();
-        const filteredLateBooks = loanRes
+        
+        const loansList = loanRes.data || []; 
+        
+        const readersList = readerRes.data || [];
+
+        const filteredLateBooks = loansList
           .filter((loan: any) => new Date(loan.returnDate) < today)
           .map((loan: any) => {
-            const reader = readerRes.find(
+            const reader = readersList.find(
               (r: any) => r.idReader === loan.idReader
             );
             return {

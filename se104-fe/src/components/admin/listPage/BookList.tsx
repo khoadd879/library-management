@@ -34,7 +34,7 @@ const BookList = ({ keyword }: Props) => {
             }
       const res = await getAllBooksAndCommentsAPI(idUser);
       console.log(res);
-      setBooks(res);
+      setBooks(res.data);
     } catch (error) {
       console.error("Lỗi khi tải danh sách sách:", error);
       message.error("Không thể tải danh sách sách");

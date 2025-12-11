@@ -25,7 +25,8 @@ const ReaderList = ({ keyword }: Props) => {
     const fetchReaders = async () => {
       try {
         const res = await getListReader();
-        const fil = res.filter((r) => r.role === "Reader");
+        const listReader = res.data || [];
+        const fil = listReader.filter((r: any) => r.role === "Reader");
         setReaders(fil);
       } catch (err) {
         console.error("Lỗi khi tải độc giả:", err);
@@ -67,7 +68,8 @@ const ReaderList = ({ keyword }: Props) => {
       const res1 = await updateReaderAPI(selectedReader.idReader, formData);
       console.log(res1);
       const res = await getListReader();
-      const fil = res.filter((r) => r.role === "Reader");
+      const listReader = res.data || [];
+      const fil = listReader.filter((r: any) => r.role === "Reader");
       setReaders(fil);
       setIsOpen(false);
       message.success("Cập nhật độc giả thành công!");
@@ -81,7 +83,7 @@ const ReaderList = ({ keyword }: Props) => {
   const loadReaders = async () => {
     try {
       const res = await getListReader();
-      setReaders(res);
+      setReaders(res.data);
     } catch (err) {
       console.error("Lỗi khi tải độc giả:", err);
       message.error("Không thể tải danh sách độc giả.");
