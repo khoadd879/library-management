@@ -4,9 +4,34 @@ import {
   getAllReadersAPI,
   getAllBooksAndCommentsAPI,
   addSlipBookAPI,
-  getBookStatusAPI,
 } from "@/services/api";
-import { message } from "antd";
+import {
+  message,
+  Table,
+  Tag,
+  Button,
+  Input,
+  Card,
+  Typography,
+  Popconfirm,
+  Space,
+} from "antd";
+import {
+  SearchOutlined,
+  ReloadOutlined,
+  CheckCircleOutlined,
+  SyncOutlined,
+} from "@ant-design/icons";
+import type { ColumnsType } from "antd/es/table";
+import dayjs from "dayjs";
+
+const { Title } = Typography;
+
+interface ILoanData extends ILoanSlip {
+  key: string;
+  readerName: string;
+  bookNameDisplay: string;
+}
 
 interface IReaderSimple {
   idReader: string;
@@ -14,38 +39,65 @@ interface IReaderSimple {
 }
 
 const ListBorrow = () => {
-  const [loans, setLoans] = useState<ILoanSlip[]>([]);
-  const [readers, setReaders] = useState<IReaderSimple[]>([]);
-  const [books, setBooks] = useState<IBook[]>([]);
-  const [keyword, setKeyword] = useState("");
-  const [returnedIds, setReturnedIds] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<ILoanData[]>([]);
+  const [searchText, setSearchText] = useState("");
 
-  const getReaderName = (id: string) =>
-    readers.find((r) => r.idReader === id)?.nameReader || "(Không rõ)";
-
-  const getBookInfo = (id: string) =>
-    books.find((b) => b.idBook === id) || { nameBook: "(Không rõ)" };
+  const formatCurrency = (amount?: number) => {
+    return amount
+      ? amount.toLocaleString("vi-VN", { style: "currency", currency: "VND" })
+      : "0 ₫";
+  };
 
   const fetchData = async () => {
+    setLoading(true);
     try {
       const idUser = localStorage.getItem("idUser");
-      if(!idUser){
-        message.warning("Không có User");
+      if (!idUser) {
+        message.warning("Không tìm thấy thông tin User!");
+        setLoading(false);
         return;
       }
+
       const [loanRes, readerRes, bookRes] = await Promise.all([
         getAllLoanSlipsAPI(),
         getAllReadersAPI(),
         getAllBooksAndCommentsAPI(idUser),
       ]);
 
-      const loanList = Array.isArray(loanRes) ? loanRes : [];
-      setLoans(loanList);
-      setReaders(Array.isArray(readerRes) ? readerRes : []);
-      setBooks(Array.isArray(bookRes) ? bookRes : []);
+      const loans = Array.isArray(loanRes?.data) 
+        ? loanRes.data 
+        : (Array.isArray(loanRes) ? loanRes : []);
+
+      const readers: IReaderSimple[] = Array.isArray(readerRes?.data) 
+        ? readerRes.data 
+        : (Array.isArray(readerRes) ? readerRes : []);
+
+      const books: IBook[] = Array.isArray(bookRes?.data) 
+        ? bookRes.data 
+        : (Array.isArray(bookRes) ? bookRes : []);
+
+      const mappedData: ILoanData[] = loans.map((item: any) => {
+        const reader = readers.find((r) => r.idReader === item.idReader);
+        const book = books.find((b) => b.idBook === item.idTheBook); 
+
+        return {
+          ...item,
+          key: item.idLoanSlipBook,
+          // Đảm bảo luôn có string, tránh null
+          readerName: reader ? reader.nameReader : (item.idReader || "Không rõ"),
+          bookNameDisplay: item.nameBook || book?.nameBook || "(Không rõ tên)",
+        };
+      });
+
+      mappedData.sort((a, b) => dayjs(b.borrowDate).valueOf() - dayjs(a.borrowDate).valueOf());
+
+      setData(mappedData);
     } catch (err) {
       console.error(err);
-      message.error("Lỗi khi tải dữ liệu!");
+      message.error("Lỗi khi tải dữ liệu hệ thống!");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -53,19 +105,19 @@ const ListBorrow = () => {
     fetchData();
   }, []);
 
-  const handleReturn = async (item: ILoanSlip) => {
+  const handleReturn = async (item: ILoanData) => {
     try {
       const res = await addSlipBookAPI(
         item.idLoanSlipBook,
         item.idReader,
         item.idTheBook
       );
-      console.log(res);
 
-      if (res.statusCode === 200) {
-        message.success("Trả sách thành công!");
-        setReturnedIds((prev) => new Set(prev).add(item.idLoanSlipBook));
-        await fetchData();
+      if (res && (res.statusCode === 200)) {
+        message.success(`Đã trả sách: ${item.bookNameDisplay}`);
+        fetchData(); 
+      } else {
+        message.error(res?.message || "Trả sách thất bại!");
       }
     } catch (error) {
       console.error("Lỗi trả sách:", error);
@@ -73,92 +125,140 @@ const ListBorrow = () => {
     }
   };
 
-  const filteredLoans = loans.filter((item) => {
-    const readerName = getReaderName(item.idReader);
-    return readerName?.toLowerCase().includes(keyword.toLowerCase());
+  const columns: ColumnsType<ILoanData> = [
+    {
+      title: "Người mượn",
+      dataIndex: "readerName",
+      key: "readerName",
+      render: (text) => <span className="font-medium text-[#153D36]">{text}</span>,
+    },
+    {
+      title: "Tên sách",
+      dataIndex: "bookNameDisplay",
+      key: "bookNameDisplay",
+    },
+    {
+      title: "Ngày mượn",
+      dataIndex: "borrowDate",
+      key: "borrowDate",
+      render: (date) => dayjs(date).format("DD/MM/YYYY"),
+      sorter: (a, b) => dayjs(a.borrowDate).valueOf() - dayjs(b.borrowDate).valueOf(),
+    },
+    {
+      title: "Hạn trả",
+      dataIndex: "returnDate",
+      key: "returnDate",
+      render: (date, record) => {
+        if (record.isReturned) return dayjs(date).format("DD/MM/YYYY");
+        
+        const isLate = dayjs().isAfter(dayjs(date), 'day');
+        return (
+          <span className={isLate ? "text-red-500 font-bold" : ""}>
+             {dayjs(date).format("DD/MM/YYYY")}
+          </span>
+        )
+      },
+    },
+    {
+      title: "Phạt",
+      dataIndex: "fineAmount",
+      key: "fineAmount",
+      align: "right",
+      render: (amount) => (
+        <span className={amount > 0 ? "text-red-500 font-semibold" : "text-gray-400"}>
+          {formatCurrency(amount)}
+        </span>
+      ),
+    },
+    {
+      title: "Trạng thái / Hành động",
+      key: "action",
+      align: "center",
+      render: (_, record) => {
+        if (record.isReturned) {
+          return (
+            <Tag icon={<CheckCircleOutlined />} color="success" className="px-3 py-1 text-sm rounded-full">
+              Đã trả
+            </Tag>
+          );
+        }
+        return (
+          <Popconfirm
+            title="Xác nhận trả sách"
+            description={`Bạn có chắc muốn trả sách "${record.bookNameDisplay}"?`}
+            onConfirm={() => handleReturn(record)}
+            okText="Đồng ý"
+            cancelText="Hủy"
+            okButtonProps={{ style: { backgroundColor: '#17966F' } }}
+          >
+            <Button 
+                type="primary" 
+                size="small"
+                icon={<SyncOutlined />}
+                style={{ backgroundColor: "#17966F", borderColor: "#17966F" }}
+            >
+              Trả sách
+            </Button>
+          </Popconfirm>
+        );
+      },
+    },
+  ];
+
+  // --- SỬA LỖI CRASH TẠI ĐÂY ---
+  const filteredData = data.filter((item) => {
+    // Luôn đảm bảo biến là chuỗi string trước khi gọi .toLowerCase()
+    const rName = item.readerName || ""; 
+    const bName = item.bookNameDisplay || "";
+    const search = searchText.toLowerCase();
+
+    return rName.toLowerCase().includes(search) || bName.toLowerCase().includes(search);
   });
 
   return (
-    <div className="min-h-screen bg-[#f0fdf4] px-4 md:px-10 py-6">
-      <h2 className="text-2xl font-bold mb-6 text-center text-[#14532d]">
-        Danh sách mượn sách của tất cả người dùng
-      </h2>
-
-      <div className="overflow-x-auto shadow rounded-md">
-        <div className="flex justify-end mb-4">
-          <input
-            type="text"
-            placeholder="Tìm kiếm theo tên người mượn..."
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-            className="px-4 py-2 border rounded-md shadow-sm w-80 outline-none"
-          />
+    <div className="flex justify-center items-start min-h-screen bg-gray-50 p-4">
+      <Card
+        className="w-full shadow-lg rounded-xl border-t-4 border-t-[#153D36]"
+        // --- SỬA LỖI DEPRECATED TẠI ĐÂY ---
+        styles={{ body: { padding: "20px" } }} 
+      >
+        <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+          <div>
+            <Title level={3} style={{ color: "#153D36", margin: 0 }}>
+              Quản Lý Mượn Trả
+            </Title>
+            <p className="text-gray-500 text-sm">Theo dõi danh sách sách đang được mượn</p>
+          </div>
+          
+          <Space>
+            <Input
+              placeholder="Tìm theo tên hoặc sách..."
+              prefix={<SearchOutlined className="text-gray-400" />}
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              className="w-64"
+              allowClear
+            />
+            <Button 
+                icon={<ReloadOutlined />} 
+                onClick={fetchData}
+                loading={loading}
+            >
+                Làm mới
+            </Button>
+          </Space>
         </div>
-        <table className="min-w-full bg-white">
-          <thead className="bg-[#14532d] text-white text-left">
-            <tr>
-              <th className="px-4 py-3">Người mượn</th>
-              <th className="px-4 py-3">Tên sách</th>
-              <th className="px-4 py-3">Ngày mượn</th>
-              <th className="px-4 py-3">Ngày trả</th>
-              <th className="px-4 py-3">Số ngày mượn</th>
-              <th className="px-4 py-3">Tiền phạt</th>
-              <th className="px-4 py-3 text-center">Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredLoans.length > 0 ? (
-              filteredLoans.map((item) => {
-                const readerName = getReaderName(item.idReader);
-                return (
-                  <tr
-                    key={item.idLoanSlipBook}
-                    className="border-b hover:bg-[#dcfce7] transition duration-200"
-                  >
-                    <td className="px-4 py-3 text-sm">{readerName}</td>
-                    <td className="px-4 py-3 text-sm">{item.nameBook}</td>
-                    <td className="px-4 py-3 text-sm">
-                      {new Date(item.borrowDate).toLocaleDateString()}
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      {new Date(item.returnDate).toLocaleDateString()}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-center">
-                      {item.loanPeriod}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-center">
-                      {item.fineAmount?.toLocaleString("vi-VN", {
-                        style: "currency",
-                        currency: "VND",
-                      })}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      {item.isReturned ? (
-                        <span className="text-green-700 font-semibold">
-                          Đã trả
-                        </span>
-                      ) : (
-                        <button
-                          onClick={() => handleReturn(item)}
-                          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-                        >
-                          Trả sách
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })
-            ) : (
-              <tr>
-                <td colSpan={7} className="text-center py-4 text-gray-500">
-                  Không có dữ liệu mượn sách.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+
+        <Table
+          columns={columns}
+          dataSource={filteredData}
+          loading={loading}
+          pagination={{ pageSize: 8 }}
+          rowClassName={() => "hover:bg-gray-50 transition-colors"}
+          locale={{ emptyText: "Không có dữ liệu mượn sách" }}
+          bordered
+        />
+      </Card>
     </div>
   );
 };

@@ -143,7 +143,7 @@ export const findReaderAPI = (token: string, username: string) => {
     return axios.post<IBackendRes<any>>(urlBackend, { token, username });
 };
 export const getTypeBooksAPI = () => {
-    return axios.get('/api/TypeBook/getAllTypeBook');
+    return axios.get('/api/TypeBook/list-all-typebook');
 };
 
 export const addLoanBookAPI = (idReader: string, idTheBook: string) => {
@@ -407,7 +407,7 @@ export const getBookStatusAPI = async (idThebook: string) => {
 };
 export const getHeaderBookByTheBookIdAPI = async (thebookId: string) => {
     const res = await axios.get(
-        `/api/Book/headerbook-by-thebook-id${thebookId}`
+        `/api/Book/headerbook-by-thebook-id?idTheBook=${thebookId}`
     );
     return res;
 };
