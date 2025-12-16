@@ -14,40 +14,43 @@ import {
     Checkbox,
     Modal,
     Card,
-    Tag,
     Space,
     Typography,
+    Spin,
+    Badge,
 } from 'antd';
 import {
     PlusOutlined,
     DeleteOutlined,
     SaveOutlined,
     EditOutlined,
-    UserOutlined,
-    KeyOutlined,
-    UnorderedListOutlined,
+    CheckSquareOutlined,
+    BorderOutlined,
+    SecurityScanOutlined,
 } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 
+// Danh sách các key chính xác từ Database (cột permission_name)
 const ALL_PERMISSIONS = [
-    'receiveBooks',
-    'manageUsers',
     'borrowBooks',
+    'chat',
+    'manageUsers',
+    'parameter',
+    'receiveBooks',
     'viewLists',
     'viewReports',
-    'parameter',
-    'chat',
 ];
 
+// Map key sang tên hiển thị (description)
 const permissionLabels: Record<string, string> = {
-    receiveBooks: 'Tiếp nhận sách',
-    manageUsers: 'Quản lý người dùng',
     borrowBooks: 'Mượn trả sách',
-    viewLists: 'Xem danh sách',
-    viewReports: 'Xem báo cáo',
-    parameter: 'Tham số hệ thống',
     chat: 'Trò chuyện',
+    manageUsers: 'Quản lý người dùng',
+    parameter: 'Tham số hệ thống',
+    receiveBooks: 'Tiếp nhận sách',
+    viewLists: 'Xem danh sách (Thêm độc giả/tác giả)',
+    viewReports: 'Xem báo cáo',
 };
 
 const RolePermissionUI = () => {
@@ -55,88 +58,74 @@ const RolePermissionUI = () => {
     const [selectedRole, setSelectedRole] = useState<string | null>(null);
     const [currentPermissions, setCurrentPermissions] = useState<string[]>([]);
     const [editPermissions, setEditPermissions] = useState<string[]>([]);
+
     const [newRoleName, setNewRoleName] = useState('');
     const [newDescription, setNewDescription] = useState('');
     const [newRolePermissions, setNewRolePermissions] = useState<string[]>([]);
-    const [activeTab, setActiveTab] = useState('create');
+
+    const [activeTab, setActiveTab] = useState<'create' | 'manage'>('manage');
+    const [loading, setLoading] = useState(false);
+    const [loadingPerms, setLoadingPerms] = useState(false);
 
     const fetchRoles = async () => {
+        setLoading(true);
         try {
             const res = await getAllRolesAPI();
-            console.log(res);
-            const res1 =
-                res.data?.filter((r: any) => r.roleName !== 'Reader') || [];
-            setRoles(res1);
+
+            const data = res.data || res || [];
+            const list = Array.isArray(data) ? data : [];
+            const filtered = list.filter((r: any) => r.roleName !== 'Reader');
+            setRoles(filtered);
         } catch (err) {
-            message.error('Không thể tải vai trò.');
-            console.log(err);
+            console.error(err);
+            message.error('Không thể tải danh sách vai trò.');
+        } finally {
+            setLoading(false);
         }
     };
 
     const fetchPermissions = async (roleName: string) => {
+        setLoadingPerms(true);
+        setCurrentPermissions([]);
+        setEditPermissions([]);
+
         try {
             const res = await getPermissionsByRoleAPI(roleName);
-            const permissionNames = (Array.isArray(res) ? res : []).map(
-                (p: any) => p.permissionName
-            );
-            setCurrentPermissions(permissionNames);
-            setEditPermissions(permissionNames);
-        } catch (err) {
-            message.error('Lỗi khi tải quyền.');
-        }
-    };
+            console.log('API Response cho role:', roleName, res);
 
-    const handleAddRole = async () => {
-        if (!newRoleName.trim()) {
-            message.warning('Vui lòng nhập tên vai trò');
-            return;
-        }
+            // Xử lý dữ liệu trả về từ API
+            // Giả sử API trả về mảng object dạng: [{ permissionName: "borrowBooks", ... }, ...]
+            const apiData = res.data?.data || res.data || [];
 
-        try {
-            await addRoleAPI(newRoleName, newDescription);
-            for (const perm of newRolePermissions) {
-                await addRolePermissionAPI(newRoleName, perm);
+            if (Array.isArray(apiData)) {
+                // Bước quan trọng: Chỉ lấy giá trị của cột permissionName
+                const mappedKeys = apiData.map((item: any) => {
+                    // Đảm bảo item.permissionName khớp với cột trong DB bạn chụp
+                    return item.permissionName;
+                });
+
+                console.log('Các quyền đã có (Keys):', mappedKeys);
+
+                // Cập nhật state để Checkbox tự động "tick"
+                setCurrentPermissions(mappedKeys);
+                setEditPermissions(mappedKeys);
             }
-            message.success('Đã thêm vai trò mới');
-            setNewRoleName('');
-            setNewDescription('');
-            setNewRolePermissions([]);
-            fetchRoles();
         } catch (err) {
-            message.error('Thêm vai trò thất bại');
+            console.error(err);
+            message.error('Lỗi tải quyền hạn.');
+        } finally {
+            setLoadingPerms(false);
         }
-    };
-
-    const handleDelete = async (roleName: string) => {
-        Modal.confirm({
-            title: `Xóa vai trò "${roleName}"?`,
-            content: 'Bạn có chắc chắn muốn xóa vai trò này?',
-            okText: 'Xóa',
-            cancelText: 'Hủy',
-            okButtonProps: {
-                danger: true,
-                style: { background: '#ff4d4f', borderColor: '#ff4d4f' },
-            },
-            onOk: async () => {
-                try {
-                    await deleteRoleAPI(roleName);
-                    message.success('Đã xóa vai trò');
-                    fetchRoles();
-                } catch (err) {
-                    message.error('Xóa thất bại');
-                }
-            },
-        });
     };
 
     const handleUpdatePermissions = async () => {
         if (!selectedRole) return;
-
         if (editPermissions.length === 0) {
-            message.warning('Vui lòng chọn ít nhất một quyền');
+            message.warning('Vai trò cần có ít nhất một quyền.');
             return;
         }
 
+        setLoadingPerms(true);
         try {
             const added = editPermissions.filter(
                 (p) => !currentPermissions.includes(p)
@@ -145,448 +134,471 @@ const RolePermissionUI = () => {
                 (p) => !editPermissions.includes(p)
             );
 
-            for (const perm of added) {
-                await addRolePermissionAPI(selectedRole, perm);
-            }
+            const promises = [
+                ...added.map((p) => addRolePermissionAPI(selectedRole, p)),
+                ...removed.map((p) => deleteRolePermissionAPI(selectedRole, p)),
+            ];
 
-            for (const perm of removed) {
-                await deleteRolePermissionAPI(selectedRole, perm);
-            }
+            await Promise.all(promises);
+            message.success('Cập nhật quyền thành công!');
 
-            message.success('Cập nhật quyền thành công');
-            fetchPermissions(selectedRole);
+            // Refresh lại
+            await fetchPermissions(selectedRole);
         } catch (err) {
-            message.error('Lỗi cập nhật quyền');
+            console.error(err);
+            message.error('Có lỗi xảy ra khi lưu.');
+        } finally {
+            setLoadingPerms(false);
         }
+    };
+
+    const handleSelectAll = (checked: boolean) => {
+        setEditPermissions(checked ? [...ALL_PERMISSIONS] : []);
+    };
+
+    const handleAddRole = async () => {
+        if (!newRoleName.trim()) return message.warning('Nhập tên vai trò');
+        setLoading(true);
+        try {
+            await addRoleAPI(newRoleName, newDescription);
+            for (const perm of newRolePermissions)
+                await addRolePermissionAPI(newRoleName, perm);
+            message.success('Tạo vai trò thành công');
+            setNewRoleName('');
+            setNewDescription('');
+            setNewRolePermissions([]);
+            fetchRoles();
+            setActiveTab('manage');
+        } catch (e) {
+            message.error('Thất bại');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDeleteRole = (name: string) => {
+        Modal.confirm({
+            title: `Xóa vai trò ${name}?`,
+            content: 'Hành động này không thể hoàn tác.',
+            okText: 'Xóa',
+            okType: 'danger',
+            cancelText: 'Hủy',
+            onOk: async () => {
+                try {
+                    await deleteRoleAPI(name);
+                    message.success('Đã xóa');
+                    if (selectedRole === name) setSelectedRole(null);
+                    fetchRoles();
+                } catch (e) {
+                    message.error('Lỗi xóa');
+                }
+            },
+        });
     };
 
     useEffect(() => {
         fetchRoles();
     }, []);
 
-    const primaryColor = '#153D36';
-    const lightPrimary = '#E8F5F2';
-    const secondaryColor = '#27AE60';
+    const colors = {
+        primary: '#153D36',
+        secondary: '#27AE60',
+        bgSelected: '#F0FDF4',
+        borderSelected: '#27AE60',
+        textMuted: '#64748B',
+    };
 
     return (
-        <div
-            className="p-6 max-w-6xl mx-auto min-h-screen"
-            style={{ background: '#f5f5f5' }}
-        >
-            <div
-                className="bg-white p-6 rounded-xl shadow-sm"
-                style={{ borderTop: `4px solid ${primaryColor}` }}
-            >
-                <div className="flex justify-between items-center mb-6">
-                    <Title
-                        level={2}
-                        className="mb-0"
-                        style={{ color: primaryColor }}
-                    >
-                        <Space>
-                            <KeyOutlined />
-                            <span>Quản lý Phân Quyền</span>
-                        </Space>
-                    </Title>
+        <div className="min-h-screen bg-gray-50/50 p-6 font-sans">
+            <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                {/* Header Section */}
+                <div className="px-8 py-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white">
+                    <div>
+                        <Title
+                            level={3}
+                            style={{
+                                color: colors.primary,
+                                margin: 0,
+                                fontWeight: 700,
+                            }}
+                        >
+                            <SecurityScanOutlined className="mr-2" /> Quản trị
+                            Phân Quyền
+                        </Title>
+                        <Text type="secondary" className="mt-1 block">
+                            Quản lý vai trò và phân cấp quyền truy cập hệ thống
+                        </Text>
+                    </div>
 
-                    <Space>
+                    <div className="flex bg-gray-100 p-1 rounded-lg">
                         <Button
-                            type={
-                                activeTab === 'create' ? 'primary' : 'default'
-                            }
-                            icon={<PlusOutlined />}
-                            onClick={() => setActiveTab('create')}
-                            style={
-                                activeTab === 'create'
-                                    ? {
-                                          background: secondaryColor,
-                                          borderColor: secondaryColor,
-                                      }
-                                    : {}
-                            }
-                        >
-                            Tạo vai trò
-                        </Button>
-                        <Button
-                            type={
-                                activeTab === 'manage' ? 'primary' : 'default'
-                            }
-                            icon={<EditOutlined />}
+                            type="text"
                             onClick={() => setActiveTab('manage')}
-                            style={
+                            className={
                                 activeTab === 'manage'
-                                    ? {
-                                          background: secondaryColor,
-                                          borderColor: secondaryColor,
-                                      }
-                                    : {}
+                                    ? 'bg-white shadow-sm text-green-700 font-medium'
+                                    : 'text-gray-500'
                             }
                         >
-                            Quản lý quyền
+                            <EditOutlined /> Quản lý quyền
                         </Button>
-                    </Space>
+                        <Button
+                            type="text"
+                            onClick={() => setActiveTab('create')}
+                            className={
+                                activeTab === 'create'
+                                    ? 'bg-white shadow-sm text-green-700 font-medium'
+                                    : 'text-gray-500'
+                            }
+                        >
+                            <PlusOutlined /> Tạo vai trò mới
+                        </Button>
+                    </div>
                 </div>
 
-                {activeTab === 'create' ? (
-                    <Card
-                        title={
-                            <Space>
-                                <UserOutlined />
-                                <span>Tạo Vai Trò Mới</span>
-                            </Space>
-                        }
-                        variant="borderless"
-                        className="shadow-sm"
-                        styles={{
-                            header: {
-                                background: lightPrimary,
-                                borderBottom: `1px solid ${lightPrimary}`,
-                                color: primaryColor,
-                            },
-                        }}
-                    >
-                        <div className="space-y-6">
-                            <div>
-                                <Text
-                                    strong
-                                    className="block mb-2"
-                                    style={{ color: primaryColor }}
-                                >
-                                    Thông tin vai trò
-                                </Text>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-6">
+                    {activeTab === 'manage' ? (
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-[650px]">
+                            {/* --- CỘT TRÁI: DANH SÁCH ROLE --- */}
+                            <div className="lg:col-span-4 flex flex-col h-full border-r border-gray-100 pr-6">
+                                <div className="mb-4 flex items-center justify-between">
+                                    <Text
+                                        strong
+                                        className="text-gray-500 uppercase text-xs"
+                                    >
+                                        Danh sách vai trò
+                                    </Text>
+                                    <Badge
+                                        count={roles.length}
+                                        style={{
+                                            backgroundColor: colors.secondary,
+                                        }}
+                                    />
+                                </div>
+
+                                <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
+                                    {loading ? (
+                                        <div className="text-center py-10">
+                                            <Spin />
+                                        </div>
+                                    ) : (
+                                        roles.map((role) => (
+                                            <div
+                                                key={role.roleName}
+                                                onClick={() => {
+                                                    setSelectedRole(
+                                                        role.roleName
+                                                    );
+                                                    fetchPermissions(
+                                                        role.roleName
+                                                    );
+                                                }}
+                                                className={`
+                                                group relative p-4 rounded-xl cursor-pointer transition-all duration-200 border
+                                                ${
+                                                    selectedRole ===
+                                                    role.roleName
+                                                        ? `bg-[${colors.bgSelected}] border-green-500 shadow-md`
+                                                        : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm'
+                                                }
+                                            `}
+                                                style={
+                                                    selectedRole ===
+                                                    role.roleName
+                                                        ? {
+                                                              backgroundColor:
+                                                                  colors.bgSelected,
+                                                              borderColor:
+                                                                  colors.secondary,
+                                                          }
+                                                        : {}
+                                                }
+                                            >
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <div
+                                                            className={`font-bold text-lg ${
+                                                                selectedRole ===
+                                                                role.roleName
+                                                                    ? 'text-green-800'
+                                                                    : 'text-gray-700'
+                                                            }`}
+                                                        >
+                                                            {role.roleName}
+                                                        </div>
+                                                        <div className="text-sm text-gray-500 mt-1 line-clamp-1">
+                                                            {role.description ||
+                                                                'Chưa có mô tả'}
+                                                        </div>
+                                                    </div>
+                                                    {role.roleName !==
+                                                        'Admin' && (
+                                                        <Button
+                                                            type="text"
+                                                            danger
+                                                            icon={
+                                                                <DeleteOutlined />
+                                                            }
+                                                            className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleDeleteRole(
+                                                                    role.roleName
+                                                                );
+                                                            }}
+                                                        />
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* --- CỘT PHẢI: CHECKBOXES --- */}
+                            <div className="lg:col-span-8 flex flex-col h-full">
+                                {selectedRole ? (
+                                    <>
+                                        <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center mb-6 pb-4 border-b border-gray-100">
+                                            <div>
+                                                <Text className="text-xs font-bold text-gray-400 uppercase">
+                                                    Đang chỉnh sửa cho
+                                                </Text>
+                                                <div className="text-3xl font-bold text-green-800 mt-1">
+                                                    {selectedRole}
+                                                </div>
+                                            </div>
+                                            <Space>
+                                                <Button
+                                                    size="middle"
+                                                    icon={
+                                                        <CheckSquareOutlined />
+                                                    }
+                                                    onClick={() =>
+                                                        handleSelectAll(true)
+                                                    }
+                                                >
+                                                    Chọn hết
+                                                </Button>
+                                                <Button
+                                                    size="middle"
+                                                    icon={<BorderOutlined />}
+                                                    onClick={() =>
+                                                        handleSelectAll(false)
+                                                    }
+                                                >
+                                                    Bỏ chọn
+                                                </Button>
+                                            </Space>
+                                        </div>
+
+                                        <div className="flex-1 overflow-y-auto relative pr-2">
+                                            {loadingPerms && (
+                                                <div className="absolute inset-0 bg-white/60 z-10 flex items-center justify-center backdrop-blur-sm">
+                                                    <Spin
+                                                        size="large"
+                                                        tip="Đang đồng bộ quyền..."
+                                                    />
+                                                </div>
+                                            )}
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                {ALL_PERMISSIONS.map((perm) => {
+                                                    const isChecked =
+                                                        editPermissions.includes(
+                                                            perm
+                                                        );
+                                                    return (
+                                                        <div
+                                                            key={perm}
+                                                            onClick={() => {
+                                                                if (isChecked)
+                                                                    setEditPermissions(
+                                                                        (
+                                                                            prev
+                                                                        ) =>
+                                                                            prev.filter(
+                                                                                (
+                                                                                    p
+                                                                                ) =>
+                                                                                    p !==
+                                                                                    perm
+                                                                            )
+                                                                    );
+                                                                else
+                                                                    setEditPermissions(
+                                                                        (
+                                                                            prev
+                                                                        ) => [
+                                                                            ...prev,
+                                                                            perm,
+                                                                        ]
+                                                                    );
+                                                            }}
+                                                            className={`
+                                                                relative p-4 rounded-xl border-2 cursor-pointer transition-all duration-200
+                                                                flex items-center gap-4 group hover:shadow-md
+                                                                ${
+                                                                    isChecked
+                                                                        ? 'bg-green-50 border-green-500'
+                                                                        : 'bg-white border-gray-100 hover:border-green-200'
+                                                                }
+                                                            `}
+                                                        >
+                                                            {/* Custom Checkbox Size */}
+                                                            <div className="flex-shrink-0">
+                                                                <Checkbox
+                                                                    checked={
+                                                                        isChecked
+                                                                    }
+                                                                    className="scale-125"
+                                                                    style={{
+                                                                        accentColor:
+                                                                            colors.secondary,
+                                                                    }}
+                                                                />
+                                                            </div>
+
+                                                            {/* Tách phần text ra để không bị dính */}
+                                                            <div className="flex flex-col">
+                                                                <span
+                                                                    className={`font-bold text-base ${
+                                                                        isChecked
+                                                                            ? 'text-green-900'
+                                                                            : 'text-gray-700 group-hover:text-green-700'
+                                                                    }`}
+                                                                >
+                                                                    {
+                                                                        permissionLabels[
+                                                                            perm
+                                                                        ]
+                                                                    }
+                                                                </span>
+                                                                <span className="text-xs font-mono text-gray-400 mt-1 bg-gray-100 px-2 py-0.5 rounded w-fit">
+                                                                    {perm}
+                                                                </span>
+                                                            </div>
+
+                                                            {isChecked && (
+                                                                <div className="absolute top-2 right-2 text-green-500 opacity-20">
+                                                                    <SecurityScanOutlined
+                                                                        style={{
+                                                                            fontSize: 40,
+                                                                        }}
+                                                                    />
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-6 pt-4 border-t border-gray-100 flex justify-between items-center bg-white">
+                                            <div className="text-sm text-gray-500 italic">
+                                                *Thay đổi sẽ có hiệu lực ngay
+                                                lập tức.
+                                            </div>
+                                            <Button
+                                                type="primary"
+                                                size="large"
+                                                icon={<SaveOutlined />}
+                                                onClick={
+                                                    handleUpdatePermissions
+                                                }
+                                                loading={loadingPerms}
+                                                style={{
+                                                    background:
+                                                        colors.secondary,
+                                                    borderColor:
+                                                        colors.secondary,
+                                                    paddingLeft: 30,
+                                                    paddingRight: 30,
+                                                }}
+                                                className="shadow-lg shadow-green-200 hover:shadow-xl"
+                                            >
+                                                Lưu Thay Đổi
+                                            </Button>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="h-full flex flex-col items-center justify-center text-gray-300">
+                                        <SecurityScanOutlined
+                                            style={{
+                                                fontSize: 64,
+                                                marginBottom: 16,
+                                                opacity: 0.5,
+                                            }}
+                                        />
+                                        <Text
+                                            type="secondary"
+                                            className="text-lg"
+                                        >
+                                            Chọn một vai trò để bắt đầu phân
+                                            quyền
+                                        </Text>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="max-w-3xl mx-auto py-10">
+                            <Card
+                                title="Tạo Vai Trò Mới"
+                                bordered={false}
+                                className="shadow-lg border border-gray-100 rounded-xl"
+                            >
+                                <div className="space-y-6">
                                     <div>
+                                        <Text strong>
+                                            Tên vai trò{' '}
+                                            <span className="text-red-500">
+                                                *
+                                            </span>
+                                        </Text>
                                         <Input
-                                            placeholder="Tên vai trò*"
+                                            size="large"
+                                            placeholder="Nhập tên vai trò..."
                                             value={newRoleName}
                                             onChange={(e) =>
                                                 setNewRoleName(e.target.value)
                                             }
-                                            size="large"
-                                            prefix={<EditOutlined />}
+                                            className="mt-2"
                                         />
                                     </div>
                                     <div>
+                                        <Text strong>Mô tả</Text>
                                         <Input.TextArea
-                                            placeholder="Mô tả (tuỳ chọn)"
+                                            rows={2}
+                                            placeholder="Mô tả vai trò..."
                                             value={newDescription}
                                             onChange={(e) =>
                                                 setNewDescription(
                                                     e.target.value
                                                 )
                                             }
-                                            rows={1}
+                                            className="mt-2"
                                         />
                                     </div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <Text
-                                    strong
-                                    className="block mb-2"
-                                    style={{ color: primaryColor }}
-                                >
-                                    Phân Quyền
-                                </Text>
-                                <div className="bg-gray-50 p-4 rounded-lg">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                        {ALL_PERMISSIONS.map((perm) => (
-                                            <div
-                                                key={perm}
-                                                className="flex items-center"
-                                            >
-                                                <Checkbox
-                                                    value={perm}
-                                                    checked={newRolePermissions.includes(
-                                                        perm
-                                                    )}
-                                                    onChange={(e) => {
-                                                        if (e.target.checked) {
-                                                            setNewRolePermissions(
-                                                                [
-                                                                    ...newRolePermissions,
-                                                                    perm,
-                                                                ]
-                                                            );
-                                                        } else {
-                                                            setNewRolePermissions(
-                                                                newRolePermissions.filter(
-                                                                    (p) =>
-                                                                        p !==
-                                                                        perm
-                                                                )
-                                                            );
-                                                        }
-                                                    }}
-                                                    className="mr-2"
-                                                >
-                                                    <Tag
-                                                        color={
-                                                            newRolePermissions.includes(
-                                                                perm
-                                                            )
-                                                                ? secondaryColor
-                                                                : 'default'
-                                                        }
-                                                        style={{
-                                                            borderRadius: '4px',
-                                                            padding: '2px 8px',
-                                                        }}
-                                                    >
-                                                        {permissionLabels[
-                                                            perm
-                                                        ] || perm}
-                                                    </Tag>
-                                                </Checkbox>
-                                            </div>
-                                        ))}
+                                    <div className="pt-4">
+                                        <Button
+                                            type="primary"
+                                            size="large"
+                                            block
+                                            onClick={handleAddRole}
+                                            loading={loading}
+                                            style={{
+                                                background: colors.secondary,
+                                            }}
+                                        >
+                                            Xác nhận tạo mới
+                                        </Button>
                                     </div>
                                 </div>
-                            </div>
-
-                            <div className="flex justify-end gap-3">
-                                <Button
-                                    size="large"
-                                    onClick={() => {
-                                        setNewRoleName('');
-                                        setNewDescription('');
-                                        setNewRolePermissions([]);
-                                    }}
-                                >
-                                    Đặt lại
-                                </Button>
-                                <Button
-                                    type="primary"
-                                    icon={<PlusOutlined />}
-                                    onClick={handleAddRole}
-                                    size="large"
-                                    style={{
-                                        background: secondaryColor,
-                                        borderColor: secondaryColor,
-                                    }}
-                                >
-                                    Tạo Vai Trò
-                                </Button>
-                            </div>
-                        </div>
-                    </Card>
-                ) : (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Danh sách vai trò */}
-                        <Card
-                            title={
-                                <Space>
-                                    <UnorderedListOutlined />
-                                    <span>Danh Sách Vai Trò</span>
-                                </Space>
-                            }
-                            variant="borderless"
-                            className="shadow-sm"
-                            styles={{
-                                header: {
-                                    background: lightPrimary,
-                                    borderBottom: `1px solid ${lightPrimary}`,
-                                    color: primaryColor,
-                                },
-                            }}
-                        >
-                            <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
-                                {roles.map((r) => (
-                                    <div
-                                        key={r.roleName}
-                                        className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                                            selectedRole === r.roleName
-                                                ? `border-[${secondaryColor}] bg-[${lightPrimary}]`
-                                                : 'border-gray-200 hover:border-gray-300'
-                                        }`}
-                                        onClick={() => {
-                                            setSelectedRole(r.roleName);
-                                            fetchPermissions(r.roleName);
-                                        }}
-                                    >
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <Text
-                                                    strong
-                                                    className="text-gray-800"
-                                                >
-                                                    {r.roleName}
-                                                </Text>
-                                                {r.description && (
-                                                    <Text
-                                                        type="secondary"
-                                                        className="block text-sm mt-1"
-                                                    >
-                                                        {r.description}
-                                                    </Text>
-                                                )}
-                                            </div>
-                                            <Button
-                                                danger
-                                                icon={<DeleteOutlined />}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleDelete(r.roleName);
-                                                }}
-                                                size="small"
-                                            />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </Card>
-
-                        {/* Cập nhật quyền */}
-                        <div className="lg:col-span-2">
-                            <Card
-                                title={
-                                    <Space>
-                                        <KeyOutlined />
-                                        <span>Phân Quyền Chi Tiết</span>
-                                    </Space>
-                                }
-                                variant="borderless"
-                                className="shadow-sm h-full"
-                                styles={{
-                                    header: {
-                                        background: lightPrimary,
-                                        borderBottom: `1px solid ${lightPrimary}`,
-                                        color: primaryColor,
-                                    },
-                                }}
-                            >
-                                {selectedRole ? (
-                                    <div className="space-y-6">
-                                        <div>
-                                            <Text strong className="block mb-1">
-                                                Vai trò đang chọn:
-                                            </Text>
-                                            <Tag
-                                                color={secondaryColor}
-                                                style={{
-                                                    fontSize: '14px',
-                                                    padding: '4px 10px',
-                                                }}
-                                            >
-                                                {selectedRole}
-                                            </Tag>
-                                        </div>
-
-                                        <div>
-                                            <Text
-                                                strong
-                                                className="block mb-3"
-                                                style={{ color: primaryColor }}
-                                            >
-                                                Danh sách quyền hạn
-                                            </Text>
-                                            <div className="bg-gray-50 p-4 rounded-lg">
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                                    {ALL_PERMISSIONS.map(
-                                                        (perm) => (
-                                                            <div
-                                                                key={perm}
-                                                                className="flex items-center"
-                                                            >
-                                                                <Checkbox
-                                                                    value={perm}
-                                                                    checked={editPermissions.includes(
-                                                                        perm
-                                                                    )}
-                                                                    onChange={(
-                                                                        e
-                                                                    ) => {
-                                                                        if (
-                                                                            e
-                                                                                .target
-                                                                                .checked
-                                                                        ) {
-                                                                            setEditPermissions(
-                                                                                [
-                                                                                    ...editPermissions,
-                                                                                    perm,
-                                                                                ]
-                                                                            );
-                                                                        } else {
-                                                                            setEditPermissions(
-                                                                                editPermissions.filter(
-                                                                                    (
-                                                                                        p
-                                                                                    ) =>
-                                                                                        p !==
-                                                                                        perm
-                                                                                )
-                                                                            );
-                                                                        }
-                                                                    }}
-                                                                    className="mr-2"
-                                                                >
-                                                                    <Tag
-                                                                        color={
-                                                                            editPermissions.includes(
-                                                                                perm
-                                                                            )
-                                                                                ? secondaryColor
-                                                                                : 'default'
-                                                                        }
-                                                                        style={{
-                                                                            borderRadius:
-                                                                                '4px',
-                                                                            padding:
-                                                                                '2px 8px',
-                                                                        }}
-                                                                    >
-                                                                        {permissionLabels[
-                                                                            perm
-                                                                        ] ||
-                                                                            perm}
-                                                                    </Tag>
-                                                                </Checkbox>
-                                                            </div>
-                                                        )
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex justify-end">
-                                            <Button
-                                                type="primary"
-                                                icon={<SaveOutlined />}
-                                                onClick={
-                                                    handleUpdatePermissions
-                                                }
-                                                size="large"
-                                                style={{
-                                                    background: secondaryColor,
-                                                    borderColor: secondaryColor,
-                                                }}
-                                                disabled={
-                                                    editPermissions.length === 0
-                                                }
-                                            >
-                                                Cập Nhật Quyền
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="text-center py-8">
-                                        <div className="text-gray-400 mb-4">
-                                            <KeyOutlined
-                                                style={{ fontSize: '32px' }}
-                                            />
-                                        </div>
-                                        <Text type="secondary">
-                                            Vui lòng chọn một vai trò từ danh
-                                            sách để phân quyền
-                                        </Text>
-                                    </div>
-                                )}
                             </Card>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
         </div>
     );

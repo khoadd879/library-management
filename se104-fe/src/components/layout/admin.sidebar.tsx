@@ -38,6 +38,7 @@ const AppSidebar: React.FC<AdminSidebarProps> = ({ open, setOpen }) => {
         const fetchPermissions = async () => {
             if (user?.data.roleName) {
                 try {
+                    console.log(user.data.roleName);
                     const res = await getPermissionsByRoleAPI(
                         user.data.roleName
                     );
@@ -45,7 +46,6 @@ const AppSidebar: React.FC<AdminSidebarProps> = ({ open, setOpen }) => {
                     const names = (res.data || []).map(
                         (p: any) => p.permissionName
                     );
-                    console.log(names);
                     setPermissions(names);
                 } catch (err) {
                     console.error('Lỗi khi tải quyền:', err);

@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import {
     getBookAndCommentsByIdAPI,
@@ -7,16 +7,36 @@ import {
     deleteCommentAPI,
 } from '@/services/api';
 import ReviewModal from '@/components/client/reviewPopUp';
-import { message, Spin } from 'antd';
+import { message, Spin, Button, Avatar, Tag, Progress, Modal } from 'antd'; // Thêm Modal
+import {
+    ArrowLeftOutlined,
+    StarFilled,
+    UserOutlined,
+    MoreOutlined,
+    EditOutlined,
+    DeleteOutlined,
+    FormOutlined,
+    BookOutlined,
+    CalendarOutlined,
+    ReadOutlined,
+    ExclamationCircleOutlined,
+} from '@ant-design/icons';
+
+// Interface
+interface IBookDetail extends IGetAllBookAndComment {
+    pageCount?: number;
+    language?: string;
+}
 
 const BookDetailPage = () => {
     const { id } = useParams<{ id: string }>();
-    const [bookDetail, setBookDetail] = useState<IGetAllBookAndComment | null>(
-        null
-    );
+    const navigate = useNavigate();
+
+    // --- STATE ---
+    const [bookDetail, setBookDetail] = useState<IBookDetail | null>(null);
     const [comments, setComments] = useState<IComment[]>([]);
     const [showModal, setShowModal] = useState(false);
-    const [activeMenu, setActiveMenu] = useState<string | null>(null);
+    const [activeMenu, setActiveMenu] = useState<string | null>(null); // Để đóng/mở menu 3 chấm
     const [editComment, setEditComment] = useState<IComment | null>(null);
     const [loading, setLoading] = useState(true);
     const [showFullDesc, setShowFullDesc] = useState(false);
@@ -24,6 +44,7 @@ const BookDetailPage = () => {
     const token = localStorage.getItem('token') || '';
     const idUser = localStorage.getItem('idUser') || '';
 
+    // --- RATING DATA ---
     const [ratingData, setRatingData] = useState<{
         average: number;
         totalRatings: number;
@@ -42,438 +63,557 @@ const BookDetailPage = () => {
         return total > 0 ? Math.round((count / total) * 100) : 0;
     };
 
-    const renderStars = (avg: number) => {
-        return Array.from({ length: 5 }, (_, i) => (
-            <span
-                key={i}
-                className={
-                    i < Math.floor(avg) ? 'text-yellow-400' : 'text-gray-300'
-                }
-            >
-                ★
-            </span>
-        ));
-    };
-
-    // Trong BookDetailPage.tsx
-
-    // Trong file detail.tsx
-
-    // src/pages/client/detail.tsx
-
-    useEffect(() => {
+    // --- FETCHING ---
+    const fetchBookData = async () => {
         if (!id) return;
         setLoading(true);
-        const fetchData = async () => {
-            try {
-                const res = await getBookAndCommentsByIdAPI(token, id);
-
-                const backendData = res.data;
-
-                if (Array.isArray(backendData) && backendData.length > 0) {
-                    setBookDetail(backendData[0]);
-                } else {
-                    setBookDetail(null);
-                }
-            } catch (error) {
-                console.error('Lỗi lấy chi tiết sách:', error);
-                setBookDetail(null);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData();
-    }, [id]);
-
-    useEffect(() => {
-        const fetchStars = async () => {
-            if (!bookDetail?.idBook) return;
-            try {
-                const res = await getStarByIdBookAPI(bookDetail.idBook);
-
-                const distribution: Record<1 | 2 | 3 | 4 | 5, number> = {
-                    1: 0,
-                    2: 0,
-                    3: 0,
-                    4: 0,
-                    5: 0,
-                };
-                let total = 0;
-                let sum = 0;
-
-                if (res.data && Array.isArray(res.data)) {
-                    res.data.forEach((entry) => {
-                        const s = entry.star as 1 | 2 | 3 | 4 | 5;
-                        if ([1, 2, 3, 4, 5].includes(s)) {
-                            distribution[s] = entry.status;
-                            total += entry.status;
-                            sum += s * entry.status;
-                        }
-                    });
-                }
-
-                setRatingData({
-                    average: total > 0 ? sum / total : 0,
-                    totalRatings: total,
-                    distribution,
-                });
-            } catch (error) {}
-        };
-        fetchStars();
-    }, [bookDetail]);
-
-    useEffect(() => {
-        const fetchComments = async () => {
-            if (!id) return;
-            try {
-                const res = await getAllComments(id);
-                setComments(res.data || []);
-            } catch (error) {
-                message.error('Lỗi khi tải nhận xét.');
-                setComments([]);
-            }
-        };
-        fetchComments();
-    }, [id]);
-
-    const handleEdit = (id: string) => {
-        const cmt = comments.find((c) => c.idEvaluation === id);
-        if (cmt) {
-            setEditComment(cmt);
-            setShowModal(true);
-        }
-        setActiveMenu(null);
-    };
-    const handleDelete = (id: string) => {
-        if (window.confirm('Bạn có chắc muốn xoá nhận xét này?')) {
-            handleDeleteComment(id);
-            setActiveMenu(null);
-        }
-    };
-
-    const handleDeleteComment = async (idComment: string) => {
         try {
-            const idUser = localStorage.getItem('idUser');
-            if (!idUser) {
-                message.error('User not found');
-                return;
+            const res = await getBookAndCommentsByIdAPI(token, id);
+            const backendData = res.data;
+            if (Array.isArray(backendData) && backendData.length > 0) {
+                setBookDetail(backendData[0]);
+            } else {
+                setBookDetail(null);
             }
-            await deleteCommentAPI(idComment, idUser);
-            setComments((prev) =>
-                prev.filter((c) => c.idEvaluation !== idComment)
-            );
-            message.success('Xóa thành công');
         } catch (error) {
-            message.error('Không thể xóa đánh giá');
+            console.error('Lỗi lấy chi tiết sách:', error);
+            setBookDetail(null);
+        } finally {
+            setLoading(false);
         }
     };
+
+    const fetchRatingData = async () => {
+        if (!bookDetail?.idBook) return;
+        try {
+            const res = await getStarByIdBookAPI(bookDetail.idBook);
+            const distribution: Record<1 | 2 | 3 | 4 | 5, number> = {
+                1: 0,
+                2: 0,
+                3: 0,
+                4: 0,
+                5: 0,
+            };
+            let total = 0;
+            let sum = 0;
+            if (res.data && Array.isArray(res.data)) {
+                res.data.forEach((entry) => {
+                    const s = entry.star as 1 | 2 | 3 | 4 | 5;
+                    if ([1, 2, 3, 4, 5].includes(s)) {
+                        distribution[s] = entry.status;
+                        total += entry.status;
+                        sum += s * entry.status;
+                    }
+                });
+            }
+            setRatingData({
+                average: total > 0 ? sum / total : 0,
+                totalRatings: total,
+                distribution,
+            });
+        } catch (error) {}
+    };
+
+    const fetchCommentsData = async () => {
+        if (!id) return;
+        try {
+            const res = await getAllComments(id);
+            setComments(res.data || []);
+        } catch (error) {
+            setComments([]);
+        }
+    };
+
+    useEffect(() => {
+        fetchBookData();
+    }, [id]);
+    useEffect(() => {
+        fetchRatingData();
+    }, [bookDetail]);
+    useEffect(() => {
+        fetchCommentsData();
+    }, [id]);
+
+    const refreshAll = () => {
+        fetchCommentsData();
+        fetchRatingData();
+    };
+
+    // --- HANDLERS (LOGIC CŨ + UI MỚI) ---
+
+    // 1. Xử lý mở Modal Edit
+    const handleEdit = (idComment: string) => {
+        const cmt = comments.find((c) => c.idEvaluation === idComment);
+        if (cmt) {
+            setEditComment(cmt); // Lưu data comment cần sửa
+            setShowModal(true); // Mở modal
+        }
+        setActiveMenu(null); // Đóng menu 3 chấm
+    };
+
+    // 2. Xử lý Delete (Dùng Modal.confirm của Antd cho đẹp)
+    const handleDelete = (idComment: string) => {
+        setActiveMenu(null); // Đóng menu ngay lập tức
+
+        Modal.confirm({
+            title: 'Xóa nhận xét?',
+            icon: <ExclamationCircleOutlined className="text-red-500" />,
+            content:
+                'Bạn có chắc chắn muốn xóa nhận xét này không? Hành động này không thể hoàn tác.',
+            okText: 'Xóa ngay',
+            okType: 'danger',
+            cancelText: 'Hủy',
+            onOk: async () => {
+                try {
+                    if (!idUser) return message.error('Vui lòng đăng nhập');
+                    await deleteCommentAPI(idComment, idUser); // API Cũ
+                    message.success('Đã xóa nhận xét thành công');
+
+                    // Cập nhật lại UI ngay lập tức
+                    setComments((prev) =>
+                        prev.filter((c) => c.idEvaluation !== idComment)
+                    );
+                    fetchRatingData(); // Tính lại sao
+                } catch (error) {
+                    message.error('Có lỗi xảy ra khi xóa nhận xét');
+                }
+            },
+        });
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex justify-center items-center bg-[#F8FAFC]">
+                <Spin
+                    size="large"
+                    tip="Đang tải thông tin sách..."
+                    className="text-[#153D36]"
+                />
+            </div>
+        );
+    }
+
+    if (!bookDetail) {
+        return (
+            <div className="min-h-screen flex flex-col justify-center items-center bg-[#F8FAFC] gap-4">
+                <ReadOutlined className="text-6xl text-gray-300" />
+                <p className="text-gray-500 text-lg font-medium">
+                    Không tìm thấy thông tin sách.
+                </p>
+                <Button
+                    type="primary"
+                    className="bg-[#153D36]"
+                    onClick={() => navigate('/')}
+                >
+                    Về trang chủ
+                </Button>
+            </div>
+        );
+    }
 
     return (
-        <div className="p-6 max-w-6xl mx-auto bg-gradient-to-br from-[#f4f7f9] to-[#e0f7fa] min-h-screen animate-fade-in">
-            {loading ? (
-                <div className="flex justify-center items-center min-h-[60vh]">
-                    <Spin size="large" />
+        <div
+            className="min-h-screen bg-[#F8FAFC] font-sans pb-20"
+            onClick={() => setActiveMenu(null)}
+        >
+            {/* HERO BANNER */}
+            <div className="relative h-[400px] md:h-[480px] overflow-hidden bg-[#153D36]">
+                {bookDetail.image && (
+                    <div
+                        className="absolute inset-0 bg-cover bg-center blur-2xl opacity-50 scale-110 transform transition-transform duration-1000"
+                        style={{ backgroundImage: `url(${bookDetail.image})` }}
+                    ></div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-b from-[#153D36]/80 via-[#153D36]/90 to-[#F8FAFC]"></div>
+                <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="group flex items-center gap-2 text-white/80 hover:text-white transition-colors mb-4 bg-black/20 hover:bg-black/30 backdrop-blur-sm px-4 py-2 rounded-full w-fit"
+                    >
+                        <ArrowLeftOutlined className="group-hover:-translate-x-1 transition-transform" />
+                        <span className="font-medium text-sm">Quay lại</span>
+                    </button>
                 </div>
-            ) : !bookDetail ? (
-                <div className="text-center text-gray-500 py-10">
-                    Không tìm thấy thông tin sách.
-                </div>
-            ) : (
-                <>
-                    <div className="flex flex-col md:flex-row gap-8 animate-fade-in-up">
-                        <div className="w-full md:w-1/3 bg-white rounded-2xl shadow-xl p-6 flex flex-col items-center transition-transform duration-300 hover:scale-[1.02]">
-                            {bookDetail.image ? (
-                                <img
-                                    src={bookDetail.image}
-                                    alt="book"
-                                    className="w-60 h-80 object-cover rounded-xl shadow-md mb-4 animate-fade-in"
-                                />
-                            ) : (
-                                <div className="w-60 h-80 bg-gray-200 flex items-center justify-center rounded-xl text-gray-500 mb-4 animate-fade-in">
-                                    No Image
-                                </div>
-                            )}
-                            <div className="text-center mt-2">
-                                <h2 className="text-2xl font-bold text-[#153D36] mb-1">
-                                    {bookDetail.nameBook}
-                                </h2>
-                                <p className="text-sm text-gray-600 mb-1">
-                                    <span className="font-semibold">
-                                        Tác giả:{' '}
-                                    </span>
-                                    {(bookDetail.authors || [])
-                                        .map((a) => a.nameAuthor)
-                                        .join(', ')}
-                                </p>
-                                <p className="text-xs text-gray-400">
-                                    Năm xuất bản: {bookDetail.reprintYear}
-                                </p>
-                            </div>
-                        </div>
+            </div>
 
-                        {/* Card mô tả và đánh giá */}
-                        <div className="w-full md:w-2/3 flex flex-col gap-6">
-                            <div className="bg-white rounded-2xl shadow-xl p-6 animate-fade-in-up">
-                                <h3 className="text-xl font-semibold mb-2 text-[#1A4E46]">
-                                    Mô tả sách
-                                </h3>
-                                <div
-                                    className={`text-gray-700 text-base leading-relaxed relative ${
-                                        showFullDesc
-                                            ? ''
-                                            : 'max-h-[100px] overflow-y-auto pr-2'
-                                    }`}
-                                    style={{ transition: 'max-height 0.3s' }}
-                                >
-                                    {bookDetail.describe}
-                                </div>
-                                {bookDetail.describe &&
-                                    bookDetail.describe.length > 300 && (
-                                        <div className="flex justify-end mt-2">
-                                            <button
-                                                className="text-blue-600 hover:underline text-sm font-medium"
-                                                onClick={() =>
-                                                    setShowFullDesc((v) => !v)
-                                                }
-                                            >
-                                                {showFullDesc
-                                                    ? 'Thu gọn'
-                                                    : 'Xem thêm'}
-                                            </button>
+            {/* MAIN CONTENT */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 -mt-[280px] md:-mt-[320px]">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 animate-fade-in-up">
+                    {/* LEFT COLUMN: Book Cover */}
+                    <div className="lg:col-span-4 xl:col-span-3">
+                        <div className="lg:sticky lg:top-24 space-y-6">
+                            <div className="bg-white p-2 rounded-3xl shadow-2xl shadow-black/10 relative group perspective-1000">
+                                <div className="aspect-[2/3] overflow-hidden rounded-2xl bg-gray-200 relative z-10">
+                                    {bookDetail.image ? (
+                                        <img
+                                            src={bookDetail.image}
+                                            alt={bookDetail.nameBook}
+                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 gap-2">
+                                            <BookOutlined className="text-4xl opacity-50" />
+                                            <span>No Cover</span>
                                         </div>
                                     )}
+                                </div>
+                                <div className="absolute top-full inset-x-4 h-8 bg-gradient-to-b from-black/5 to-transparent blur-md rounded-b-3xl -mt-2 z-0"></div>
                             </div>
-
-                            <div className="bg-white rounded-2xl shadow-xl p-6 animate-fade-in-up">
-                                <h4 className="font-semibold mb-4 text-[#1A4E46]">
-                                    Đánh giá sản phẩm
-                                </h4>
-                                <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-                                    <div className="flex flex-col items-start min-w-[120px]">
-                                        <div className="text-3xl font-bold text-red-600">
-                                            {ratingData.average.toFixed(1)}
+                            <div className="grid grid-cols-1 gap-4">
+                                <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-row items-center justify-between px-6 text-center">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center text-[#2D7D6E]">
+                                            <CalendarOutlined className="text-xl" />
                                         </div>
-                                        <div className="text-sm text-gray-500">
-                                            /5
-                                        </div>
-                                        <div className="text-yellow-500 text-xl mt-1">
-                                            {renderStars(ratingData.average)}
-                                        </div>
-                                        <div className="text-sm text-gray-500 mt-1">
-                                            ({ratingData.totalRatings} đánh giá)
-                                        </div>
+                                        <span className="text-gray-500 text-sm font-medium uppercase tracking-wider">
+                                            Năm XB
+                                        </span>
                                     </div>
-                                    <div className="flex flex-1 flex-col gap-2 w-full">
-                                        {[5, 4, 3, 2, 1].map((star) => (
-                                            <div
-                                                key={star}
-                                                className="flex justify-between items-center text-sm"
-                                            >
-                                                <div className="flex items-center gap-1 w-[100px]">
-                                                    <span>{star}</span>
-                                                    <span>sao</span>
-                                                </div>
-                                                <div className="flex-1 bg-gray-200 h-2 rounded mx-2">
-                                                    <div
-                                                        className="bg-yellow-400 h-2 rounded transition-all duration-500"
-                                                        style={{
-                                                            width: `${getPercent(
-                                                                ratingData
-                                                                    .distribution[
-                                                                    star as
-                                                                        | 1
-                                                                        | 2
-                                                                        | 3
-                                                                        | 4
-                                                                        | 5
-                                                                ]
-                                                            )}%`,
-                                                        }}
-                                                    />
-                                                </div>
-                                                <div className="w-[40px] text-right text-gray-600">
-                                                    {getPercent(
-                                                        ratingData.distribution[
-                                                            star as
-                                                                | 1
-                                                                | 2
-                                                                | 3
-                                                                | 4
-                                                                | 5
-                                                        ]
-                                                    )}
-                                                    %
-                                                </div>
-                                            </div>
-                                        ))}
-                                        <div className="flex justify-end mt-4">
-                                            <button
-                                                className="text-red-600 border border-red-500 rounded px-4 py-1 hover:bg-red-50 transition text-sm flex items-center gap-1 animate-fade-in"
-                                                onClick={() =>
-                                                    setShowModal(true)
-                                                }
-                                            >
-                                                ✎ Viết đánh giá
-                                            </button>
-                                        </div>
-                                    </div>
+                                    <span className="font-bold text-[#153D36] text-lg">
+                                        {bookDetail.reprintYear}
+                                    </span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="mt-8 bg-white rounded-2xl shadow-xl p-6 animate-fade-in-up">
-                        <h3 className="font-semibold text-lg mb-3 text-[#1A4E46]">
-                            Nhận xét:
-                        </h3>
-                        <div className="space-y-4">
-                            {comments.map((cmt) => (
-                                <div
-                                    key={cmt.idEvaluation}
-                                    className="flex items-start gap-3 relative group animate-fade-in"
+                    {/* RIGHT COLUMN: Details */}
+                    <div className="lg:col-span-8 xl:col-span-9 space-y-8 pt-4 lg:pt-12">
+                        {/* Title & Author */}
+                        <div className="mb-10">
+                            <div className="flex flex-wrap gap-3 mb-4">
+                                <Tag
+                                    color="rgba(255,255,255,0.2)"
+                                    className="text-white backdrop-blur-md border-none px-3 py-1 font-semibold tracking-wider uppercase"
                                 >
-                                    <img
-                                        src={
-                                            cmt.avatarUrl !== null &&
-                                            cmt.avatarUrl !== ''
-                                                ? cmt.avatarUrl
-                                                : `https://i.pravatar.cc/40?u=${cmt.idReader}`
+                                    Sách in
+                                </Tag>
+                                {ratingData.totalRatings > 0 && (
+                                    <Tag
+                                        color="#fadb14"
+                                        className="text-black border-none px-3 py-1 font-bold flex items-center gap-1"
+                                    >
+                                        <StarFilled />{' '}
+                                        {ratingData.average.toFixed(1)}
+                                    </Tag>
+                                )}
+                            </div>
+                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-tight drop-shadow-sm">
+                                {bookDetail.nameBook}
+                            </h1>
+                            <div className="flex items-center gap-3 text-white/90 text-lg">
+                                <span className="opacity-70">Tác giả:</span>
+                                <div className="flex flex-wrap gap-2">
+                                    {(bookDetail.authors || []).map(
+                                        (a, index) => (
+                                            <span
+                                                key={index}
+                                                className="font-bold hover:text-[#fadb14] transition cursor-pointer underline-offset-4 hover:underline"
+                                            >
+                                                {a.nameAuthor}
+                                                {index <
+                                                (bookDetail.authors || [])
+                                                    .length -
+                                                    1
+                                                    ? ', '
+                                                    : ''}
+                                            </span>
+                                        )
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Description */}
+                        <div className="bg-white p-8 rounded-3xl shadow-[0_10px_30px_-10px_rgba(0,0,0,0.1)] border border-gray-100/50">
+                            <h3 className="text-xl font-bold text-[#153D36] mb-4 flex items-center gap-2">
+                                <ReadOutlined /> Giới thiệu nội dung
+                            </h3>
+                            <div className="relative">
+                                <div
+                                    className={`text-gray-600 leading-relaxed text-[16px] whitespace-pre-line transition-all duration-500 ${
+                                        !showFullDesc
+                                            ? 'max-h-[180px] overflow-hidden'
+                                            : 'max-h-[2000px]'
+                                    }`}
+                                >
+                                    {bookDetail.describe ||
+                                        'Đang cập nhật mô tả cho cuốn sách này...'}
+                                </div>
+                                {!showFullDesc &&
+                                    bookDetail.describe &&
+                                    bookDetail.describe.length > 300 && (
+                                        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white via-white/80 to-transparent"></div>
+                                    )}
+                            </div>
+                            {bookDetail.describe &&
+                                bookDetail.describe.length > 300 && (
+                                    <button
+                                        onClick={() =>
+                                            setShowFullDesc(!showFullDesc)
                                         }
-                                        alt="avatar"
-                                        className="rounded-full w-10 h-10 object-cover border-2 border-[#1A4E46] shadow group-hover:scale-105 transition-transform duration-300"
-                                    />
-                                    <div className="bg-gray-100 p-3 rounded-xl shadow w-full">
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <div className="font-semibold text-[#153D36]">
-                                                    {cmt.nameReader ||
-                                                        'Người dùng'}
-                                                </div>
-                                                <div className="text-yellow-500 text-sm">
-                                                    {Array.from(
-                                                        { length: 5 },
-                                                        (_, i) => (
-                                                            <span key={i}>
-                                                                {i < cmt.star
-                                                                    ? '★'
-                                                                    : '☆'}
-                                                            </span>
-                                                        )
-                                                    )}
-                                                </div>
+                                        className="mt-4 text-[#2D7D6E] font-bold hover:underline flex items-center gap-1 group"
+                                    >
+                                        {showFullDesc ? 'Thu gọn' : 'Đọc tiếp'}
+                                        <ArrowLeftOutlined
+                                            rotate={showFullDesc ? 90 : 270}
+                                            className="text-xs transition-transform group-hover:translate-y-0.5"
+                                        />
+                                    </button>
+                                )}
+                        </div>
+
+                        {/* Ratings */}
+                        <div className="grid md:grid-cols-5 gap-6">
+                            <div className="md:col-span-2 bg-gradient-to-br from-[#153D36] to-[#0D2621] text-white p-8 rounded-3xl shadow-xl flex flex-col justify-between relative overflow-hidden">
+                                <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/5 rounded-full blur-2xl"></div>
+                                <div>
+                                    <h3 className="text-lg font-medium text-white/80 mb-4">
+                                        Đánh giá từ độc giả
+                                    </h3>
+                                    <div className="flex items-baseline gap-2 mb-2">
+                                        <span className="text-6xl font-extrabold tracking-tighter">
+                                            {ratingData.average.toFixed(1)}
+                                        </span>
+                                        <span className="text-2xl text-white/60">
+                                            /5
+                                        </span>
+                                    </div>
+                                    <div className="flex gap-1 text-[#fadb14] text-2xl mb-4">
+                                        {Array.from({ length: 5 }, (_, i) => (
+                                            <StarFilled
+                                                key={i}
+                                                className={
+                                                    i <
+                                                    Math.round(
+                                                        ratingData.average
+                                                    )
+                                                        ? ''
+                                                        : 'text-white/20'
+                                                }
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                                <p className="text-white/70 font-medium">
+                                    {ratingData.totalRatings} lượt đánh giá
+                                </p>
+                            </div>
+
+                            <div className="md:col-span-3 bg-white p-8 rounded-3xl shadow-[0_10px_30px_-10px_rgba(0,0,0,0.1)] border border-gray-100/50 flex flex-col justify-center">
+                                <div className="space-y-4 mb-8">
+                                    {[5, 4, 3, 2, 1].map((star) => (
+                                        <div
+                                            key={star}
+                                            className="flex items-center gap-4"
+                                        >
+                                            <div className="flex items-center gap-1 w-12 font-bold text-gray-700">
+                                                {star}{' '}
+                                                <StarFilled className="text-yellow-400 text-sm" />
                                             </div>
-                                            <div className="relative">
-                                                <button
-                                                    className="text-gray-500 hover:text-gray-800"
-                                                    onClick={() =>
-                                                        setActiveMenu(
-                                                            activeMenu ===
-                                                                cmt.idEvaluation
-                                                                ? null
-                                                                : cmt.idEvaluation
-                                                        )
-                                                    }
-                                                >
-                                                    ⋮
-                                                </button>
-                                                {activeMenu ===
-                                                    cmt.idEvaluation && (
-                                                    <div className="absolute right-0 mt-1 bg-white border rounded shadow-md text-sm z-10 min-w-[120px] animate-fade-in">
-                                                        <button
-                                                            className="block px-4 py-2 hover:bg-gray-100 w-full text-left disabled:text-gray-400"
-                                                            disabled={
-                                                                idUser !==
-                                                                cmt.idReader
-                                                            }
-                                                            onClick={() =>
-                                                                handleEdit(
-                                                                    cmt.idEvaluation
-                                                                )
-                                                            }
-                                                        >
-                                                            ✏️ Chỉnh sửa
-                                                        </button>
-                                                        <button
-                                                            className="block px-4 py-2 hover:bg-gray-100 w-full text-left text-red-600 disabled:text-gray-400"
-                                                            disabled={
-                                                                idUser !==
-                                                                cmt.idReader
-                                                            }
-                                                            onClick={() =>
-                                                                handleDelete(
-                                                                    cmt.idEvaluation
-                                                                )
-                                                            }
-                                                        >
-                                                            🗑️ Xoá
-                                                        </button>
-                                                    </div>
+                                            <Progress
+                                                percent={getPercent(
+                                                    ratingData.distribution[
+                                                        star as
+                                                            | 1
+                                                            | 2
+                                                            | 3
+                                                            | 4
+                                                            | 5
+                                                    ]
                                                 )}
+                                                strokeColor="#2D7D6E"
+                                                trailColor="#F1F5F9"
+                                                showInfo={false}
+                                                size={['100%', 8]}
+                                                className="flex-1 m-0"
+                                            />
+                                            <div className="w-10 text-right font-medium text-gray-500">
+                                                {
+                                                    ratingData.distribution[
+                                                        star as
+                                                            | 1
+                                                            | 2
+                                                            | 3
+                                                            | 4
+                                                            | 5
+                                                    ]
+                                                }
                                             </div>
                                         </div>
-                                        <p className="mt-1 text-gray-700">
-                                            {cmt.comment}
+                                    ))}
+                                </div>
+                                <Button
+                                    type="primary"
+                                    icon={<FormOutlined />}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setShowModal(true);
+                                        setEditComment(null);
+                                    }}
+                                    size="large"
+                                    className="bg-[#153D36] hover:!bg-[#2D7D6E] border-none rounded-xl h-12 font-bold shadow-md hover:shadow-lg transition-all w-full md:w-auto"
+                                >
+                                    Viết đánh giá của bạn
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* COMMENTS LIST */}
+                        {/* QUAN TRỌNG: Không được có overflow-hidden ở đây */}
+                        <div className="bg-white rounded-3xl shadow-[0_10px_30px_-10px_rgba(0,0,0,0.1)] border border-gray-100/50">
+                            <div className="p-8 border-b border-gray-100 flex items-center gap-3">
+                                <div className="bg-teal-50 p-2 rounded-full text-[#153D36]">
+                                    <MoreOutlined className="text-xl" />
+                                </div>
+                                <h3 className="text-xl font-bold text-[#153D36] m-0">
+                                    Cộng đồng thảo luận ({comments.length})
+                                </h3>
+                            </div>
+                            <div className="divide-y divide-gray-50">
+                                {comments.length === 0 ? (
+                                    <div className="p-12 text-center flex flex-col items-center text-gray-400 gap-4">
+                                        <FormOutlined className="text-4xl opacity-30" />
+                                        <p className="text-lg">
+                                            Chưa có nhận xét nào. Hãy là người
+                                            đầu tiên!
                                         </p>
                                     </div>
-                                </div>
-                            ))}
-                            {comments.length === 0 && (
-                                <p className="text-gray-500 italic">
-                                    Chưa có nhận xét nào.
-                                </p>
-                            )}
+                                ) : (
+                                    comments.map((cmt) => (
+                                        <div
+                                            key={cmt.idEvaluation}
+                                            className="p-8 hover:bg-[#F8FAFC] transition-colors relative group"
+                                        >
+                                            <div className="flex gap-5">
+                                                <Avatar
+                                                    size={56}
+                                                    src={cmt.avatarUrl}
+                                                    icon={<UserOutlined />}
+                                                    className="flex-shrink-0 bg-gray-200 border-2 border-white shadow-sm"
+                                                />
+                                                <div className="flex-1">
+                                                    <div className="flex justify-between items-start mb-2">
+                                                        <div>
+                                                            <h4 className="font-bold text-gray-900 text-[17px] mb-1">
+                                                                {cmt.nameReader ||
+                                                                    'Độc giả ẩn danh'}
+                                                            </h4>
+                                                            <div className="flex text-[#fadb14] text-sm gap-0.5">
+                                                                {Array.from(
+                                                                    {
+                                                                        length: 5,
+                                                                    },
+                                                                    (_, i) => (
+                                                                        <StarFilled
+                                                                            key={
+                                                                                i
+                                                                            }
+                                                                            className={
+                                                                                i <
+                                                                                cmt.star
+                                                                                    ? ''
+                                                                                    : 'text-gray-300'
+                                                                            }
+                                                                        />
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* MENU 3 CHẤM - CHỈ HIỆN VỚI CHỦ SỞ HỮU */}
+                                                        {String(idUser) ===
+                                                            String(
+                                                                cmt.idReader
+                                                            ) && (
+                                                            <div className="relative">
+                                                                <button
+                                                                    onClick={(
+                                                                        e
+                                                                    ) => {
+                                                                        e.stopPropagation();
+                                                                        setActiveMenu(
+                                                                            activeMenu ===
+                                                                                cmt.idEvaluation
+                                                                                ? null
+                                                                                : cmt.idEvaluation
+                                                                        );
+                                                                    }}
+                                                                    className={`p-2 rounded-full transition ${
+                                                                        activeMenu ===
+                                                                        cmt.idEvaluation
+                                                                            ? 'bg-gray-100 text-[#153D36]'
+                                                                            : 'text-gray-400 hover:text-[#153D36] hover:bg-gray-100'
+                                                                    }`}
+                                                                >
+                                                                    <MoreOutlined className="text-xl" />
+                                                                </button>
+
+                                                                {activeMenu ===
+                                                                    cmt.idEvaluation && (
+                                                                    <div
+                                                                        className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 py-2 animate-fade-in origin-top-right"
+                                                                        onClick={(
+                                                                            e
+                                                                        ) =>
+                                                                            e.stopPropagation()
+                                                                        } // Chặn click xuyên
+                                                                    >
+                                                                        <button
+                                                                            onClick={() =>
+                                                                                handleEdit(
+                                                                                    cmt.idEvaluation
+                                                                                )
+                                                                            }
+                                                                            className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-teal-50 hover:text-[#153D36] flex items-center gap-3 transition-colors"
+                                                                        >
+                                                                            <EditOutlined />{' '}
+                                                                            Chỉnh
+                                                                            sửa
+                                                                        </button>
+                                                                        <div className="my-1 border-t border-gray-50"></div>
+                                                                        <button
+                                                                            onClick={() =>
+                                                                                handleDelete(
+                                                                                    cmt.idEvaluation
+                                                                                )
+                                                                            }
+                                                                            className="w-full text-left px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors"
+                                                                        >
+                                                                            <DeleteOutlined />{' '}
+                                                                            Xóa
+                                                                            nhận
+                                                                            xét
+                                                                        </button>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="mt-3 text-gray-700 leading-relaxed text-[16px] bg-gray-50/50 p-4 rounded-2xl rounded-tl-none">
+                                                        {cmt.comment}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
                         </div>
                     </div>
-                </>
-            )}
+                </div>
+            </div>
+
+            {/* MODAL REVIEW CŨ */}
             {showModal && bookDetail && (
                 <ReviewModal
                     bookId={bookDetail.idBook}
                     onClose={() => {
                         setShowModal(false);
                         setEditComment(null);
-                        if (bookDetail.idBook) {
-                            getAllComments(bookDetail.idBook).then((res) => {
-                                setComments(res.data || []);
-                            });
-                            getStarByIdBookAPI(bookDetail.idBook).then(
-                                (res) => {
-                                    const distribution: Record<
-                                        1 | 2 | 3 | 4 | 5,
-                                        number
-                                    > = {
-                                        1: 0,
-                                        2: 0,
-                                        3: 0,
-                                        4: 0,
-                                        5: 0,
-                                    };
-                                    let total = 0;
-                                    let sum = 0;
-                                    if (res.data && Array.isArray(res.data)) {
-                                        res.data.forEach((entry) => {
-                                            const s = entry.star as
-                                                | 1
-                                                | 2
-                                                | 3
-                                                | 4
-                                                | 5;
-                                            if ([1, 2, 3, 4, 5].includes(s)) {
-                                                distribution[s] = entry.status;
-                                                total += entry.status;
-                                                sum += s * entry.status;
-                                            }
-                                        });
-                                    }
-                                    setRatingData({
-                                        average: total > 0 ? sum / total : 0,
-                                        totalRatings: total,
-                                        distribution,
-                                    });
-                                }
-                            );
-                        }
+                        refreshAll();
                     }}
+                    // TRUYỀN DATA ĐÚNG NHƯ CODE CŨ CỦA BẠN
                     editData={
                         editComment
                             ? {

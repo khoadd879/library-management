@@ -292,8 +292,8 @@ export const addRolePermissionAPI = (
     permissionName: string
 ) => {
     return axios.post('/api/RolePermission/add-role-permission', {
-        roleName,
-        permissionName,
+        roleName: roleName,
+        permissionName: permissionName,
     });
 };
 export const getAllRolesAPI = async () => {
@@ -376,7 +376,7 @@ export const getAllHeaderBooksAPI = async () => {
     return res;
 };
 export const getChatUsersAPI = async () => {
-    const res = await axios.get('/api/Chat/getAllUserSentMessage');
+    const res = await axios.get('/api/Chat/get-all-user-sent-message');
     return res;
 };
 export const logoutAPI = async (refreshToken: string) => {
