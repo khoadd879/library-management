@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getAllBooksAndCommentsAPI } from "@/services/api";
 import { useNavigate } from "react-router-dom";
 import { Spin, message } from "antd";
@@ -13,7 +13,13 @@ const NewBooks = () => {
     const fetchBooks = async () => {
       setLoading(true);
       try {
-        const res = await getAllBooksAndCommentsAPI();
+         const idUser = localStorage.getItem("idUser");
+      if(!idUser){
+        message.warning("Không có User");
+        return;
+      }
+        const data = await getAllBooksAndCommentsAPI(idUser);
+        const res = data.data;
         if (Array.isArray(res)) {
           // Lọc sách có reprintYear là 2024 hoặc 2025
           const currentYear = 2025;
@@ -26,7 +32,6 @@ const NewBooks = () => {
           setBooks(filtered);
         } else {
           setBooks([]);
-          message.error("Không thể tải danh sách sách mới.");
         }
       } catch (err) {
         setBooks([]);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getTypeBooksAPI, deleteTypeBookAPI } from "@/services/api";
 import { message, Modal, Spin } from "antd";
 import AddTypeBookModal from "./AddTypeBookModal";

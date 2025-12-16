@@ -19,8 +19,6 @@ const History = () => {
         const res = await getLoanSlipHistoryAPI(idUser);
         if (Array.isArray(res)) {
           setHistory(res);
-        } else {
-          message.error("Dữ liệu không hợp lệ.");
         }
       } catch (err) {
         console.error("Lỗi khi tải lịch sử mượn:", err);

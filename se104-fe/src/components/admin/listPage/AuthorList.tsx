@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { message, Modal } from "antd"; // dùng Modal xác nhận
+import { message, Modal } from "antd"; 
 import {
   deleteAuthorAPI,
   getListAuthor,

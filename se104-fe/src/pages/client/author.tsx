@@ -12,7 +12,7 @@ const AuthorPage = () => {
     const fetchAuthors = async () => {
       try {
         const res = await listAuthorAPI();
-        setAuthors(Array.isArray(res) ? res : []);
+        setAuthors(Array.isArray(res.data) ? res.data : []);
       } catch (error) {
         console.error("Error fetching authors:", error);
       } finally {

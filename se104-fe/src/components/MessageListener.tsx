@@ -13,7 +13,6 @@ const GlobalMessageListener = () => {
     const checkNewMessages = async () => {
       try {
         const users = await getChatUsersAPI();
-
         for (const user of users) {
           const senderId = user.receiveUserId;
           const res = await getChatHistoryAPI(senderId);

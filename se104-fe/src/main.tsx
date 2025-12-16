@@ -94,7 +94,6 @@ const router = createBrowserRouter([
           { index: true, element: <RolePermissionUI /> },
           { path: "roles", element: <RolePermissionUI /> },
           { path: "users", element: <UserList /> },
-          { path: "roles", element: <RolePermissionUI /> },
         ],
       },
     ],
