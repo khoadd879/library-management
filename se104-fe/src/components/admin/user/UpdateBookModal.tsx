@@ -1,218 +1,311 @@
-import React, { useEffect, useState } from "react";
-import { Modal, Spin, message } from "antd";
+import React, { useEffect, useState } from 'react';
+import {
+    Modal,
+    Form,
+    Input,
+    InputNumber,
+    Select,
+    Upload,
+    Button,
+    Row,
+    Col,
+    Divider,
+} from 'antd';
+import {
+    UploadOutlined,
+    BookOutlined,
+    UserOutlined,
+    DollarOutlined,
+    CalendarOutlined,
+    FileTextOutlined,
+    BankOutlined,
+} from '@ant-design/icons';
+import type { UploadFile, UploadProps } from 'antd/es/upload/interface';
+
+const { TextArea } = Input;
 
 interface IUpdateBookModalProps {
-  open: boolean;
-  onClose: () => void;
-  initialData: {
-    idBook: string;
-    nameHeaderBook: string;
-    describeBook: string;
-    idTypeBook: string;
-    idAuthors: string[];
-    publisher: string;
-    reprintYear: number;
-    valueOfBook: number;
-    imageUrl?: string;
-  };
-  authors: { id: string; nameAuthor: string }[];
-  typeBooks: { value: string; label: string }[];
-  onSubmit: (idBook: string, formData: FormData) => Promise<void>;
-  isLoading: boolean;
+    open: boolean;
+    onClose: () => void;
+    initialData: {
+        idBook: string;
+        nameHeaderBook: string;
+        describeBook: string;
+        idTypeBook: string;
+        idAuthors: string[];
+        publisher: string;
+        reprintYear: number;
+        valueOfBook: number;
+        imageUrl?: string;
+    };
+    authors: { id: string; nameAuthor: string }[];
+    typeBooks: { value: string; label: string }[];
+    onSubmit: (idBook: string, formData: FormData) => Promise<void>;
+    isLoading: boolean;
 }
 
 const UpdateBookModal = ({
-  open,
-  onClose,
-  initialData,
-  authors,
-  typeBooks,
-  onSubmit,
-  isLoading,
+    open,
+    onClose,
+    initialData,
+    authors,
+    typeBooks,
+    onSubmit,
+    isLoading,
 }: IUpdateBookModalProps) => {
-  const [form, setForm] = useState({ ...initialData });
-  const [previewImage, setPreviewImage] = useState<string | null>(
-    initialData.imageUrl || null
-  );
-  const [bookImage, setBookImage] = useState<File | null>(null);
+    const [form] = Form.useForm();
+    const [fileList, setFileList] = useState<UploadFile[]>([]);
+    const [previewImage, setPreviewImage] = useState<string | null>(null);
 
-  useEffect(() => {
-    setForm({ ...initialData });
-    setPreviewImage(initialData.imageUrl || null);
-    setBookImage(null);
-  }, [initialData]);
+    // Đồng bộ dữ liệu khi mở Modal
+    useEffect(() => {
+        if (open) {
+            form.setFieldsValue(initialData);
+            setPreviewImage(initialData.imageUrl || null);
+            setFileList([]);
+        }
+    }, [open, initialData, form]);
 
-  const handleChange = (e: React.ChangeEvent<any>) => {
-    const { name, value, files } = e.target;
-    if (files?.[0]) {
-      const file = files[0];
-      setBookImage(file);
-      setPreviewImage(URL.createObjectURL(file));
-    } else if (name === "idAuthors") {
-      const values = Array.from(e.target.selectedOptions).map(
-        (opt: any) => opt.value
-      );
-      setForm((prev) => ({ ...prev, idAuthors: values }));
-    } else {
-      setForm((prev) => ({ ...prev, [name]: value }));
-    }
-  };
+    const handleFinish = async (values: any) => {
+        const formData = new FormData();
+        formData.append('IdTypeBook', values.idTypeBook);
+        formData.append('NameHeaderBook', values.nameHeaderBook);
+        formData.append('DescribeBook', values.describeBook || '');
 
-  const handleSubmit = async () => {
-    try {
-      const formData = new FormData();
-      formData.append("IdTypeBook", form.idTypeBook);
-      formData.append("NameHeaderBook", form.nameHeaderBook);
-      formData.append("DescribeBook", form.describeBook);
-      form.idAuthors.forEach((id) => formData.append("IdAuthors", id));
-      formData.append("bookUpdateRequest.Publisher", form.publisher);
-      formData.append(
-        "bookUpdateRequest.ReprintYear",
-        form.reprintYear.toString()
-      );
-      formData.append(
-        "bookUpdateRequest.ValueOfBook",
-        form.valueOfBook.toString()
-      );
+        // Xử lý mảng tác giả
+        values.idAuthors.forEach((id: string) =>
+            formData.append('IdAuthors', id)
+        );
 
-      if (bookImage) {
-        formData.append("BookImage", bookImage);
-      }
+        // Xử lý object lồng nhau theo Swagger yêu cầu
+        formData.append('bookUpdateRequest.Publisher', values.publisher);
+        formData.append(
+            'bookUpdateRequest.ReprintYear',
+            values.reprintYear.toString()
+        );
+        formData.append(
+            'bookUpdateRequest.ValueOfBook',
+            values.valueOfBook.toString()
+        );
 
-      await onSubmit(form.idBook, formData);
-      message.success("Cập nhật sách thành công");
-      onClose();
-    } catch (err) {
-      message.error("Cập nhật sách thất bại");
-    }
-  };
+        if (fileList[0]?.originFileObj) {
+            formData.append('BookImage', fileList[0].originFileObj);
+        }
 
-  return (
-    <Modal
-      title="Cập nhật thông tin sách"
-      open={open}
-      onCancel={onClose}
-      footer={null}
-      destroyOnHidden
-    >
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSubmit();
-        }}
-        className="space-y-4"
-      >
-        <div className="flex justify-center">
-          {previewImage ? (
-            <img
-              src={previewImage}
-              alt="book"
-              className="w-32 h-48 object-cover rounded shadow"
-            />
-          ) : (
-            <div className="w-32 h-48 bg-gray-200 flex items-center justify-center rounded">
-              <span className="text-sm text-gray-500">Chưa có ảnh</span>
-            </div>
-          )}
-        </div>
+        await onSubmit(initialData.idBook, formData);
+    };
 
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleChange}
-          className="text-sm"
-        />
+    const uploadProps: UploadProps = {
+        onRemove: () => {
+            setFileList([]);
+            setPreviewImage(initialData.imageUrl || null);
+        },
+        beforeUpload: (file) => {
+            setFileList([file]);
+            const reader = new FileReader();
+            reader.onload = (e) => setPreviewImage(e.target?.result as string);
+            reader.readAsDataURL(file);
+            return false; // Ngăn auto upload
+        },
+        fileList,
+        maxCount: 1,
+    };
 
-        <input
-          type="text"
-          name="nameHeaderBook"
-          value={form.nameHeaderBook}
-          onChange={handleChange}
-          placeholder="Tên sách"
-          className="w-full px-4 py-2 border rounded text-sm"
-        />
-
-        <input
-          type="text"
-          name="publisher"
-          value={form.publisher}
-          onChange={handleChange}
-          placeholder="Nhà xuất bản"
-          className="w-full px-4 py-2 border rounded text-sm"
-        />
-
-        <div className="grid grid-cols-2 gap-4">
-          <input
-            type="number"
-            name="reprintYear"
-            value={form.reprintYear}
-            onChange={handleChange}
-            placeholder="Năm tái bản"
-            className="w-full px-4 py-2 border rounded text-sm"
-          />
-          <select
-            name="idTypeBook"
-            value={form.idTypeBook}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded text-sm"
-          >
-            <option value="">-- Chọn thể loại --</option>
-            {typeBooks.map((type) => (
-              <option key={type.value} value={type.value}>
-                {type.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <input
-          type="number"
-          name="valueOfBook"
-          value={form.valueOfBook}
-          onChange={handleChange}
-          placeholder="Trị giá"
-          className="w-full px-4 py-2 border rounded text-sm"
-        />
-
-        <textarea
-          name="describeBook"
-          value={form.describeBook}
-          onChange={handleChange}
-          placeholder="Mô tả sách"
-          className="w-full px-4 py-2 border rounded text-sm"
-          rows={3}
-        />
-
-        <select
-          name="idAuthors"
-          multiple
-          value={form.idAuthors}
-          onChange={handleChange}
-          className="w-full px-4 py-2 border rounded text-sm h-[100px] overflow-y-auto"
+    return (
+        <Modal
+            title={
+                <div className="flex items-center gap-2 text-[#153D36]">
+                    <BookOutlined />
+                    <span>Cập nhật thông tin sách</span>
+                </div>
+            }
+            open={open}
+            onCancel={onClose}
+            footer={null}
+            width={750}
+            centered
+            destroyOnClose
+            bodyStyle={{ padding: '20px 24px' }}
         >
-          {authors.map((author) => (
-            <option key={author.id} value={author.id}>
-              {author.nameAuthor}
-            </option>
-          ))}
-        </select>
+            <Form
+                form={form}
+                layout="vertical"
+                onFinish={handleFinish}
+                initialValues={initialData}
+                className="mt-4"
+            >
+                <Row gutter={24}>
+                    {/* Cột trái: Ảnh bìa */}
+                    <Col span={8}>
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="w-full aspect-[2/3] bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden shadow-inner">
+                                {previewImage ? (
+                                    <img
+                                        src={previewImage}
+                                        alt="Preview"
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <span className="text-gray-400 text-xs">
+                                        Chưa có ảnh
+                                    </span>
+                                )}
+                            </div>
+                            <Upload {...uploadProps} showUploadList={false}>
+                                <Button
+                                    icon={<UploadOutlined />}
+                                    className="w-full"
+                                >
+                                    Thay ảnh bìa
+                                </Button>
+                            </Upload>
+                        </div>
+                    </Col>
 
-        <div className="text-center pt-4">
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={`px-6 py-2 rounded text-sm font-semibold flex items-center justify-center gap-2 ${
-              isLoading
-                ? "bg-gray-400 text-white cursor-not-allowed"
-                : "bg-blue-600 text-white"
-            }`}
-          >
-            {isLoading ? <Spin size="small" /> : "Cập nhật"}
-          </button>
-        </div>
-      </form>
-    </Modal>
-  );
+                    {/* Cột phải: Thông tin chi tiết */}
+                    <Col span={16}>
+                        <Form.Item
+                            label="Tên sách"
+                            name="nameHeaderBook"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: 'Vui lòng nhập tên sách',
+                                },
+                            ]}
+                        >
+                            <Input
+                                prefix={
+                                    <BookOutlined className="text-gray-400" />
+                                }
+                                placeholder="Tên đầu sách"
+                            />
+                        </Form.Item>
+
+                        <Row gutter={16}>
+                            <Col span={12}>
+                                <Form.Item
+                                    label="Thể loại"
+                                    name="idTypeBook"
+                                    rules={[
+                                        {
+                                            required: true,
+                                            message: 'Chọn thể loại',
+                                        },
+                                    ]}
+                                >
+                                    <Select
+                                        placeholder="Chọn thể loại"
+                                        options={typeBooks}
+                                    />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item
+                                    label="Trị giá (VNĐ)"
+                                    name="valueOfBook"
+                                    rules={[
+                                        {
+                                            required: true,
+                                            message: 'Nhập giá tiền',
+                                        },
+                                    ]}
+                                >
+                                    <InputNumber
+                                        className="max-w-full"
+                                        formatter={(value) =>
+                                            `${value}`.replace(
+                                                /\B(?=(\d{3})+(?!\d))/g,
+                                                ','
+                                            )
+                                        }
+                                        parser={(value) =>
+                                            value!.replace(/\$\s?|(,*)/g, '')
+                                        }
+                                        prefix={
+                                            <DollarOutlined className="text-gray-400" />
+                                        }
+                                    />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+
+                        <Form.Item
+                            label="Tác giả"
+                            name="idAuthors"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: 'Chọn ít nhất một tác giả',
+                                },
+                            ]}
+                        >
+                            <Select
+                                mode="multiple"
+                                allowClear
+                                placeholder="Chọn tác giả"
+                                prefix={
+                                    <UserOutlined className="text-gray-400" />
+                                }
+                                options={authors.map((a) => ({
+                                    value: a.id,
+                                    label: a.nameAuthor,
+                                }))}
+                                maxTagCount="responsive"
+                            />
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                <Divider className="my-4" />
+
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Form.Item label="Nhà xuất bản" name="publisher">
+                            <Input
+                                prefix={
+                                    <BankOutlined className="text-gray-400" />
+                                }
+                                placeholder="NXB Kim Đồng..."
+                            />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item label="Năm tái bản" name="reprintYear">
+                            <InputNumber
+                                className="w-full"
+                                prefix={
+                                    <CalendarOutlined className="text-gray-400" />
+                                }
+                                placeholder="2024"
+                            />
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                <Form.Item label="Mô tả sách" name="describeBook">
+                    <TextArea
+                        rows={4}
+                        placeholder="Mô tả ngắn về nội dung sách..."
+                        showCount
+                        maxLength={1000}
+                    />
+                </Form.Item>
+
+                <div className="flex justify-end gap-3 mt-6">
+                    <Button onClick={onClose}>Hủy bỏ</Button>
+                    <Button
+                        type="primary"
+                        htmlType="submit"
+                        loading={isLoading}
+                        className="bg-[#153D36] border-none px-8"
+                    >
+                        Cập nhật thông tin
+                    </Button>
+                </div>
+            </Form>
+        </Modal>
+    );
 };
 
 export default UpdateBookModal;
