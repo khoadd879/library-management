@@ -95,9 +95,11 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
         // Fetch avatar nếu user đã có
         const fetchAvatar = async () => {
             try {
-                const readers = await getListReader();
-                const found = Array.isArray(readers)
-                    ? readers.find((r) => r.idReader === user?.data.idReader)
+                const idUser = localStorage.getItem('idUser');
+                const res = await getListReader();
+                const readersArray = res?.data || res;
+                const found = Array.isArray(readersArray)
+                    ? readersArray.find((r: any) => r.idReader === idUser)
                     : null;
                 setAvatarUrl(found?.urlAvatar || null);
             } catch (e) {
@@ -129,15 +131,18 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
 
     return (
         <nav
-            className={`fixed top-0 left-0 h-full p-2 flex flex-col duration-300 bg-[#153D36] text-white z-50 ${
+            className={`fixed top-0 left-0 h-full flex flex-col duration-500 ease-out bg-gradient-to-b from-[#153D36] via-[#1A4A42] to-[#0D2621] text-white z-50 shadow-2xl ${
                 open ? 'w-72' : 'w-20'
             }`}
             aria-label="Sidebar"
         >
+            {/* Decorative gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-teal-500/5 pointer-events-none" />
+            
             {/* Header - User Info */}
-            <div className="px-4 py-6 flex justify-between items-center border-b border-white/20">
+            <div className="relative px-4 py-6 flex justify-between items-center border-b border-white/10">
                 <button
-                    className="hover:bg-white/10 rounded-md transition-colors w-full overflow-hidden"
+                    className="group hover:bg-white/10 rounded-2xl transition-all duration-300 w-full overflow-hidden p-2"
                     onClick={() => navigate('/profile')}
                 >
                     <div
@@ -145,22 +150,28 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
                             !open && 'hidden'
                         }`}
                     >
-                        {/* Avatar with fixed size */}
-                        {avatarUrl ? (
-                            <img
-                                src={avatarUrl}
-                                alt="avatar"
-                                className="w-12 h-12 rounded-full object-cover flex-shrink-0 border border-white"
-                            />
-                        ) : (
-                            <div className="w-12 h-12 bg-gray-300 rounded-full overflow-hidden flex-shrink-0" />
-                        )}
-                        {/* Text container with constrained width */}
-                        <div className="flex-1 ">
-                            <p className="font-medium text-left text-md ">
+                        {/* Avatar with glow effect */}
+                        <div className="relative">
+                            {avatarUrl ? (
+                                <img
+                                    src={avatarUrl}
+                                    alt="avatar"
+                                    className="w-12 h-12 rounded-full object-cover flex-shrink-0 border-2 border-emerald-400/50 shadow-lg shadow-emerald-500/20 group-hover:border-emerald-400 group-hover:scale-105 transition-all duration-300"
+                                />
+                            ) : (
+                                <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center shadow-lg">
+                                    <FaUserCircle size={28} className="text-white/80" />
+                                </div>
+                            )}
+                            {/* Online indicator */}
+                            <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-[#153D36] shadow-sm" />
+                        </div>
+                        {/* Text container */}
+                        <div className="flex-1 text-left min-w-0">
+                            <p className="font-bold text-sm text-white truncate group-hover:text-emerald-300 transition-colors">
                                 {user?.data.nameReader}
                             </p>
-                            <span className="text-sm text-left opacity-80 ">
+                            <span className="text-xs text-emerald-200/60 truncate block">
                                 {user?.data.email}
                             </span>
                         </div>
@@ -168,35 +179,39 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
                 </button>
                 <button
                     onClick={() => setOpen(!open)}
-                    className="p-2 rounded-full hover:bg-white/20 transition-colors flex-shrink-0"
+                    className="p-2.5 rounded-xl hover:bg-white/15 hover:scale-110 transition-all duration-300 flex-shrink-0 backdrop-blur-sm"
                 >
                     <FaBars
-                        size={20}
-                        className={`duration-300 ${!open && 'rotate-90'}`}
+                        size={18}
+                        className={`duration-500 ${!open && 'rotate-180'}`}
                     />
                 </button>
             </div>
+
             {/* Navigation Items */}
-            <ul className="flex-0 py-6 space-y-4 flex flex-col">
+            <ul className={`relative flex-1 py-6 space-y-1.5 px-3 ${open ? 'overflow-y-auto' : 'overflow-hidden'}`}>
                 {menuItems.map((item, index) => (
                     <li key={index}>
                         <button
                             onClick={item.onClick}
-                            className="w-full flex items-center gap-4 px-4 py-4 hover:bg-white/10 rounded-md transition-colors duration-300 relative group"
+                            className="w-full flex items-center gap-4 px-4 py-3.5 hover:bg-gradient-to-r hover:from-white/15 hover:to-white/5 rounded-xl transition-all duration-300 relative group hover:translate-x-1 hover:shadow-lg hover:shadow-black/10"
                         >
-                            <div className="flex justify-center w-8">
+                            {/* Active indicator bar */}
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-0 bg-emerald-400 rounded-full group-hover:h-6 transition-all duration-300 shadow-lg shadow-emerald-400/50" />
+                            
+                            <div className="flex justify-center w-8 text-emerald-300/80 group-hover:text-emerald-300 group-hover:scale-110 transition-all duration-300">
                                 {item.icon}
                             </div>
                             <span
                                 className={`${
                                     !open ? 'opacity-0 w-0' : 'opacity-100'
-                                } transition-all duration-300 truncate text-md`}
+                                } transition-all duration-300 truncate text-sm font-medium text-white/90 group-hover:text-white`}
                             >
                                 {item.label}
                             </span>
                             {/* Tooltip khi sidebar đóng */}
                             {!open && (
-                                <span className="absolute left-16 bg-white text-gray-800 text-base px-4 py-2 rounded-md shadow-lg z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                                <span className="absolute left-20 bg-[#153D36] text-white text-sm font-medium px-4 py-2.5 rounded-xl shadow-2xl shadow-black/30 z-50 opacity-0 group-hover:opacity-100 transition-all duration-200 whitespace-nowrap border border-emerald-500/20 backdrop-blur-md">
                                     {item.label}
                                 </span>
                             )}
@@ -204,34 +219,39 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
                     </li>
                 ))}
             </ul>
+
             {/* Group Logo */}
-            <div className={`flex flex-col m-auto ${!open && 'hidden'}`}>
-                <img
-                    src="https://cdn-icons-png.flaticon.com/512/29/29302.png"
-                    alt="Library"
-                    className="w-15 h-15 filter invert "
-                />
-                <p className="italic font-bold text-xl">Library</p>
+            <div className={`flex flex-col items-center py-6 border-t border-white/10 ${!open && 'hidden'}`}>
+                <div className="relative">
+                    <img
+                        src="https://cdn-icons-png.flaticon.com/512/29/29302.png"
+                        alt="Library"
+                        className="w-12 h-12 filter invert opacity-60"
+                    />
+                    <div className="absolute inset-0 bg-emerald-400/20 blur-xl rounded-full" />
+                </div>
+                <p className="italic font-black text-lg tracking-wider text-emerald-200/80 mt-2 uppercase">LibManager</p>
             </div>
+
             {/* Footer - Logout */}
-            <div className="mt-auto py-4">
+            <div className="relative px-3 py-4 border-t border-white/10">
                 <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-4 px-4 py-4 hover:bg-white/10 rounded-md transition-colors duration-300 relative group"
+                    className="w-full flex items-center gap-4 px-4 py-3.5 hover:bg-red-500/20 rounded-xl transition-all duration-300 relative group"
                 >
-                    <div className="flex justify-center w-8">
-                        <FaSignOutAlt size={20} />
+                    <div className="flex justify-center w-8 text-red-300/70 group-hover:text-red-400 group-hover:scale-110 transition-all duration-300">
+                        <FaSignOutAlt size={18} />
                     </div>
                     <span
                         className={`${
                             !open ? 'opacity-0 w-0' : 'opacity-100'
-                        } transition-all duration-300 text-md`}
+                        } transition-all duration-300 text-sm font-bold tracking-wide text-white/80 group-hover:text-red-300`}
                     >
                         ĐĂNG XUẤT
                     </span>
                     {/* Tooltip khi sidebar đóng */}
                     {!open && (
-                        <span className="absolute left-16 bg-white text-gray-800 text-base px-4 py-2 rounded-md shadow-lg z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                        <span className="absolute left-20 bg-red-500/90 text-white text-sm font-medium px-4 py-2.5 rounded-xl shadow-2xl z-50 opacity-0 group-hover:opacity-100 transition-all duration-200 whitespace-nowrap backdrop-blur-md">
                             ĐĂNG XUẤT
                         </span>
                     )}

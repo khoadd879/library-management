@@ -339,7 +339,7 @@ const ProfilePage = () => {
                     name={name}
                     value={value}
                     onChange={onChange}
-                    className={`w-full pl-10 pr-3 py-2.5 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 outline-none ${
+                    className={`w-full pl-10 pr-3 py-2.5 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 outline-none ${
                         error
                             ? 'border-red-500 ring-1 ring-red-200'
                             : 'border-gray-200'
@@ -361,7 +361,7 @@ const ProfilePage = () => {
                     {/* Main Profile Card */}
                     <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 flex flex-col items-center relative overflow-hidden">
                         {/* Background Decoration */}
-                        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-green-500 to-green-800 opacity-100 z-0"></div>
+                        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-[#153D36] to-[#0D2621] opacity-100 z-0"></div>
 
                         <div className="relative z-10 mt-12 mb-4 group">
                             <div className="relative">
@@ -403,7 +403,7 @@ const ProfilePage = () => {
 
                                 {isEditing && (
                                     <div
-                                        className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full shadow-md border-2 border-white cursor-pointer hover:bg-blue-700 transition"
+                                        className="absolute bottom-0 right-0 bg-[#153D36] text-white p-2 rounded-full shadow-md border-2 border-white cursor-pointer hover:bg-[#1E4D45] transition"
                                         onClick={handleAvatarClick}
                                     >
                                         <EditOutlined className="text-xs" />
@@ -471,7 +471,7 @@ const ProfilePage = () => {
                                                     e.target.value
                                                 )
                                             }
-                                            className="w-full text-sm p-1.5 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                            className="w-full text-sm p-1.5 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
                                         >
                                             <option value="">Chọn loại</option>
                                             {typeReaderOptions.map((opt) => (
@@ -571,7 +571,7 @@ const ProfilePage = () => {
                                 </button>
                                 <button
                                     onClick={handleSaveClick}
-                                    className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all active:scale-95"
+                                    className="flex items-center gap-2 px-5 py-2.5 bg-[#153D36] text-white font-medium rounded-xl hover:bg-[#1E4D45] shadow-lg shadow-emerald-200 transition-all active:scale-95"
                                 >
                                     <SaveOutlined /> <span>Lưu lại</span>
                                 </button>
@@ -628,7 +628,7 @@ const ProfilePage = () => {
                                         name="gender"
                                         value={formData.gender}
                                         onChange={handleInputChange}
-                                        className={`w-full pl-10 pr-3 py-2.5 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none appearance-none ${
+                                        className={`w-full pl-10 pr-3 py-2.5 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none appearance-none ${
                                             errors.gender
                                                 ? 'border-red-500'
                                                 : 'border-gray-200'
@@ -669,7 +669,7 @@ const ProfilePage = () => {
                                         name="dob"
                                         value={dob}
                                         onChange={(e) => setDob(e.target.value)}
-                                        className={`w-full pl-10 pr-3 py-2.5 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none ${
+                                        className={`w-full pl-10 pr-3 py-2.5 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none ${
                                             errors.dob
                                                 ? 'border-red-500'
                                                 : 'border-gray-200'
@@ -715,7 +715,7 @@ const ProfilePage = () => {
                                         value={formData.address}
                                         onChange={handleInputChange}
                                         rows={3}
-                                        className={`w-full pl-10 pr-3 py-2 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none ${
+                                        className={`w-full pl-10 pr-3 py-2 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none ${
                                             errors.address
                                                 ? 'border-red-500'
                                                 : 'border-gray-200'

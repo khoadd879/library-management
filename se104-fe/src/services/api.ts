@@ -86,14 +86,9 @@ export const updateAuthorAPI = (idAuthor: string, formData: FormData) => {
     });
 };
 
-export const getAuthorByID = (token: string, idAuthor: string) => {
-    const urlBackend = `/api/Author/inf-author${idAuthor}`;
-    return axios.get<IGetAuthor>(urlBackend, {
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-        },
-    });
+export const getAuthorByID = (idAuthor: string) => {
+    const urlBackend = `/api/Author/inf-author?idAuthor=${idAuthor}`;
+    return axios.get<IGetAuthorDetail>(urlBackend);
 };
 //book
 export const addBookAPI = (formData: FormData) => {
@@ -187,7 +182,7 @@ export const sendMessageAPI = async (payload: ISendMessagePayload) => {
     return await axios.post(url, payload);
 };
 export const getChatHistoryAPI = async (receiveUserId: string) => {
-    const url = `/api/Chat/history?receiveUserId=${receiveUserId}`;
+    const url = `/api/Chat/history-chat?receiveUserId=${receiveUserId}`;
     const res = await axios.get<IChatMessage[]>(url);
     return res;
 };
@@ -367,7 +362,7 @@ export const getAmountByTypeBookAPI = async (month: number) => {
     return res;
 };
 export const findBooksByNameAPI = async (namebook: string) => {
-    const url = `/api/Book/findBooks${encodeURIComponent(namebook)}`;
+    const url = `/api/Book/find-books?namebook=${encodeURIComponent(namebook)}`;
     const res = await axios.get<IBook[]>(url);
     return res;
 };
@@ -376,7 +371,7 @@ export const getAllHeaderBooksAPI = async () => {
     return res;
 };
 export const getChatUsersAPI = async () => {
-    const res = await axios.get('/api/Chat/get-all-user-sent-message');
+    const res = await axios.get('/api/Chat/get-all-reader-sent-message');
     return res;
 };
 export const logoutAPI = async (refreshToken: string) => {
