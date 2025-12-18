@@ -203,6 +203,13 @@ declare global {
         urlAvatar: string | null;
     }
 
+    export interface IManyAuthor {
+        success: boolean;
+        message: string;
+        statusCode: number;
+        data: IAddAuthor[];
+    }
+
     export interface IManyReader {
         success: boolean;
         message: string;

@@ -499,22 +499,17 @@ const BookDetailPage = () => {
                                                                 {cmt.nameReader ||
                                                                     'Độc giả ẩn danh'}
                                                             </h4>
-                                                            <div className="flex text-[#fadb14] text-sm gap-0.5">
+                                                            <div className="flex text-sm gap-0.5">
                                                                 {Array.from(
                                                                     {
                                                                         length: 5,
                                                                     },
                                                                     (_, i) => (
                                                                         <StarFilled
-                                                                            key={
-                                                                                i
-                                                                            }
-                                                                            className={
-                                                                                i <
-                                                                                cmt.star
-                                                                                    ? ''
-                                                                                    : 'text-gray-300'
-                                                                            }
+                                                                            key={i}
+                                                                            style={{
+                                                                                color: i < cmt.star ? '#fadb14' : '#d1d5db'
+                                                                            }}
                                                                         />
                                                                     )
                                                                 )}

@@ -1,6 +1,28 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { getAllParametersAPI, updateParameterAPI } from "@/services/api";
-import { Table, InputNumber, Button, message, Switch } from "antd";
+import {
+  Table,
+  InputNumber,
+  Button,
+  message,
+  Switch,
+  Card,
+  Typography,
+  Tag,
+  Space,
+  Badge,
+  Descriptions
+} from "antd";
+import {
+  SettingOutlined,
+  ReloadOutlined,
+  SaveOutlined,
+  UndoOutlined,
+  CheckCircleOutlined,
+  InfoCircleOutlined
+} from "@ant-design/icons";
+
+const { Text, Title } = Typography;
 
 interface IParameter {
   idParameter: string;
@@ -8,36 +30,41 @@ interface IParameter {
   valueParameter: number;
 }
 
+// Hàm helper để làm đẹp tên biến (VD: maxStudentPerRoom -> Max Student Per Room)
+const formatParameterName = (name: string) => {
+  return name
+    .replace(/([A-Z])/g, " $1")
+    .replace(/^./, (str) => str.toUpperCase())
+    .trim();
+};
+
 const Parameter = () => {
   const [params, setParams] = useState<IParameter[]>([]);
   const [editing, setEditing] = useState<{ [key: string]: number }>({});
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const fetchParameters = async () => {
     try {
-      const res = await getAllParametersAPI();
-      setParams(res);
+      setLoading(true);
+      const res: any = await getAllParametersAPI();
+      let dataToCheck: IParameter[] = [];
+      
+      if (Array.isArray(res)) dataToCheck = res;
+      else if (res?.data && Array.isArray(res.data)) dataToCheck = res.data;
+      else if (res?.result && Array.isArray(res.result)) dataToCheck = res.result;
+
+      setParams(dataToCheck);
+
+      // Reset editing state về giống dữ liệu gốc
       const editMap: { [key: string]: number } = {};
-      res.forEach((p: IParameter) => {
+      dataToCheck.forEach((p) => {
         editMap[p.idParameter] = p.valueParameter;
       });
       setEditing(editMap);
     } catch (err) {
-      message.error("Không thể tải tham số.");
-    }
-  };
-
-  const handleSave = async (param: IParameter) => {
-    try {
-      setLoading(true);
-      await updateParameterAPI(param.idParameter, {
-        nameParameter: param.nameParameter,
-        valueParameter: editing[param.idParameter],
-      });
-      message.success("Cập nhật thành công.");
-      fetchParameters();
-    } catch (err) {
-      message.error("Cập nhật thất bại.");
+      console.error(err);
+      message.error("Không thể tải cấu hình hệ thống.");
     } finally {
       setLoading(false);
     }
@@ -47,56 +74,191 @@ const Parameter = () => {
     fetchParameters();
   }, []);
 
-  return (
-    <div className="p-6 max-w-5xl mx-auto bg-white shadow rounded">
-      <h2 className="text-xl font-semibold mb-4 text-center">
-        Sửa luật hệ thống
-      </h2>
-      <Table
-        dataSource={params}
-        rowKey="idParameter"
-        pagination={false}
-        loading={loading}
-        columns={[
-          {
-            title: "Tên luật",
-            dataIndex: "nameParameter",
-          },
-          {
-            title: "Giá trị",
-            render: (_, record) =>
-              record.nameParameter === "LateReturnPenaltyPolicy" ? (
+  // Tính toán xem có thay đổi nào chưa lưu không
+  const changedItems = useMemo(() => {
+    return params.filter(
+      (p) => editing[p.idParameter] !== p.valueParameter
+    );
+  }, [params, editing]);
+
+  const hasChanges = changedItems.length > 0;
+
+  const handleSaveAll = async () => {
+    try {
+      setSaving(true);
+      // Chạy song song các request update (hoặc gửi 1 mảng nếu BE hỗ trợ bulk update)
+      const promises = changedItems.map((item) =>
+        updateParameterAPI(item.idParameter, {
+          nameParameter: item.nameParameter,
+          valueParameter: editing[item.idParameter],
+        })
+      );
+
+      await Promise.all(promises);
+      message.success(`Đã cập nhật thành công ${changedItems.length} cấu hình!`);
+      await fetchParameters(); // Tải lại dữ liệu mới nhất
+    } catch (err) {
+      console.error(err);
+      message.error("Có lỗi xảy ra khi lưu.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleReset = () => {
+    const resetMap: { [key: string]: number } = {};
+    params.forEach((p) => {
+      resetMap[p.idParameter] = p.valueParameter;
+    });
+    setEditing(resetMap);
+    message.info("Đã khôi phục giá trị gốc.");
+  };
+
+  const columns = [
+    {
+      title: "TÊN CẤU HÌNH",
+      dataIndex: "nameParameter",
+      width: "50%",
+      render: (text: string, record: IParameter) => {
+        const isChanged = editing[record.idParameter] !== record.valueParameter;
+        return (
+          <div className="flex items-start gap-3">
+             {/* Icon thay đổi tùy trạng thái */}
+            <div className={`mt-1 p-2 rounded-lg ${isChanged ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-500'}`}>
+               {isChanged ? <InfoCircleOutlined /> : <SettingOutlined />}
+            </div>
+            <div>
+              <Text strong className="text-base block text-gray-800">
+                {formatParameterName(text)}
+              </Text>
+              <Text type="secondary" className="text-xs font-mono text-gray-400">
+                Key: {text}
+              </Text>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      title: "GIÁ TRỊ THIẾT LẬP",
+      width: "50%",
+      render: (_: any, record: IParameter) => {
+        const isSwitch = record.nameParameter.toLowerCase().includes("policy") || 
+                         record.nameParameter.toLowerCase().includes("enable"); // Tự động đoán nếu tên có chữ Policy/Enable
+        const currentValue = editing[record.idParameter];
+        const originalValue = record.valueParameter;
+        const isChanged = currentValue !== originalValue;
+
+        return (
+          <div className="flex items-center justify-between group">
+            <div className="flex-1 max-w-[200px]">
+              {isSwitch ? (
                 <Switch
-                  checked={editing[record.idParameter] === 1}
+                  checkedChildren={<CheckCircleOutlined />}
+                  unCheckedChildren="Tắt"
+                  checked={currentValue === 1}
                   onChange={(checked) =>
-                    setEditing({
-                      ...editing,
-                      [record.idParameter]: checked ? 1 : 0,
-                    })
+                    setEditing((prev) => ({ ...prev, [record.idParameter]: checked ? 1 : 0 }))
                   }
                 />
               ) : (
                 <InputNumber
-                  value={editing[record.idParameter]}
+                  size="middle"
+                  className={`w-full ${isChanged ? 'border-orange-400 shadow-sm' : ''}`}
+                  value={currentValue}
                   onChange={(val) =>
-                    setEditing({
-                      ...editing,
-                      [record.idParameter]: val || 0,
-                    })
+                    setEditing((prev) => ({ ...prev, [record.idParameter]: val || 0 }))
                   }
                 />
-              ),
-          },
-          {
-            title: "Hành động",
-            render: (_, record) => (
-              <Button type="primary" onClick={() => handleSave(record)}>
-                Lưu
-              </Button>
-            ),
-          },
-        ]}
-      />
+              )}
+            </div>
+            
+            {/* Hiển thị giá trị cũ mờ mờ để user so sánh */}
+            {isChanged && (
+              <div className="text-xs text-gray-400 ml-4 flex flex-col items-end animate-fade-in">
+                <span>Gốc: {isSwitch ? (originalValue === 1 ? "Bật" : "Tắt") : originalValue}</span>
+                <Tag color="warning" className="mr-0 mt-1 border-0 bg-orange-50 text-orange-600">Đã sửa</Tag>
+              </div>
+            )}
+          </div>
+        );
+      },
+    },
+  ];
+
+  return (
+    <div className="p-6 bg-gray-50/50 min-h-screen pb-24 relative">
+      <div className="max-w-5xl mx-auto">
+        
+        {/* Header Section */}
+        <div className="flex justify-between items-end mb-6">
+          <div>
+            <Title level={3} style={{ marginBottom: 0 }}>Cấu Hình Hệ Thống</Title>
+            <Text type="secondary">Quản lý các tham số và luật lệ vận hành.</Text>
+          </div>
+          <Button 
+            icon={<ReloadOutlined />} 
+            onClick={fetchParameters} 
+            loading={loading}
+            type="text"
+            className="text-gray-500 hover:text-blue-600 hover:bg-blue-50"
+          >
+            Làm mới dữ liệu
+          </Button>
+        </div>
+
+        {/* Main Card */}
+        <Card 
+          bordered={false} 
+          className="shadow-sm rounded-xl overflow-hidden"
+          bodyStyle={{ padding: 0 }}
+        >
+          <Table
+            dataSource={params}
+            rowKey="idParameter"
+            pagination={false}
+            loading={loading}
+            columns={columns}
+            // Row styling: Highlight row đang được sửa
+            rowClassName={(record) => {
+                const isChanged = editing[record.idParameter] !== record.valueParameter;
+                return isChanged ? "bg-orange-50/30 transition-colors" : "hover:bg-gray-50 transition-colors";
+            }}
+          />
+        </Card>
+      </div>
+
+      {/* Floating Action Bar - Chỉ hiện khi có thay đổi */}
+      <div 
+        className={`fixed bottom-0 left-0 right-0 p-4 bg-white border-t shadow-[0_-4px_20px_rgba(0,0,0,0.1)] z-50 transition-transform duration-300 ease-in-out ${
+          hasChanges ? "translate-y-0" : "translate-y-full"
+        }`}
+      >
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Badge count={changedItems.length} style={{ backgroundColor: '#faad14' }} />
+            <span className="font-medium text-gray-700">cấu hình chưa được lưu.</span>
+          </div>
+          <Space>
+            <Button 
+                onClick={handleReset} 
+                icon={<UndoOutlined />}
+                disabled={saving}
+            >
+              Hủy thay đổi
+            </Button>
+            <Button
+              type="primary"
+              onClick={handleSaveAll}
+              loading={saving}
+              icon={<SaveOutlined />}
+              className="bg-black hover:bg-gray-800 border-black h-10 px-6 shadow-lg shadow-gray-400/50"
+            >
+              Lưu tất cả thay đổi
+            </Button>
+          </Space>
+        </div>
+      </div>
     </div>
   );
 };

@@ -43,7 +43,7 @@ const AuthorInfo = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-6 animate-fade-in">
-      <div className="flex flex-col md:flex-row items-center gap-8 bg-gradient-to-r from-[#e0f7fa] to-[#f1f8e9] rounded-xl shadow-lg p-8 mb-8">
+      <div className="flex flex-col md:flex-row items-center gap-8 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl shadow-lg p-8 mb-8">
         <div className="relative group">
           <img
             src={
@@ -102,7 +102,7 @@ const AuthorInfo = () => {
                 )}
               </div>
               <div className="p-4">
-                <h4 className="font-semibold text-gray-800 line-clamp-2 group-hover:text-[#1A4E46] transition-colors duration-300 text-center">
+                <h4 className="font-semibold text-gray-800 line-clamp-2 group-hover:text-[#153D36] transition-colors duration-300 text-center">
                   {book.nameBook}
                 </h4>
                 <p className="text-xs text-gray-500 mt-1 text-center">
