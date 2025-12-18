@@ -113,6 +113,7 @@ const ReceiveBook = () => {
         if (!value) return;
 
         const selected = headerBooks.find((h) => h.idHeaderBook === value);
+        console.log(selected);
         if (selected) {
             setFormState((prev) => ({
                 ...prev,
@@ -127,6 +128,7 @@ const ReceiveBook = () => {
                 content: 'Đã cập nhật thông tin từ đầu sách cũ',
                 key: 'autofill',
             });
+            setSelectedHeaderId(null);
         }
     };
 
@@ -391,6 +393,7 @@ const ReceiveBook = () => {
                                         <Input
                                             size="large"
                                             placeholder="Nhập tên sách..."
+                                            disabled={!!selectedHeaderId}
                                             value={formState.nameHeaderBook}
                                             onChange={(e) =>
                                                 setFormState({
