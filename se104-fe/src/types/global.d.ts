@@ -71,6 +71,13 @@ declare global {
         books: IBookAuthor[];
     }
 
+    export interface IGetAuthorDetail {
+        success: boolean;
+        message: string;
+        statusCode: number;
+        data: IGetAuthor;
+    }
+
     export interface IBookAuthor {
         idBook: string;
         nameBook: string;

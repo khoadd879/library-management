@@ -113,48 +113,67 @@ const NewBooks = () => {
               {filteredBooks.map((book, index) => (
                 <div
                   key={book.idBook}
-                  className="group rounded-2xl bg-white border-2 border-slate-100 hover:border-emerald-200 p-3 hover:shadow-2xl transition-all duration-500 cursor-pointer hover:-translate-y-2"
+                  className="group bg-white rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-500 cursor-pointer overflow-hidden"
                   onClick={() => navigate(`/detail/${book.idBook}`)}
-                  style={{ animationDelay: `${index * 30}ms` }}
+                  style={{
+                    animation: `fadeInUp 0.5s ease-out ${index * 0.05}s both`,
+                  }}
                 >
-                  {/* Book Cover */}
-                  <div className="relative w-full h-44 bg-gradient-to-br from-slate-100 to-slate-50 rounded-xl overflow-hidden mb-3">
+                  {/* Book Cover - Full Bleed */}
+                  <div className="aspect-[2/3] bg-gradient-to-br from-slate-100 to-slate-200 relative overflow-hidden">
                     {book.image ? (
                       <img
                         src={book.image}
                         alt={book.nameBook}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-slate-300">
-                        <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="w-full h-full flex flex-col items-center justify-center text-slate-300">
+                        <svg className="w-12 h-12 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                         </svg>
+                        <span className="text-xs mt-2 opacity-60">No Cover</span>
                       </div>
                     )}
-                    {/* Year Badge */}
-                    <div className={`absolute top-2 right-2 px-2 py-1 rounded-lg text-[10px] font-black shadow-lg ${
-                      book.reprintYear === 2025 
-                        ? 'bg-emerald-500 text-white' 
-                        : 'bg-amber-500 text-white'
-                    }`}>
-                      {book.reprintYear}
-                    </div>
+                    
                     {/* New Badge */}
                     {book.reprintYear === 2025 && (
-                      <div className="absolute top-2 left-2 px-2 py-1 bg-red-500 text-white rounded-lg text-[10px] font-black shadow-lg animate-pulse">
+                      <div className="absolute top-3 left-3 px-2.5 py-1 bg-red-500 text-white rounded-full text-[10px] font-black shadow-lg animate-pulse">
                         MỚI
                       </div>
                     )}
+                    
+                    {/* Gradient Overlay on Hover */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    
+                    {/* Author Info on Hover */}
+                    <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+                      <p className="text-white text-xs font-medium truncate">
+                        ✍️ {book.authors?.[0]?.nameAuthor || "Không rõ tác giả"}
+                      </p>
+                    </div>
                   </div>
                   
                   {/* Book Info */}
-                  <h3 className="text-sm font-bold truncate text-slate-800 group-hover:text-[#153D36] transition-colors">
-                    {book.nameBook}
-                  </h3>
-                  <p className="text-xs text-slate-500 truncate mt-1">
-                    {book.authors?.[0]?.nameAuthor || "Không rõ tác giả"}
-                  </p>
+                  <div className="p-3">
+                    <h3 className="text-sm font-bold text-slate-800 line-clamp-2 group-hover:text-emerald-600 transition-colors duration-300 leading-tight min-h-[2.5rem]">
+                      {book.nameBook}
+                    </h3>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className={`px-2 py-1 rounded-md text-[10px] font-bold ${
+                        book.reprintYear === 2025 
+                          ? 'bg-emerald-100 text-emerald-700' 
+                          : 'bg-amber-100 text-amber-700'
+                      }`}>
+                        {book.reprintYear}
+                      </span>
+                      {book.valueOfbook && (
+                        <span className="text-emerald-600 text-xs font-semibold">
+                          {book.valueOfbook.toLocaleString()}đ
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -170,7 +189,21 @@ const NewBooks = () => {
             </div>
           )}
         </div>
-      </div>
+    </div>
+
+      {/* Custom Styles */}
+      <style>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 };

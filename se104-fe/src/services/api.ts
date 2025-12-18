@@ -86,14 +86,9 @@ export const updateAuthorAPI = (idAuthor: string, formData: FormData) => {
     });
 };
 
-export const getAuthorByID = (token: string, idAuthor: string) => {
-    const urlBackend = `/api/Author/inf-author${idAuthor}`;
-    return axios.get<IGetAuthor>(urlBackend, {
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-        },
-    });
+export const getAuthorByID = (idAuthor: string) => {
+    const urlBackend = `/api/Author/inf-author?idAuthor=${idAuthor}`;
+    return axios.get<IGetAuthorDetail>(urlBackend);
 };
 //book
 export const addBookAPI = (formData: FormData) => {
