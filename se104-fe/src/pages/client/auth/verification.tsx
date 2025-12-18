@@ -74,7 +74,7 @@ const VerificationCodePage = () => {
     }
   };
 
-  
+
   return (
     <div className="min-h-screen bg-[#0a3d3f] flex items-center justify-center relative overflow-hidden p-4">
       <div className="absolute top-5 left-5 flex items-center space-x-2 text-white text-lg font-semibold">
@@ -104,7 +104,7 @@ const VerificationCodePage = () => {
               maxLength={1}
               value={digit}
               onChange={(e) => handleChange(e.target.value, idx)}
-              onKeyDown={(e) => handleKeyDown(e, idx)} 
+              onKeyDown={(e) => handleKeyDown(e, idx)}
               ref={(el: HTMLInputElement | null) => {
                 inputsRef.current[idx] = el;
               }}
@@ -114,6 +114,7 @@ const VerificationCodePage = () => {
         </div>
 
         <button
+          onKeyDown={(e) => e.key === "Enter" && handleConfirmCode()}
           onClick={handleConfirmCode}
           className="w-full py-3 bg-[#21b39b] rounded-lg text-white font-semibold hover:bg-[#1a9c86] transition-colors shadow-lg text-sm sm:text-base"
         >
@@ -131,7 +132,7 @@ const VerificationCodePage = () => {
           ) : (
             <button
               className="text-sm text-[#a5f3fc] hover:underline transition-colors"
-              //onClick={handleResendOTP}
+            //onClick={handleResendOTP}
             >
               Gửi lại mã xác minh
             </button>

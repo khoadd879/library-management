@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
     message,
     Select,
@@ -6,11 +6,9 @@ import {
     InputNumber,
     Button,
     Card,
-    Divider,
     Tag,
     Row,
     Col,
-    Typography,
 } from 'antd';
 import {
     getListAuthor,

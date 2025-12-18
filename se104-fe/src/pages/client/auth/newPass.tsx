@@ -14,18 +14,18 @@ const NewPasswordPage = () => {
   const email = location.state?.email;
 
   const handleChangePassword = async () => {
-    if(!password || !confirmPassword){
+    if (!password || !confirmPassword) {
       message.warning("Vui lòng nhập đầy đủ mật khẩu!");
       return;
     }
-    
+
     try {
       const res = await changePassword(email, password, confirmPassword);
 
-      if(res){
+      if (res) {
         message.success("Đổi mật khẩu thành công!");
         navigate("/signin");
-      }else{
+      } else {
         message.error("Đổi mật khẩu thất bại");
       }
     } catch (error) {
@@ -63,7 +63,7 @@ const NewPasswordPage = () => {
               autoComplete="new-password"
             />
           </div>
-          
+
           <div>
             <input
               type={showPassword ? "text" : "password"}
@@ -79,6 +79,7 @@ const NewPasswordPage = () => {
 
 
         <button
+          onKeyDown={(e) => e.key === "Enter" && handleChangePassword()}
           onClick={handleChangePassword}
           className="w-full py-3 bg-[#21b39b] rounded-lg text-white font-semibold hover:bg-[#1a9c86] transition-colors shadow-lg mt-6 text-sm sm:text-base"
         >

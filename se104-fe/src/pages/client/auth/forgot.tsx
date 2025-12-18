@@ -70,6 +70,7 @@ const ForgotPasswordPage = () => {
         </div>
 
         <button
+          onKeyDown={(e) => e.key === "Enter" && handleSendOTP()}
           onClick={handleSendOTP}
           className="w-full py-3 bg-[#21b39b] rounded-lg text-white font-semibold hover:bg-[#1a9c86] transition-colors shadow-lg mt-6 text-sm sm:text-base"
         >
