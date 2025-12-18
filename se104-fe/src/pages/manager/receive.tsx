@@ -35,8 +35,6 @@ import {
 import dayjs from 'dayjs';
 
 const { TextArea } = Input;
-const { Title, Text } = Typography;
-
 const ReceiveBook = () => {
     const [today, setToday] = useState('');
     const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -232,41 +230,29 @@ const ReceiveBook = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#F8F9FA] p-6 font-sans text-slate-700">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50/30">
             {/* Header Section */}
-            <div className="max-w-7xl mx-auto mb-8 animate-fade-in-down">
-                <div className="flex justify-between items-end border-b border-gray-200 pb-4">
+            <div className="bg-gradient-to-r from-[#153D36] via-[#1A4A42] to-[#0D2621] px-8 py-6">
+                <div className="max-w-7xl mx-auto flex justify-between items-end">
                     <div>
-                        <Title
-                            level={2}
-                            style={{
-                                color: '#153D36',
-                                margin: 0,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '10px',
-                            }}
-                        >
-                            <ReadOutlined className="text-[#27AE60]" /> Nhập
-                            Sách Mới
-                        </Title>
-                        <Text type="secondary" className="mt-1 block">
+                        <h1 className="text-2xl font-bold text-white mb-1 flex items-center gap-3">
+                            <ReadOutlined className="text-emerald-300" />
+                            Nhập sách mới
+                        </h1>
+                        <p className="text-emerald-200/80 text-sm">
                             Quản lý nhập kho và cập nhật đầu sách vào hệ thống
-                        </Text>
+                        </p>
                     </div>
-                    <div className="text-right">
-                        <Tag
-                            icon={<CalendarOutlined />}
-                            color="processing"
-                            className="px-3 py-1 text-sm rounded-lg m-0"
-                        >
-                            Ngày nhập: <strong>{today}</strong>
-                        </Tag>
-                    </div>
+                    <Tag
+                        icon={<CalendarOutlined />}
+                        className="px-4 py-2 text-sm rounded-xl m-0 border-0 bg-white/10 text-white backdrop-blur-sm"
+                    >
+                        Ngày nhập: <strong>{today}</strong>
+                    </Tag>
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-7xl mx-auto px-8 py-8">
                 <Row gutter={32}>
                     {/* --- LEFT COLUMN: IMAGE UPLOAD --- */}
                     <Col xs={24} lg={7} xl={6}>

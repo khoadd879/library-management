@@ -17,10 +17,33 @@ const SignIn = () => {
   const { setIsAuthenticated, setUser, isAuthenticated } = useCurrentApp();
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/");
+    const hasExistingToken = localStorage.getItem("token");
+    if (isAuthenticated && hasExistingToken) {
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          const base64Url = token.split('.')[1];
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          const jsonPayload = decodeURIComponent(
+            atob(base64)
+              .split('')
+              .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+              .join('')
+          );
+          const payload = JSON.parse(jsonPayload);
+          const role = payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
+            payload.role || payload.roleName || 'Reader';
+          switch (role) {
+            case "Admin": navigate("/admin"); break;
+            case "Manager": navigate("/manager"); break;
+            default: navigate("/"); break;
+          }
+        } catch (e) {
+          navigate("/");
+        }
+      }
     }
-  }, [isAuthenticated, navigate]);
+  }, []);
   const handleGoogleLogin = () => {
     const popup = window.open(
       "https://librarymanagement-api-840378105403.asia-southeast1.run.app/api/Authentication/login-google",
@@ -28,7 +51,7 @@ const SignIn = () => {
       "width=500,height=600"
     );
 
-    const handleMessage = (event: MessageEvent) => {
+    const handleMessage = async (event: MessageEvent) => {
       if (
         event.origin !==
         "https://librarymanagement-api-840378105403.asia-southeast1.run.app"
@@ -40,16 +63,64 @@ const SignIn = () => {
         localStorage.setItem("token", token);
         localStorage.setItem("refreshToken", refreshToken);
         localStorage.setItem("idUser", iduser);
+        const roleFromToken = getRoleFromToken(token);
+
+        try {
+          const userRes = await authenticateAPI(token);
+          setUser(userRes);
+        } catch (authError) {
+          console.warn('authenticateAPI failed, using token role:', authError);
+        }
 
         setIsAuthenticated(true);
         message.success("Đăng nhập Google thành công!");
-        navigate("/");
+
+        // Điều hướng theo role từ token
+        navigateByRole(roleFromToken);
 
         window.removeEventListener("message", handleMessage);
       }
     };
 
     window.addEventListener("message", handleMessage);
+  };
+
+  const getRoleFromToken = (token: string): string => {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      const payload = JSON.parse(jsonPayload);
+      return (
+        payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
+        payload.role ||
+        payload.roleName ||
+        'Reader'
+      );
+    } catch (e) {
+      console.error('Error decoding token:', e);
+      return 'Reader';
+    }
+  };
+
+  const navigateByRole = (roleName: string) => {
+    switch (roleName) {
+      case "Admin":
+        navigate("/admin");
+        break;
+      case "Manager":
+        navigate("/manager");
+        break;
+      case "Reader":
+      default:
+        navigate("/");
+        break;
+    }
   };
 
   const handleLogin = async () => {
@@ -65,12 +136,19 @@ const SignIn = () => {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("refreshToken", res.data.refreshToken);
         localStorage.setItem("idUser", res.data.iduser);
-        const userRes = await authenticateAPI(res.data.token);
-        setUser(userRes);
-        setIsAuthenticated(true);
+
+        const roleFromToken = getRoleFromToken(res.data.token);
+
+        try {
+          const userRes = await authenticateAPI(res.data.token);
+          setUser(userRes);
+        } catch (authError) {
+          console.warn('authenticateAPI failed, using token role:', authError);
+        }
+
         setIsAuthenticated(true);
         message.success("Đăng nhập thành công!");
-        navigate("/");
+        navigateByRole(roleFromToken);
       } else {
         message.error("Sai tài khoản hoặc mật khấu!");
       }
@@ -154,9 +232,8 @@ const SignIn = () => {
         <button
           onClick={handleLogin}
           disabled={loading}
-          className={`w-full py-3 bg-[#21b39b] rounded-lg text-white font-semibold hover:bg-[#1a9c86] transition-colors shadow-lg mt-6 text-sm sm:text-base flex items-center justify-center ${
-            loading ? "opacity-70 cursor-not-allowed" : ""
-          }`}
+          className={`w-full py-3 bg-[#21b39b] rounded-lg text-white font-semibold hover:bg-[#1a9c86] transition-colors shadow-lg mt-6 text-sm sm:text-base flex items-center justify-center ${loading ? "opacity-70 cursor-not-allowed" : ""
+            }`}
         >
           {loading ? (
             <div className="flex items-center gap-2">

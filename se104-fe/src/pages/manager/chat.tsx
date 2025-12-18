@@ -20,9 +20,11 @@ const ChatDashboard = () => {
       if (!myId) return;
       try {
         const res = await getChatUsersAPI();
-        setChatUsers(res);
+        const usersData = Array.isArray(res) ? res : (res?.data || []);
+        setChatUsers(usersData);
       } catch (err) {
         console.error("Lỗi khi tải danh sách người dùng:", err);
+        setChatUsers([]);
       }
     };
 
@@ -76,11 +78,10 @@ const ChatDashboard = () => {
               <div
                 key={user.receiveUserId}
                 onClick={() => setSelectedUserId(user.receiveUserId)}
-                className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-all duration-200 border-b border-gray-50 ${
-                  selectedUserId === user.receiveUserId
-                    ? "bg-emerald-50 border-l-4 border-l-emerald-500"
-                    : "hover:bg-gray-50 border-l-4 border-l-transparent"
-                }`}
+                className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-all duration-200 border-b border-gray-50 ${selectedUserId === user.receiveUserId
+                  ? "bg-emerald-50 border-l-4 border-l-emerald-500"
+                  : "hover:bg-gray-50 border-l-4 border-l-transparent"
+                  }`}
               >
                 {/* Avatar */}
                 <div className="relative flex-shrink-0">

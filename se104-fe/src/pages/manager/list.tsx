@@ -99,29 +99,27 @@ const List = () => {
     ];
 
     return (
-        <Layout className="min-h-screen bg-[#f5f7fa]">
-            {/* Không dùng Header của Antd nữa, dùng padding để tạo khoảng thở */}
-            <Content className="p-6 md:p-10 max-w-[1600px] mx-auto w-full">
-                {/* === PHẦN HEADER MỚI: Nằm chung với background === */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-                    {/* Bên trái: Tiêu đề & Breadcrumb ảo */}
-                    <div>
-                        <Title
-                            level={2}
-                            style={{
-                                color: '#153D36',
-                                margin: 0,
-                                fontWeight: 700,
-                            }}
-                        >
-                            Quản lý thư viện
-                        </Title>
-                        <Text className="text-gray-500">
-                            Tra cứu và quản lý dữ liệu hệ thống
-                        </Text>
-                    </div>
+        <Layout className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50/30">
+            {/* Header Section */}
+            <div className="bg-gradient-to-r from-[#153D36] via-[#1A4A42] to-[#0D2621] px-8 py-6">
+                <div className="max-w-[1600px] mx-auto">
+                    <Title
+                        level={2}
+                        style={{
+                            color: 'white',
+                            margin: 0,
+                            fontWeight: 700,
+                        }}
+                    >
+                        Quản lý thư viện
+                    </Title>
+                    <Text className="text-emerald-200/80">
+                        Tra cứu và quản lý dữ liệu hệ thống
+                    </Text>
                 </div>
+            </div>
 
+            <Content className="p-6 md:p-10 max-w-[1600px] mx-auto w-full">
                 {/* === PHẦN NỘI DUNG CHÍNH (CARD TRẮNG) === */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <Tabs

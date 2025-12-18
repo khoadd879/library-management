@@ -8,7 +8,7 @@ import {
 import AuthorForm from "@/components/admin/user/AuthorForm";
 import { App } from "antd";
 import ReaderForm from "@/components/admin/user/ReaderForm";
-import { User, PenTool, Users, PlusCircle } from "lucide-react"; // Cần cài lucide-react hoặc dùng icon tương tự
+import { FaUserPlus, FaPenFancy, FaUsers } from "react-icons/fa";
 
 interface ITypeBookOption {
   value: string;
@@ -28,7 +28,6 @@ const AddUser = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef1 = useRef<HTMLInputElement | null>(null);
 
-  // Logic giữ nguyên hoàn toàn
   const [authorForm, setAuthorForm] = useState({
     IdTypeBook: "",
     NameAuthor: "",
@@ -153,78 +152,91 @@ const AddUser = () => {
     }
   };
 
-  return (
-    <div className="w-full min-h-screen bg-[#F0F2F5] px-6 py-10 lg:px-20">
-      {/* Header Section */}
-      <div className="max-w-5xl mx-auto mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-extrabold text-[#153D36] tracking-tight">
-            Quản lý Thành viên
-          </h1>
-          <p className="text-gray-500 mt-1">Thêm mới tác giả hoặc độc giả vào hệ thống thư viện.</p>
-        </div>
+  const tabs = [
+    { key: 'tacgia', label: 'Tác giả', icon: <FaPenFancy className="text-lg" /> },
+    { key: 'docgia', label: 'Độc giả', icon: <FaUsers className="text-lg" /> },
+  ];
 
-        {/* Custom Tab Switcher */}
-        <div className="inline-flex p-1 bg-gray-200/80 rounded-xl backdrop-blur-sm">
-          <button
-            onClick={() => setActiveTab("tacgia")}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 ${
-              activeTab === "tacgia"
-                ? "bg-white text-[#153D36] shadow-sm active:scale-95"
-                : "text-gray-600 hover:text-[#153D36] hover:bg-white/50"
-            }`}
-          >
-            <PenTool size={18} />
-            Tác giả
-          </button>
-          <button
-            onClick={() => setActiveTab("docgia")}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 ${
-              activeTab === "docgia"
-                ? "bg-white text-[#153D36] shadow-sm active:scale-95"
-                : "text-gray-600 hover:text-[#153D36] hover:bg-white/50"
-            }`}
-          >
-            <Users size={18} />
-            Độc giả
-          </button>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50/30">
+      {/* Header Section */}
+      <div className="bg-gradient-to-r from-[#153D36] via-[#1A4A42] to-[#0D2621] px-8 py-6">
+        <div className="max-w-5xl mx-auto">
+          <h1 className="text-2xl font-bold text-white mb-1">
+            Thêm mới thành viên
+          </h1>
+          <p className="text-emerald-200/80 text-sm">
+            Thêm mới tác giả hoặc độc giả vào hệ thống thư viện
+          </p>
         </div>
       </div>
 
-      {/* Main Form Card */}
-      <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl shadow-gray-200/50 overflow-hidden border border-gray-100">
-        <div className="border-b border-gray-50 bg-gray-50/30 px-8 py-4 flex items-center gap-2">
-            <PlusCircle size={20} className="text-[#153D36]" />
-            <span className="font-bold text-[#153D36] uppercase tracking-wider text-sm">
-                {activeTab === "docgia" ? "Biểu mẫu Độc giả" : "Biểu mẫu Tác giả"}
-            </span>
+      <div className="max-w-5xl mx-auto px-8 py-8">
+        {/* Tab Navigation */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-2 mb-8 inline-flex gap-2">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key as typeof activeTab)}
+              className={`flex items-center gap-3 px-6 py-3.5 rounded-xl font-medium text-sm transition-all duration-300 ${activeTab === tab.key
+                  ? 'bg-gradient-to-r from-[#153D36] to-[#1A4A42] text-white shadow-lg shadow-emerald-500/20'
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-[#153D36]'
+                }`}
+            >
+              <span className={`${activeTab === tab.key ? 'text-emerald-300' : 'text-gray-400'}`}>
+                {tab.icon}
+              </span>
+              {tab.label}
+            </button>
+          ))}
         </div>
-        
-        <div className="p-8">
-          <div className="transition-all duration-500 ease-in-out">
-            {activeTab === "tacgia" ? (
-              <AuthorForm
-                form={authorForm}
-                onChange={handleAuthorChange}
-                onSubmit={handleSubmitAuthor}
-                preview={authorAvatarPreview}
-                setPreview={setAuthorAvatarPreview}
-                typeBookOptions={typeBookOptions}
-                isLoading={isLoading}
-                fileInputRef={fileInputRef}
-              />
-            ) : (
-              <ReaderForm
-                form={readerForm}
-                onChange={handleReaderChange}
-                onSubmit={handleSubmitReader}
-                preview={readerAvatarPreview}
-                setPreview={setReaderAvatarPreview}
-                typeReaderOptions={typeReaderOptions}
-                isLoading={isLoading}
-                fileInputRef1={fileInputRef1}
-              />
-            )}
+
+        {/* Form Card */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          {/* Card Header */}
+          <div className="bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                <FaUserPlus className="text-white text-lg" />
+              </div>
+              <div>
+                <h3 className="text-white font-semibold">
+                  {activeTab === "docgia" ? "Biểu mẫu Độc giả" : "Biểu mẫu Tác giả"}
+                </h3>
+                <p className="text-emerald-100 text-sm">
+                  Điền thông tin để thêm mới
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Form Content */}
+          <div className="p-8">
+            <div className="transition-all duration-500 ease-in-out">
+              {activeTab === "tacgia" ? (
+                <AuthorForm
+                  form={authorForm}
+                  onChange={handleAuthorChange}
+                  onSubmit={handleSubmitAuthor}
+                  preview={authorAvatarPreview}
+                  setPreview={setAuthorAvatarPreview}
+                  typeBookOptions={typeBookOptions}
+                  isLoading={isLoading}
+                  fileInputRef={fileInputRef}
+                />
+              ) : (
+                <ReaderForm
+                  form={readerForm}
+                  onChange={handleReaderChange}
+                  onSubmit={handleSubmitReader}
+                  preview={readerAvatarPreview}
+                  setPreview={setReaderAvatarPreview}
+                  typeReaderOptions={typeReaderOptions}
+                  isLoading={isLoading}
+                  fileInputRef1={fileInputRef1}
+                />
+              )}
+            </div>
           </div>
         </div>
       </div>

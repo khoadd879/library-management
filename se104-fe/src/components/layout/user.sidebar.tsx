@@ -59,24 +59,24 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
             label: 'Danh sách mượn',
             onClick: () => navigate('/borrow-list'),
         },
-        ...(user?.data.roleName === 'Manager' || user?.data.roleName === 'Admin'
-            ? [
-                  {
-                      icon: <FaUserCircle size={20} />,
-                      label: 'Thủ thư',
-                      onClick: () => navigate('/manager'),
-                  },
-              ]
-            : []),
-        ...(user?.data.roleName === 'Admin'
-            ? [
-                  {
-                      icon: <FaUserCircle size={20} />,
-                      label: 'Trang quản trị',
-                      onClick: () => navigate('/admin'),
-                  },
-              ]
-            : []),
+        // ...(user?.data.roleName === 'Manager' || user?.data.roleName === 'Admin'
+        //     ? [
+        //           {
+        //               icon: <FaUserCircle size={20} />,
+        //               label: 'Thủ thư',
+        //               onClick: () => navigate('/manager'),
+        //           },
+        //       ]
+        //     : []),
+        // ...(user?.data.roleName === 'Admin'
+        //     ? [
+        //           {
+        //               icon: <FaUserCircle size={20} />,
+        //               label: 'Trang quản trị',
+        //               onClick: () => navigate('/admin'),
+        //           },
+        //       ]
+        //     : []),
     ];
 
     useEffect(() => {
