@@ -18,6 +18,10 @@ import {
     RightOutlined,
     TrophyFilled,
     ReadOutlined,
+    BookOutlined,
+    CheckCircleFilled,
+    ClockCircleFilled,
+    FireFilled,
 } from '@ant-design/icons';
 import { message, Skeleton, Avatar, Tag } from 'antd';
 
@@ -45,23 +49,14 @@ const swiperStyles = `
     width: 24px;
     border-radius: 4px;
   }
-  
-  /* CSS transition mượt mà hơn */
-  .mySwiper .swiper-wrapper {
-    transition-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1) !important;
-  }
-
   .mySwiper .swiper-slide {
-    transition: transform 1s ease, opacity 1s ease;
+    transition: transform 0.8s ease, opacity 0.8s ease;
     opacity: 0.4;
     transform: scale(0.85);
-    filter: blur(1px);
   }
-  
   .mySwiper .swiper-slide-active {
     opacity: 1;
     transform: scale(1.05);
-    filter: blur(0);
     z-index: 10;
   }
 `;
@@ -79,8 +74,8 @@ interface IBook {
 }
 
 const BookCardSkeleton = () => (
-    <div className="bg-white rounded-xl p-3 shadow-sm space-y-3">
-        <Skeleton.Image active className="!w-full !h-48 rounded-lg" />
+    <div className="bg-white rounded-2xl p-4 shadow-sm space-y-4 border border-gray-100">
+        <Skeleton.Image active className="!w-full !h-52 rounded-xl" />
         <Skeleton active paragraph={{ rows: 2 }} title={false} />
     </div>
 );
@@ -97,7 +92,7 @@ const BookCard = ({
     rank?: number;
 }) => (
     <div
-        className="bg-white rounded-2xl p-3 border border-gray-100 flex flex-col h-full relative overflow-hidden shadow-md select-none"
+        className="bg-white rounded-2xl p-3 border border-gray-100 flex flex-col h-full relative overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer"
         onClick={() => onClick(book.idBook)}
     >
         {rank && (
@@ -119,14 +114,14 @@ const BookCard = ({
             </div>
         )}
 
-        <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-gray-100 mb-3">
+        <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-gray-50 mb-3">
             <img
-                src={book.image || 'https://via.placeholder.com/150'}
+                src={book.image || 'https://placehold.co/400x600'}
                 alt={book.nameBook}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
             />
             <div
-                className="absolute top-2 right-2 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm cursor-pointer hover:bg-red-50 transition-colors z-10"
+                className="absolute top-2 right-2 p-2 bg-white/90 backdrop-blur-md rounded-full shadow-md cursor-pointer hover:bg-red-50 transition-all z-10"
                 onClick={(e) => {
                     e.stopPropagation();
                     onLike(book.idBook);
@@ -135,27 +130,27 @@ const BookCard = ({
                 {book.isLiked ? (
                     <HeartFilled className="text-lg text-red-500" />
                 ) : (
-                    <HeartOutlined className="text-gray-400 text-lg hover:text-red-400" />
+                    <HeartOutlined className="text-gray-400 text-lg hover:text-red-500" />
                 )}
             </div>
         </div>
 
-        <div className="flex-1 flex flex-col">
-            <h3 className="font-bold text-gray-800 text-base line-clamp-2 mb-1 leading-snug">
+        <div className="flex-1 flex flex-col px-1">
+            <h3 className="font-bold text-gray-800 text-sm line-clamp-2 mb-1 group-hover:text-[#153D36] transition-colors">
                 {book.nameBook}
             </h3>
-            <p className="text-sm text-gray-500 mb-2 truncate">
+            <p className="text-xs text-gray-400 mb-3 truncate">
                 {book.authors?.[0]?.nameAuthor || 'Tác giả ẩn danh'}
             </p>
             <div className="mt-auto flex items-center justify-between pt-2 border-t border-gray-50">
                 <div className="flex items-center gap-1">
-                    <StarFilled className="text-yellow-400 text-xs" />
-                    <span className="text-xs font-semibold text-gray-600">
-                        {book.star ? book.star.toFixed(1) : '0.0'}
+                    <StarFilled className="text-yellow-400 text-[10px]" />
+                    <span className="text-xs font-bold text-gray-600">
+                        {book.star ? book.star.toFixed(1) : '5.0'}
                     </span>
                 </div>
-                <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-                    {book.reprintYear}
+                <span className="text-[10px] font-medium text-gray-400 bg-gray-50 px-2 py-0.5 rounded-md">
+                    {book.reprintYear || 2024}
                 </span>
             </div>
         </div>
@@ -172,13 +167,15 @@ const UserHomepage = () => {
     const [search, setSearch] = useState('');
     const [searchBooks, setSearchBooks] = useState<IBook[] | null>(null);
     const hasFetchedData = useRef(false);
+
+    // States cho Hero Section
     const [activeHeroBook, setActiveHeroBook] = useState<IBook | null>(null);
+    const [isHeroTransitioning, setIsHeroTransitioning] = useState(false);
 
     const toggleLike = async (bookId: string) => {
         try {
             const idUser = localStorage.getItem('idUser');
             if (!idUser) return message.error('Vui lòng đăng nhập!');
-
             const res = await addFavoriteBookAPI(idUser, bookId);
             if (res) {
                 const update = (list: IBook[]) =>
@@ -188,14 +185,11 @@ const UserHomepage = () => {
                 setFeaturedBooks((prev) => update(prev));
                 setLatestBooks((prev) => update(prev));
                 if (searchBooks) setSearchBooks((prev) => update(prev!));
-                if (activeHeroBook?.idBook === bookId) {
+                if (activeHeroBook?.idBook === bookId)
                     setActiveHeroBook((prev) =>
                         prev ? { ...prev, isLiked: !prev.isLiked } : null
                     );
-                }
-                message.success(
-                    res ? 'Đã thêm vào yêu thích' : 'Đã bỏ yêu thích'
-                );
+                message.success('Đã cập nhật yêu thích');
             }
         } catch (err) {
             message.error('Lỗi thao tác');
@@ -216,32 +210,50 @@ const UserHomepage = () => {
         }
     };
 
+    // Hàm đồng bộ Hero với Swiper realIndex
+    const handleSlideChange = (swiper: any) => {
+        const index = swiper.realIndex;
+        if (
+            featuredBooks[index] &&
+            featuredBooks[index].idBook !== activeHeroBook?.idBook
+        ) {
+            setIsHeroTransitioning(true);
+            setTimeout(() => {
+                setActiveHeroBook(featuredBooks[index]);
+                setIsHeroTransitioning(false);
+            }, 300);
+        }
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             if (hasFetchedData.current) return;
             hasFetchedData.current = true;
-
             try {
                 setLoading(true);
                 const idUser = localStorage.getItem('idUser');
                 if (!idUser) return;
 
-                // --- GỌI ĐẦY ĐỦ API (Sách, Tác giả, Lịch sử) ---
                 const [data, authorRes, historyRes] = await Promise.all([
                     getAllBooksAndCommentsAPI(idUser),
                     listAuthorAPI(),
                     getLoanSlipHistoryAPI(idUser),
                 ]);
 
-                // Set Lịch sử mượn
-                if (Array.isArray(historyRes))
-                    setLoanHistory(historyRes.slice(0, 5));
+                // Xử lý Lịch sử mượn
+                const rawHistory = historyRes?.data ?? historyRes ?? [];
+                setLoanHistory(
+                    Array.isArray(rawHistory) ? rawHistory.slice(0, 4) : []
+                );
 
-                // Set Tác giả
-                if (Array.isArray(authorRes)) setAuthors(authorRes.slice(0, 5));
+                // Xử lý Tác giả
+                const rawAuthors = authorRes?.data ?? authorRes ?? [];
+                setAuthors(
+                    Array.isArray(rawAuthors) ? rawAuthors.slice(0, 5) : []
+                );
 
-                // Set Sách (Nổi bật & Mới)
-                const booksResponse = data.data;
+                // Xử lý Sách
+                const booksResponse = data?.data ?? data ?? [];
                 if (Array.isArray(booksResponse)) {
                     const booksWithStars = await Promise.all(
                         booksResponse.map(async (book: any) => {
@@ -249,35 +261,28 @@ const UserHomepage = () => {
                                 const res = await getStarByIdBookAPI(
                                     book.idBook
                                 );
-                                const starData = res.data;
-                                const star =
-                                    Array.isArray(starData) &&
-                                    starData.length > 0
-                                        ? starData[0].star
-                                        : 0;
-
-                                return { ...book, star };
+                                return {
+                                    ...book,
+                                    star: res?.data?.[0]?.star ?? 0,
+                                };
                             } catch {
                                 return { ...book, star: 0 };
                             }
                         })
                     );
-
                     const sortedFeatured = [...booksWithStars]
                         .sort((a, b) => (b.star || 0) - (a.star || 0))
                         .slice(0, 8);
                     setFeaturedBooks(sortedFeatured);
-
                     if (sortedFeatured.length > 0)
                         setActiveHeroBook(sortedFeatured[0]);
-
                     setLatestBooks(
                         [...booksWithStars]
                             .sort(
                                 (a, b) =>
                                     (b.reprintYear || 0) - (a.reprintYear || 0)
                             )
-                            .slice(0, 10)
+                            .slice(0, 12)
                     );
                 }
             } catch (error) {
@@ -293,175 +298,137 @@ const UserHomepage = () => {
         <div className="min-h-screen bg-[#F8FAFC] font-sans text-gray-800">
             <style>{swiperStyles}</style>
 
-            <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
+            <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
                     <div
                         className="flex items-center gap-2 cursor-pointer"
                         onClick={() => navigate('/')}
                     >
                         <div className="w-10 h-10 bg-[#153D36] rounded-xl flex items-center justify-center shadow-lg">
-                            <img
-                                src="https://cdn-icons-png.flaticon.com/512/29/29302.png"
-                                alt="Logo"
-                                className="w-6 h-6 filter invert"
-                            />
+                            <BookOutlined className="text-white text-xl" />
                         </div>
-                        <span className="font-extrabold text-xl text-[#153D36] tracking-tight hidden sm:block">
+                        <span className="font-extrabold text-xl text-[#153D36] tracking-tight hidden sm:block uppercase italic">
                             LibManager
                         </span>
                     </div>
-                    <div className="flex-1 max-w-2xl relative group">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <SearchOutlined className="text-gray-400" />
-                        </div>
+                    <div className="flex-1 max-w-xl relative">
+                        <SearchOutlined className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                         <input
                             type="text"
                             placeholder="Tìm kiếm sách, tác giả..."
-                            className="block w-full pl-11 pr-4 py-2.5 bg-gray-100 rounded-full text-sm focus:bg-white focus:ring-4 focus:ring-teal-500/10 outline-none transition-all"
+                            className="block w-full pl-11 pr-4 py-2.5 bg-gray-100 rounded-2xl text-sm focus:bg-white focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all"
                             value={search}
                             onChange={(e) => handleSearch(e.target.value)}
                         />
                     </div>
                     <div className="flex items-center gap-3">
                         <div
+                            className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center cursor-pointer hover:bg-[#153D36] hover:text-white transition-all shadow-sm"
                             onClick={() => navigate('/profile')}
-                            className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center cursor-pointer hover:bg-gray-200 transition"
                         >
-                            <UserOutlined className="text-gray-600" />
+                            <UserOutlined />
                         </div>
                     </div>
                 </div>
             </header>
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* HERO SECTION */}
-                {!searchBooks && (
-                    <section className="relative rounded-3xl overflow-hidden bg-[#153D36] text-white shadow-2xl shadow-teal-900/30 mb-10 min-h-[420px] flex items-center transition-all duration-500 group">
-                        {/* BACKGROUND IMAGES */}
-                        {activeHeroBook && (
-                            <div className="absolute inset-0 z-0">
-                                <div
-                                    className="absolute inset-0 bg-cover bg-center transition-all duration-1000 ease-out blur-xl opacity-40 scale-110"
-                                    style={{
-                                        backgroundImage: `url(${activeHeroBook.image})`,
-                                    }}
-                                ></div>
-                                <div className="absolute inset-0 bg-gradient-to-r from-[#153D36] via-[#153D36]/70 to-[#153D36]/40 mix-blend-multiply"></div>
-                                <div className="absolute inset-0 bg-black/20"></div>
-                            </div>
-                        )}
-
-                        {/* CONTENT */}
-                        <div className="relative z-10 w-full px-8 md:px-12 py-8 flex flex-col-reverse md:flex-row items-center gap-10">
-                            {/* Text Info */}
+                {/* HERO SECTION - SYNCED WITH SWIPER */}
+                {!searchBooks && activeHeroBook && (
+                    <section
+                        className={`relative rounded-[2.5rem] overflow-hidden bg-[#153D36] text-white shadow-2xl mb-12 min-h-[480px] flex items-center transition-all duration-500 ${
+                            isHeroTransitioning
+                                ? 'opacity-50 blur-sm scale-[0.98]'
+                                : 'opacity-100 blur-0 scale-100'
+                        }`}
+                    >
+                        <div className="absolute inset-0 z-0">
+                            <div
+                                className="absolute inset-0 bg-cover bg-center opacity-20 blur-3xl scale-125"
+                                style={{
+                                    backgroundImage: `url(${activeHeroBook.image})`,
+                                }}
+                            ></div>
+                            <div className="absolute inset-0 bg-gradient-to-r from-[#153D36] via-[#153D36]/80 to-transparent"></div>
+                        </div>
+                        <div className="relative z-10 w-full px-8 md:px-16 py-12 flex flex-col-reverse md:flex-row items-center gap-12">
                             <div className="flex-1 space-y-6">
-                                <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 shadow-sm">
-                                    <Tag
-                                        color="#fadb14"
-                                        className="m-0 border-none text-black font-extrabold px-2"
-                                    >
-                                        HOT
-                                    </Tag>
-                                    <span className="text-xs text-white/90 font-medium tracking-wide">
-                                        Nổi bật nhất tuần này
-                                    </span>
-                                </div>
-                                <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold leading-tight text-white drop-shadow-md">
-                                    {activeHeroBook
-                                        ? activeHeroBook.nameBook
-                                        : 'Khám phá tri thức'}
+                                <Tag
+                                    color="gold"
+                                    className="font-black border-none uppercase px-4 py-1 rounded-full flex items-center gap-2 w-fit"
+                                >
+                                    <FireFilled /> Sách thịnh hành
+                                </Tag>
+                                <h1 className="text-4xl md:text-6xl font-black leading-tight drop-shadow-2xl">
+                                    {activeHeroBook.nameBook}
                                 </h1>
-                                <p className="text-gray-100 text-lg line-clamp-2 max-w-xl font-medium drop-shadow-sm opacity-90">
-                                    {activeHeroBook?.authors?.[0]?.nameAuthor
-                                        ? `Một tác phẩm kinh điển của ${activeHeroBook.authors[0].nameAuthor}. Hãy đắm chìm vào từng trang sách ngay hôm nay.`
-                                        : 'Hàng ngàn đầu sách đang chờ bạn khám phá tại thư viện của chúng tôi.'}
+                                <p className="text-emerald-50/80 text-lg font-medium max-w-xl line-clamp-2 italic">
+                                    "
+                                    {activeHeroBook.description ||
+                                        `Khám phá hành trình tri thức cùng ${activeHeroBook.authors?.[0]?.nameAuthor}. Một tác phẩm không thể bỏ qua tại thư viện.`}
+                                    "
                                 </p>
                                 <div className="flex flex-wrap gap-4 pt-4">
                                     <button
                                         onClick={() =>
-                                            activeHeroBook &&
                                             navigate(
                                                 `/detail/${activeHeroBook.idBook}`
                                             )
                                         }
-                                        className="bg-[#fadb14] text-black px-8 py-3.5 rounded-xl font-bold hover:bg-[#eacc15] hover:scale-105 transition-all shadow-lg shadow-yellow-500/20 flex items-center gap-2"
+                                        className="bg-white text-[#153D36] px-10 py-4 rounded-2xl font-black hover:bg-emerald-50 hover:scale-105 transition-all shadow-2xl flex items-center gap-2"
                                     >
-                                        <ReadOutlined /> Chi tiết
+                                        <ReadOutlined /> CHI TIẾT SÁCH
                                     </button>
                                     <button
                                         onClick={() =>
-                                            activeHeroBook &&
                                             toggleLike(activeHeroBook.idBook)
                                         }
-                                        className="px-6 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 transition-all text-white font-semibold flex items-center gap-2"
+                                        className="px-8 py-4 rounded-2xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 transition-all font-bold flex items-center gap-2"
                                     >
-                                        {activeHeroBook?.isLiked ? (
-                                            <>
-                                                <HeartFilled className="text-red-500" />{' '}
-                                                Đã thích
-                                            </>
+                                        {activeHeroBook.isLiked ? (
+                                            <HeartFilled className="text-red-500" />
                                         ) : (
-                                            <>
-                                                <HeartOutlined /> Yêu thích
-                                            </>
-                                        )}
+                                            <HeartOutlined />
+                                        )}{' '}
+                                        YÊU THÍCH
                                     </button>
                                 </div>
                             </div>
-
-                            {/* Book Cover */}
-                            <div className="w-full md:w-auto flex justify-center md:justify-end relative">
-                                {activeHeroBook ? (
-                                    <div className="relative w-[200px] md:w-[260px] aspect-[2/3] transform rotate-3 hover:rotate-0 transition-all duration-500 ease-out">
-                                        <div className="absolute inset-0 bg-black/40 blur-2xl rounded-lg translate-y-4 translate-x-4"></div>
-                                        <img
-                                            src={activeHeroBook.image}
-                                            alt={activeHeroBook.nameBook}
-                                            className="relative w-full h-full object-cover rounded-lg shadow-2xl border border-white/10"
-                                        />
-                                        <div className="absolute -top-4 -right-4 w-12 h-12 bg-yellow-400 rounded-full flex flex-col items-center justify-center shadow-lg border-2 border-[#153D36] z-20">
-                                            <StarFilled className="text-[#153D36] text-xs" />
-                                            <span className="text-[#153D36] font-bold text-xs">
-                                                {activeHeroBook.star?.toFixed(
-                                                    1
-                                                ) || 5.0}
-                                            </span>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="w-[200px] h-[300px] bg-white/5 rounded-lg flex items-center justify-center border border-white/10">
-                                        <ReadOutlined className="text-6xl text-white/20" />
-                                    </div>
-                                )}
+                            <div className="relative group">
+                                <div className="absolute inset-0 bg-emerald-500/20 blur-[100px] rounded-full"></div>
+                                <img
+                                    src={activeHeroBook.image}
+                                    className="relative w-[260px] md:w-[320px] aspect-[2/3] object-cover rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] rotate-2 group-hover:rotate-0 transition-all duration-700"
+                                    alt=""
+                                />
                             </div>
                         </div>
                     </section>
                 )}
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    {/* LEFT COLUMN - 8 CỘT (Main Content) */}
-                    <div className="lg:col-span-8 space-y-12">
-                        {/* SWIPER SECTION */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                    {/* LEFT COLUMN */}
+                    <div className="lg:col-span-8 space-y-20">
+                        {/* RANKING */}
                         <section>
-                            <div className="flex items-center justify-between mb-6">
-                                <div className="flex items-center gap-2">
-                                    <TrophyFilled className="text-yellow-500 text-2xl" />
-                                    <h2 className="text-2xl font-bold text-gray-800">
-                                        {searchBooks !== null
-                                            ? 'Kết quả tìm kiếm'
-                                            : 'Bảng Xếp Hạng Sách'}
-                                    </h2>
+                            <div className="flex items-center gap-4 mb-10">
+                                <div className="w-12 h-12 bg-amber-100 rounded-2xl flex items-center justify-center">
+                                    <TrophyFilled className="text-amber-500 text-2xl" />
                                 </div>
+                                <h2 className="text-3xl font-black text-gray-800 tracking-tight uppercase italic">
+                                    {searchBooks !== null
+                                        ? 'Kết quả tìm kiếm'
+                                        : 'Bảng vàng thư viện'}
+                                </h2>
                             </div>
-
                             {loading ? (
-                                <div className="grid grid-cols-3 gap-6">
+                                <div className="grid grid-cols-3 gap-8">
                                     {[1, 2, 3].map((i) => (
                                         <BookCardSkeleton key={i} />
                                     ))}
                                 </div>
                             ) : searchBooks !== null ? (
-                                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                                     {searchBooks.map((book) => (
                                         <BookCard
                                             key={book.idBook}
@@ -474,95 +441,44 @@ const UserHomepage = () => {
                                     ))}
                                 </div>
                             ) : (
-                                <div className="py-4">
-                                    {/* --- SWIPER CONFIGURATION (Mượt mà 3s) --- */}
-                                    <Swiper
-                                        effect={'coverflow'}
-                                        grabCursor={true}
-                                        centeredSlides={true}
-                                        slidesPerView={'auto'}
-                                        loop={true}
-                                        speed={1200} // Chậm và mượt
-                                        autoplay={{
-                                            delay: 3000, // Dừng đúng 3s
-                                            disableOnInteraction: false,
-                                            pauseOnMouseEnter: true,
-                                        }}
-                                        coverflowEffect={{
-                                            rotate: 0,
-                                            stretch: 0,
-                                            depth: 100,
-                                            modifier: 2.5,
-                                            slideShadows: false,
-                                        }}
-                                        pagination={{
-                                            clickable: true,
-                                            dynamicBullets: true,
-                                        }}
-                                        modules={[
-                                            EffectCoverflow,
-                                            Pagination,
-                                            Autoplay,
-                                        ]}
-                                        className="mySwiper !pb-12"
-                                        breakpoints={{
-                                            640: { slidesPerView: 2 },
-                                            768: { slidesPerView: 2 },
-                                            1024: { slidesPerView: 3 },
-                                        }}
-                                        onSlideChange={(swiper) => {
-                                            const realIndex = swiper.realIndex;
-                                            if (featuredBooks[realIndex])
-                                                setActiveHeroBook(
-                                                    featuredBooks[realIndex]
-                                                );
-                                        }}
-                                    >
-                                        {featuredBooks.map((book, index) => (
-                                            <SwiperSlide
-                                                key={book.idBook}
-                                                className="!w-[200px] sm:!w-[230px]"
-                                            >
-                                                <BookCard
-                                                    book={book}
-                                                    onLike={toggleLike}
-                                                    onClick={(id) =>
-                                                        navigate(
-                                                            `/detail/${id}`
-                                                        )
-                                                    }
-                                                    rank={index + 1}
-                                                />
-                                            </SwiperSlide>
-                                        ))}
-                                    </Swiper>
-                                </div>
-                            )}
-                        </section>
-
-                        {/* NEW BOOKS SECTION */}
-                        {!searchBooks && (
-                            <section>
-                                <div className="flex items-center justify-between mb-6">
-                                    <div className="flex items-center gap-2">
-                                        <span className="w-1.5 h-8 bg-[#2D7D6E] rounded-full"></span>
-                                        <h2 className="text-2xl font-bold text-gray-800">
-                                            Sách mới cập nhật
-                                        </h2>
-                                    </div>
-                                    <button
-                                        onClick={() => navigate('/new-books')}
-                                        className="text-[#2D7D6E] font-semibold hover:underline flex items-center text-sm"
-                                    >
-                                        Xem tất cả{' '}
-                                        <RightOutlined className="text-xs ml-1" />
-                                    </button>
-                                </div>
-                                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
-                                    {latestBooks.map((book) => (
-                                        <div
+                                <Swiper
+                                    effect={'coverflow'}
+                                    grabCursor={true}
+                                    centeredSlides={true}
+                                    slidesPerView={'auto'}
+                                    loop={featuredBooks.length >= 3}
+                                    speed={1200}
+                                    autoplay={{
+                                        delay: 3500,
+                                        disableOnInteraction: false,
+                                    }}
+                                    coverflowEffect={{
+                                        rotate: 0,
+                                        stretch: 0,
+                                        depth: 100,
+                                        modifier: 2.5,
+                                        slideShadows: false,
+                                    }}
+                                    pagination={{
+                                        clickable: true,
+                                        dynamicBullets: true,
+                                    }}
+                                    modules={[
+                                        EffectCoverflow,
+                                        Pagination,
+                                        Autoplay,
+                                    ]}
+                                    className="mySwiper !pb-16"
+                                    breakpoints={{
+                                        640: { slidesPerView: 2 },
+                                        1024: { slidesPerView: 3 },
+                                    }}
+                                    onSlideChange={handleSlideChange}
+                                >
+                                    {featuredBooks.map((book, index) => (
+                                        <SwiperSlide
                                             key={book.idBook}
-                                            className="hover:-translate-y-1 transition duration-300"
+                                            className="!w-[240px]"
                                         >
                                             <BookCard
                                                 book={book}
@@ -570,36 +486,68 @@ const UserHomepage = () => {
                                                 onClick={(id) =>
                                                     navigate(`/detail/${id}`)
                                                 }
+                                                rank={index + 1}
                                             />
-                                        </div>
+                                        </SwiperSlide>
+                                    ))}
+                                </Swiper>
+                            )}
+                        </section>
+
+                        {/* NEW BOOKS */}
+                        {!searchBooks && (
+                            <section>
+                                <div className="flex items-center justify-between mb-10 border-b border-gray-100 pb-4">
+                                    <h2 className="text-2xl font-black text-gray-800 flex items-center gap-3">
+                                        <div className="w-3 h-3 bg-[#153D36] rounded-full animate-ping"></div>{' '}
+                                        SÁCH MỚI LÊN KỆ
+                                    </h2>
+                                    <button
+                                        onClick={() => navigate('/new-books')}
+                                        className="group text-[#153D36] font-black text-sm uppercase tracking-wider flex items-center"
+                                    >
+                                        XEM TẤT CẢ{' '}
+                                        <RightOutlined className="ml-2 group-hover:translate-x-1 transition-transform" />
+                                    </button>
+                                </div>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                                    {latestBooks.map((book) => (
+                                        <BookCard
+                                            key={book.idBook}
+                                            book={book}
+                                            onLike={toggleLike}
+                                            onClick={(id) =>
+                                                navigate(`/detail/${id}`)
+                                            }
+                                        />
                                     ))}
                                 </div>
                             </section>
                         )}
                     </div>
 
-                    {/* RIGHT COLUMN - 4 CỘT (SIDEBAR - Đã thêm lại) */}
+                    {/* SIDEBAR */}
                     {!searchBooks && (
-                        <div className="lg:col-span-4 space-y-8">
-                            <div className="sticky top-24 space-y-8">
-                                {/* Tác giả hàng đầu */}
-                                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                                    <div className="flex justify-between items-center mb-6">
-                                        <h3 className="font-bold text-lg text-gray-800">
-                                            Tác giả hàng đầu
+                        <div className="lg:col-span-4 space-y-12">
+                            <div className="sticky top-24 space-y-12">
+                                {/* TOP AUTHORS */}
+                                <section className="bg-white rounded-[2rem] p-8 shadow-2xl shadow-gray-200/50 border border-gray-50 relative overflow-hidden">
+                                    <div className="flex justify-between items-center mb-8 relative z-10">
+                                        <h3 className="font-black text-xl text-gray-800 uppercase tracking-tighter">
+                                            Tác giả tiêu biểu
                                         </h3>
                                         <button
                                             onClick={() => navigate('/author')}
-                                            className="text-xs font-semibold text-gray-500 hover:text-[#153D36]"
+                                            className="text-[#153D36] font-bold text-xs hover:underline uppercase"
                                         >
-                                            Xem thêm
+                                            Tất cả
                                         </button>
                                     </div>
-                                    <div className="space-y-4">
+                                    <div className="space-y-6 relative z-10">
                                         {loading ? (
-                                            <Skeleton active />
+                                            <Skeleton active avatar />
                                         ) : (
-                                            authors.map((author) => (
+                                            authors.map((author, index) => (
                                                 <div
                                                     key={author.idAuthor}
                                                     onClick={() =>
@@ -607,51 +555,63 @@ const UserHomepage = () => {
                                                             `/authorInfo/${author.idAuthor}`
                                                         )
                                                     }
-                                                    className="flex items-center gap-4 group cursor-pointer p-2 hover:bg-gray-50 rounded-lg transition"
+                                                    className="flex items-center gap-4 group cursor-pointer p-2 hover:bg-emerald-50 rounded-2xl transition-all duration-300"
                                                 >
-                                                    <Avatar
-                                                        size={48}
-                                                        src={author.urlAvatar}
-                                                        className="border border-gray-200"
-                                                        icon={<UserOutlined />}
-                                                    />
-                                                    <div>
-                                                        <h4 className="font-semibold text-gray-800 group-hover:text-[#153D36] transition-colors">
+                                                    <div className="relative">
+                                                        <Avatar
+                                                            size={60}
+                                                            src={
+                                                                author.urlAvatar
+                                                            }
+                                                            className="border-2 border-white shadow-lg group-hover:scale-110 transition-transform duration-500"
+                                                            icon={
+                                                                <UserOutlined />
+                                                            }
+                                                        />
+                                                        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-amber-400 text-[#153D36] rounded-full flex items-center justify-center text-[10px] font-black border-2 border-white shadow-sm">
+                                                            {index + 1}
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="font-black text-gray-800 group-hover:text-[#153D36] transition-colors truncate text-base">
                                                             {author.nameAuthor}
                                                         </h4>
-                                                        <span className="text-xs text-gray-400">
-                                                            Đang cập nhật
-                                                        </span>
+                                                        <Tag className="m-0 mt-1 border-none bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-md uppercase">
+                                                            {author.nationality ||
+                                                                'Việt Nam'}
+                                                        </Tag>
                                                     </div>
-                                                    <RightOutlined className="ml-auto text-gray-300 text-xs group-hover:text-[#153D36]" />
                                                 </div>
                                             ))
                                         )}
                                     </div>
-                                </div>
+                                    {/* Decoration */}
+                                    <div className="absolute top-0 right-0 w-40 h-40 bg-[#153D36]/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                                </section>
 
-                                {/* Lịch sử mượn sách */}
-                                <div className="bg-gradient-to-b from-[#153D36] to-[#11302b] rounded-2xl p-6 shadow-lg text-white">
-                                    <div className="flex justify-between items-center mb-6">
-                                        <div className="flex items-center gap-2">
-                                            <HistoryOutlined />
-                                            <h3 className="font-bold text-lg">
+                                {/* RECENT BORROWING */}
+                                <section className="bg-[#153D36] rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden group">
+                                    <div className="flex justify-between items-center mb-10 relative z-10">
+                                        <div className="flex items-center gap-3 text-white">
+                                            <HistoryOutlined className="text-emerald-400 text-2xl" />
+                                            <h3 className="font-black text-lg uppercase tracking-widest">
                                                 Mượn gần đây
                                             </h3>
                                         </div>
                                         <button
                                             onClick={() => navigate('/history')}
-                                            className="text-xs font-semibold text-gray-300 hover:text-white"
+                                            className="text-emerald-300 text-[10px] font-black hover:text-white uppercase tracking-widest"
                                         >
-                                            Chi tiết
+                                            Lịch sử
                                         </button>
                                     </div>
-                                    <div className="space-y-4">
+
+                                    <div className="space-y-5 relative z-10">
                                         {loading ? (
                                             <Skeleton
                                                 active
-                                                paragraph={{ rows: 2 }}
-                                                title={false}
+                                                paragraph={{ rows: 3 }}
+                                                dark
                                             />
                                         ) : loanHistory.length > 0 ? (
                                             loanHistory.map((item) => (
@@ -662,35 +622,54 @@ const UserHomepage = () => {
                                                             `/detail/${item.idBook}`
                                                         )
                                                     }
-                                                    className="flex gap-3 items-center bg-white/10 p-2 rounded-lg hover:bg-white/20 transition cursor-pointer backdrop-blur-sm"
+                                                    className="flex gap-4 p-3 bg-white/5 hover:bg-white/10 rounded-2xl transition-all duration-300 cursor-pointer border border-white/5 hover:border-emerald-500/30 group/item"
                                                 >
-                                                    <img
-                                                        src={
-                                                            item.avatarUrl ||
-                                                            'https://via.placeholder.com/150'
-                                                        }
-                                                        className="w-10 h-14 object-cover rounded bg-gray-700"
-                                                        alt=""
-                                                    />
-                                                    <div className="flex-1 min-w-0">
-                                                        <h4 className="text-sm font-medium truncate text-gray-100">
+                                                    <div className="w-16 h-22 flex-shrink-0 shadow-2xl">
+                                                        <img
+                                                            src={
+                                                                item.avatarUrl ||
+                                                                'https://placehold.co/150x220'
+                                                            }
+                                                            className="w-full h-full object-cover rounded-xl border border-white/10 group-item-hover:scale-105 transition-transform"
+                                                            alt=""
+                                                        />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                                        <h4 className="text-sm font-black truncate text-white group-item-hover:text-emerald-400 transition-colors mb-1">
                                                             {item.nameBook}
                                                         </h4>
-                                                        <p className="text-xs text-gray-400 truncate">
-                                                            {item.genre ||
-                                                                'Ngày mượn: ' +
-                                                                    new Date().toLocaleDateString()}
-                                                        </p>
+                                                        <div className="space-y-1">
+                                                            <p className="text-[10px] text-gray-400 font-medium">
+                                                                ID:{' '}
+                                                                {item.idBook}
+                                                            </p>
+                                                            {item.dateReturn ? (
+                                                                <span className="text-[10px] text-emerald-400 font-black flex items-center gap-1.5 uppercase">
+                                                                    <CheckCircleFilled />{' '}
+                                                                    Đã hoàn trả
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-[10px] text-amber-400 font-black flex items-center gap-1.5 uppercase animate-pulse">
+                                                                    <ClockCircleFilled />{' '}
+                                                                    Đang mượn
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ))
                                         ) : (
-                                            <div className="text-center py-4 text-gray-400 text-sm">
-                                                Chưa có lịch sử mượn sách
+                                            <div className="flex flex-col items-center justify-center py-12 text-white/20">
+                                                <BookOutlined className="text-5xl mb-3" />
+                                                <p className="text-xs uppercase tracking-widest font-black">
+                                                    Chưa có lịch sử
+                                                </p>
                                             </div>
                                         )}
                                     </div>
-                                </div>
+                                    {/* Decoration */}
+                                    <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-all duration-700"></div>
+                                </section>
                             </div>
                         </div>
                     )}

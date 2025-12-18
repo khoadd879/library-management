@@ -13,7 +13,6 @@ const Chat = ({ receiverId, receiveUserName, avatarUrl }: ChatProps) => {
   const [input, setInput] = useState("");
   const { user } = useCurrentApp();
   const senderId = localStorage.getItem("idUser") ?? "";
-
   useEffect(() => {
     let interval: any;
 
@@ -35,7 +34,7 @@ const Chat = ({ receiverId, receiveUserName, avatarUrl }: ChatProps) => {
     interval = setInterval(fetchMessages, 5000);
 
     return () => clearInterval(interval);
-  }, [receiverId, senderId, messages.length]);
+  }, [receiverId]);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -102,7 +101,7 @@ const Chat = ({ receiverId, receiveUserName, avatarUrl }: ChatProps) => {
               </div>
               {isSender && (
                 <img
-                  src={user?.avatarUrl}
+                  src={user?.data.avatarUrl}
                   alt="avatar"
                   className="w-8 h-8 rounded-full ml-2"
                 />
