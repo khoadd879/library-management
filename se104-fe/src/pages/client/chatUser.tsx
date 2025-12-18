@@ -12,7 +12,7 @@ const Chat = () => {
   const { user } = useCurrentApp();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const receiverId = "";
+  const receiverId = "rd00002";
   const senderId = localStorage.getItem("idUser") ?? "";
 
   const scrollToBottom = () => {
@@ -31,6 +31,7 @@ const Chat = () => {
         const res = await getChatHistoryAPI(senderId);
         if (Array.isArray(res)) {
           setMessages(res);
+          console.log(res)
         } else {
           antdMessage.error("Không lấy được tin nhắn.");
         }
