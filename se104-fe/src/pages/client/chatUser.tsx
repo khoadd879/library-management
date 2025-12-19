@@ -46,10 +46,10 @@ const Chat = () => {
         fetchMessages();
     }, []);
 
-    const ENDPOINT = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080/';
+    const ENDPOINT =
+        import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080/';
 
     useEffect(() => {
-        // 1. Khởi tạo connection
         const newConnection = new signalR.HubConnectionBuilder()
             .withUrl(`${ENDPOINT}chatHub`, {
                 accessTokenFactory: () => localStorage.getItem('token') || '',
@@ -58,32 +58,33 @@ const Chat = () => {
             .build();
 
         // Backend gửi: SendAsync("ReceiveMessage", senderId, content, sentAt)
-        newConnection.on('ReceiveMessage', (msgSenderId: string, content: IChatContent, sentAt: string) => {
-            const newMessage: IChatMessage = {
-                id: Date.now().toString(),
-                senderId: msgSenderId,
-                receiverId: senderId, // Người nhận là user hiện tại
-                content: content,
-                sentAt: sentAt,
-            };
-            setMessages((prev) => {
-                // Tránh duplicate message
-                const isExisted = prev.find((m) => 
-                    m.senderId === msgSenderId && 
-                    m.content?.data === content?.data && 
-                    m.sentAt === sentAt
-                );
-                if (isExisted) return prev;
-                return [...prev, newMessage];
-            });
-        });
+        newConnection.on(
+            '/ReceiveMessage',
+            (msgSenderId: string, content: IChatContent, sentAt: string) => {
+                const newMessage: IChatMessage = {
+                    id: Date.now().toString(),
+                    senderId: msgSenderId,
+                    receiverId: senderId,
+                    content: content,
+                    sentAt: sentAt,
+                };
+                setMessages((prev) => {
+                    const isExisted = prev.find(
+                        (m) =>
+                            m.senderId === msgSenderId &&
+                            m.content?.data === content?.data &&
+                            m.sentAt === sentAt
+                    );
+                    if (isExisted) return prev;
+                    return [...prev, newMessage];
+                });
+            }
+        );
 
         const startConnection = async () => {
             try {
                 await newConnection.start();
                 console.log('SignalR Connected!');
-                // Backend dùng CustomUserIdProvider lấy userId từ JWT token
-                // Không cần invoke JoinRoom
                 setConnection(newConnection);
             } catch (err) {
                 console.log('SignalR Connection Error: ', err);
