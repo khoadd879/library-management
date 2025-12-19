@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { getChatUsersAPI } from "@/services/api";
 import Chat from "@/components/admin/ChatPage";
-import { SearchOutlined, MessageOutlined, UserOutlined } from "@ant-design/icons";
+import { SearchOutlined, MessageOutlined, UserOutlined, ArrowLeftOutlined } from "@ant-design/icons";
+
 
 const ChatDashboard = () => {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
@@ -9,6 +10,7 @@ const ChatDashboard = () => {
     { receiveUserId: string; receiveUserName: string; avatarUrl: string }[]
   >([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showUserList, setShowUserList] = useState(true);
 
   const myId = localStorage.getItem("idUser");
   const selectedUser = chatUsers.find(
@@ -37,23 +39,37 @@ const ChatDashboard = () => {
       user.receiveUserId?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Handle user selection on mobile
+  const handleSelectUser = (userId: string) => {
+    setSelectedUserId(userId);
+    setShowUserList(false);
+  };
+
+  // Handle back button on mobile
+  const handleBack = () => {
+    setShowUserList(true);
+    setSelectedUserId(null);
+  };
+
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-[calc(100vh-4rem)] sm:h-screen bg-gray-100">
       {/* Sidebar - User List */}
-      <div className="w-96 flex flex-col bg-white border-r border-gray-200 shadow-sm">
+      <div className={`${
+        showUserList ? 'flex' : 'hidden'
+      } md:flex w-full md:w-80 lg:w-96 flex-col bg-white border-r border-gray-200 shadow-sm`}>
         {/* Sidebar Header */}
-        <div className="bg-gradient-to-r from-[#153D36] to-[#1E5D4A] px-5 py-4">
-          <h2 className="text-white font-semibold text-lg flex items-center gap-2">
+        <div className="bg-gradient-to-r from-[#153D36] to-[#1E5D4A] px-4 sm:px-5 py-3 sm:py-4">
+          <h2 className="text-white font-semibold text-base sm:text-lg flex items-center gap-2">
             <MessageOutlined />
             Tin nhắn
           </h2>
-          <p className="text-emerald-200 text-sm mt-1">
+          <p className="text-emerald-200 text-xs sm:text-sm mt-1">
             {chatUsers.length} cuộc trò chuyện
           </p>
         </div>
 
         {/* Search Box */}
-        <div className="p-3 border-b border-gray-100">
+        <div className="p-2 sm:p-3 border-b border-gray-100">
           <div className="relative">
             <SearchOutlined className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
@@ -61,7 +77,7 @@ const ChatDashboard = () => {
               placeholder="Tìm kiếm người dùng..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-gray-100 rounded-full text-sm outline-none focus:bg-white focus:ring-2 focus:ring-emerald-400 transition-all duration-200"
+              className="w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-2.5 bg-gray-100 rounded-full text-sm outline-none focus:bg-white focus:ring-2 focus:ring-emerald-400 transition-all duration-200"
             />
           </div>
         </div>
@@ -70,22 +86,22 @@ const ChatDashboard = () => {
         <div className="flex-1 overflow-y-auto">
           {filteredUsers.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-400 p-4">
-              <UserOutlined className="text-4xl mb-2" />
-              <p className="text-sm">Không có cuộc trò chuyện nào</p>
+              <UserOutlined className="text-3xl sm:text-4xl mb-2" />
+              <p className="text-xs sm:text-sm">Không có cuộc trò chuyện nào</p>
             </div>
           ) : (
             filteredUsers.map((user) => (
               <div
                 key={user.receiveUserId}
-                onClick={() => setSelectedUserId(user.receiveUserId)}
-                className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-all duration-200 border-b border-gray-50 ${selectedUserId === user.receiveUserId
+                onClick={() => handleSelectUser(user.receiveUserId)}
+                className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 cursor-pointer transition-all duration-200 border-b border-gray-50 ${selectedUserId === user.receiveUserId
                   ? "bg-emerald-50 border-l-4 border-l-emerald-500"
                   : "hover:bg-gray-50 border-l-4 border-l-transparent"
                   }`}
               >
                 {/* Avatar */}
                 <div className="relative flex-shrink-0">
-                  <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center">
                     {user.avatarUrl ? (
                       <img
                         src={user.avatarUrl}
@@ -93,20 +109,20 @@ const ChatDashboard = () => {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <span className="text-white font-semibold text-lg">
+                      <span className="text-white font-semibold text-base sm:text-lg">
                         {user.receiveUserName?.charAt(0)?.toUpperCase() || "U"}
                       </span>
                     )}
                   </div>
-                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></span>
+                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-400 border-2 border-white rounded-full"></span>
                 </div>
 
                 {/* User Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-800 truncate">
+                  <p className="font-semibold text-gray-800 truncate text-sm sm:text-base">
                     {user.receiveUserName || "Người dùng"}
                   </p>
-                  <p className="text-xs text-gray-500 truncate">
+                  <p className="text-[10px] sm:text-xs text-gray-500 truncate">
                     ID: {user.receiveUserId}
                   </p>
                 </div>
@@ -122,22 +138,49 @@ const ChatDashboard = () => {
       </div>
 
       {/* Chat Area */}
-      <div className="flex-1">
+      <div className={`${
+        !showUserList ? 'flex' : 'hidden'
+      } md:flex flex-1 flex-col`}>
         {selectedUser ? (
-          <Chat
-            receiverId={selectedUser.receiveUserId}
-            receiveUserName={selectedUser.receiveUserName}
-            avatarUrl={selectedUser.avatarUrl}
-          />
-        ) : (
-          <div className="flex flex-col items-center justify-center h-full bg-gradient-to-br from-slate-50 to-emerald-50">
-            <div className="w-24 h-24 rounded-full bg-emerald-100 flex items-center justify-center mb-6">
-              <MessageOutlined className="text-5xl text-emerald-500" />
+          <div className="flex flex-col h-full">
+            {/* Mobile back button header */}
+            <div className="md:hidden bg-gradient-to-r from-[#153D36] to-[#1E5D4A] px-3 py-2 flex items-center gap-3">
+              <button
+                onClick={handleBack}
+                className="p-2 rounded-full hover:bg-white/10 transition-colors"
+              >
+                <ArrowLeftOutlined className="text-white text-lg" />
+              </button>
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <div className="w-8 h-8 rounded-full overflow-hidden bg-white/20">
+                  {selectedUser.avatarUrl ? (
+                    <img src={selectedUser.avatarUrl} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <UserOutlined className="text-white" />
+                    </div>
+                  )}
+                </div>
+                <span className="text-white font-medium truncate">{selectedUser.receiveUserName}</span>
+              </div>
             </div>
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            <div className="flex-1">
+              <Chat
+                receiverId={selectedUser.receiveUserId}
+                receiveUserName={selectedUser.receiveUserName}
+                avatarUrl={selectedUser.avatarUrl}
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full bg-gradient-to-br from-slate-50 to-emerald-50 px-4">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-emerald-100 flex items-center justify-center mb-4 sm:mb-6">
+              <MessageOutlined className="text-4xl sm:text-5xl text-emerald-500" />
+            </div>
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-700 mb-2 text-center">
               Tin nhắn của bạn
             </h3>
-            <p className="text-gray-500 text-center max-w-sm">
+            <p className="text-gray-500 text-center text-sm sm:text-base max-w-sm">
               Chọn một người dùng từ danh sách bên trái để xem cuộc trò chuyện
             </p>
           </div>

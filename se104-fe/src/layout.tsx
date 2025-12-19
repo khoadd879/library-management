@@ -1,27 +1,51 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import AppSidebar from "./components/layout/admin.sidebar";
 import GlobalMessageListener from "./components/MessageListener";
 
 const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // Check if mobile on mount
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   return (
     <div className="flex min-h-screen">
-      {/* Sidebar thực tế */}
-      <aside
-        className={`fixed top-0 left-0 h-full z-30 transition-all duration-300 bg-white shadow-lg ${
-          sidebarOpen ? "w-72" : "w-20"
-        }`}
-        aria-label="Sidebar"
-      >
-        <AppSidebar open={sidebarOpen} setOpen={setSidebarOpen} />
-      </aside>
+      {/* Sidebar / Mobile Header */}
+      {!isMobile && (
+        <aside
+          className={`fixed top-0 left-0 h-full z-30 transition-all duration-300 bg-white shadow-lg ${
+            sidebarOpen ? "w-72" : "w-20"
+          }`}
+          aria-label="Sidebar"
+        >
+          <AppSidebar open={sidebarOpen} setOpen={setSidebarOpen} isMobile={false} />
+        </aside>
+      )}
+      
+      {/* Mobile Header is rendered inside AppSidebar when isMobile is true */}
+      {isMobile && (
+        <AppSidebar open={sidebarOpen} setOpen={setSidebarOpen} isMobile={true} />
+      )}
 
-      {/* Main content with left margin for sidebar */}
+      {/* Main content */}
       <div
         className={`flex-1 transition-all duration-300 ${
-          sidebarOpen ? "ml-72" : "ml-20"
+          isMobile 
+            ? "pt-16" // Add padding for mobile header
+            : sidebarOpen 
+              ? "ml-72" 
+              : "ml-20"
         }`}
       >
         <GlobalMessageListener />

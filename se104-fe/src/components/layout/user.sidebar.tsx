@@ -7,6 +7,7 @@ import {
     FaSignOutAlt,
     FaUserCircle,
     FaBars,
+    FaTimes,
 } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useCurrentApp } from '../context/app.context';
@@ -16,12 +17,14 @@ import { FaList } from 'react-icons/fa6';
 interface UserSidebarProps {
     open: boolean;
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    isMobile?: boolean;
 }
 
-const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
+const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen, isMobile = false }) => {
     const navigate = useNavigate();
     const { setIsAuthenticated, user, setUser } = useCurrentApp();
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const handleLogout = async () => {
         const refreshToken = localStorage.getItem('refreshToken');
@@ -37,46 +40,28 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
         {
             icon: <FaHome size={20} />,
             label: 'Trang chủ',
-            onClick: () => navigate('/'),
+            onClick: () => { navigate('/'); setMobileMenuOpen(false); },
         },
         {
             icon: <FaHeart size={20} />,
             label: 'Yêu thích',
-            onClick: () => navigate('/favorites'),
+            onClick: () => { navigate('/favorites'); setMobileMenuOpen(false); },
         },
         {
             icon: <FaHistory size={20} />,
             label: 'Lịch sử mượn',
-            onClick: () => navigate('/history'),
+            onClick: () => { navigate('/history'); setMobileMenuOpen(false); },
         },
         {
             icon: <FaComments size={20} />,
             label: 'Trò chuyện',
-            onClick: () => navigate('/chat'),
+            onClick: () => { navigate('/chat'); setMobileMenuOpen(false); },
         },
         {
             icon: <FaList size={20} />,
             label: 'Danh sách mượn',
-            onClick: () => navigate('/borrow-list'),
+            onClick: () => { navigate('/borrow-list'); setMobileMenuOpen(false); },
         },
-        // ...(user?.data.roleName === 'Manager' || user?.data.roleName === 'Admin'
-        //     ? [
-        //           {
-        //               icon: <FaUserCircle size={20} />,
-        //               label: 'Thủ thư',
-        //               onClick: () => navigate('/manager'),
-        //           },
-        //       ]
-        //     : []),
-        // ...(user?.data.roleName === 'Admin'
-        //     ? [
-        //           {
-        //               icon: <FaUserCircle size={20} />,
-        //               label: 'Trang quản trị',
-        //               onClick: () => navigate('/admin'),
-        //           },
-        //       ]
-        //     : []),
     ];
 
     useEffect(() => {
@@ -129,6 +114,86 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
         };
     }, [user, setUser]);
 
+    // Mobile Header View
+    if (isMobile) {
+        return (
+            <>
+                {/* Mobile Header */}
+                <nav className="fixed top-0 left-0 right-0 h-16 bg-gradient-to-r from-[#153D36] via-[#1A4A42] to-[#153D36] text-white z-50 shadow-lg flex items-center justify-between px-4">
+                    {/* Logo */}
+                    <div className="flex items-center gap-3">
+                        <img
+                            src="https://cdn-icons-png.flaticon.com/512/29/29302.png"
+                            alt="Library"
+                            className="w-8 h-8 filter invert opacity-80"
+                        />
+                        <span className="font-black text-lg tracking-wider text-emerald-200">LibManager</span>
+                    </div>
+
+                    {/* User & Menu */}
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => navigate('/profile')}
+                            className="flex items-center gap-2 hover:bg-white/10 rounded-xl px-2 py-1.5 transition-all"
+                        >
+                            {avatarUrl ? (
+                                <img src={avatarUrl} alt="avatar" className="w-8 h-8 rounded-full object-cover border border-emerald-400/50" />
+                            ) : (
+                                <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center">
+                                    <FaUserCircle size={18} className="text-white/80" />
+                                </div>
+                            )}
+                        </button>
+                        <button
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                            className="p-2 rounded-xl hover:bg-white/15 transition-all"
+                        >
+                            {mobileMenuOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
+                        </button>
+                    </div>
+                </nav>
+
+                {/* Mobile Dropdown Menu */}
+                {mobileMenuOpen && (
+                    <>
+                        {/* Backdrop */}
+                        <div 
+                            className="fixed inset-0 bg-black/50 z-40 mt-16"
+                            onClick={() => setMobileMenuOpen(false)}
+                        />
+                        {/* Menu */}
+                        <div className="fixed top-16 left-0 right-0 bg-gradient-to-b from-[#1A4A42] to-[#153D36] z-50 shadow-2xl mobile-menu-enter max-h-[calc(100vh-4rem)] overflow-y-auto no-scrollbar">
+                            <ul className="py-2">
+                                {menuItems.map((item, index) => (
+                                    <li key={index}>
+                                        <button
+                                            onClick={item.onClick}
+                                            className="w-full flex items-center gap-4 px-6 py-4 hover:bg-white/10 transition-all text-left"
+                                        >
+                                            <span className="text-emerald-300">{item.icon}</span>
+                                            <span className="text-white font-medium">{item.label}</span>
+                                        </button>
+                                    </li>
+                                ))}
+                                {/* Logout */}
+                                <li className="border-t border-white/10 mt-2 pt-2">
+                                    <button
+                                        onClick={handleLogout}
+                                        className="w-full flex items-center gap-4 px-6 py-4 hover:bg-red-500/20 transition-all text-left"
+                                    >
+                                        <span className="text-red-400"><FaSignOutAlt size={20} /></span>
+                                        <span className="text-red-300 font-bold">ĐĂNG XUẤT</span>
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </>
+                )}
+            </>
+        );
+    }
+
+    // Desktop Sidebar View
     return (
         <nav
             className={`fixed top-0 left-0 h-full flex flex-col duration-500 ease-out bg-gradient-to-b from-[#153D36] via-[#1A4A42] to-[#0D2621] text-white z-50 shadow-2xl ${
@@ -189,7 +254,7 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen }) => {
             </div>
 
             {/* Navigation Items */}
-            <ul className={`relative flex-1 py-6 space-y-1.5 px-3 ${open ? 'overflow-y-auto' : 'overflow-hidden'}`}>
+            <ul className={`relative flex-1 py-6 space-y-1.5 px-3 no-scrollbar ${open ? 'overflow-y-auto' : 'overflow-hidden'}`}>
                 {menuItems.map((item, index) => (
                     <li key={index}>
                         <button

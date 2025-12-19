@@ -14,7 +14,6 @@ import {
   Card,
   Typography,
   Popconfirm,
-  Space,
 } from "antd";
 import {
   SearchOutlined,
@@ -131,11 +130,13 @@ const ListBorrow = () => {
       dataIndex: "readerName",
       key: "readerName",
       render: (text) => <span className="font-medium text-[#153D36]">{text}</span>,
+      responsive: ['sm'],
     },
     {
       title: "Tên sách",
       dataIndex: "bookNameDisplay",
       key: "bookNameDisplay",
+      ellipsis: true,
     },
     {
       title: "Ngày mượn",
@@ -143,6 +144,7 @@ const ListBorrow = () => {
       key: "borrowDate",
       render: (date) => dayjs(date).format("DD/MM/YYYY"),
       sorter: (a, b) => dayjs(a.borrowDate).valueOf() - dayjs(b.borrowDate).valueOf(),
+      responsive: ['md'],
     },
     {
       title: "Hạn trả",
@@ -154,7 +156,7 @@ const ListBorrow = () => {
         const isLate = dayjs().isAfter(dayjs(date), 'day');
         return (
           <span className={isLate ? "text-red-500 font-bold" : ""}>
-             {dayjs(date).format("DD/MM/YYYY")}
+             {dayjs(date).format("DD/MM/YY")}
           </span>
         )
       },
@@ -165,19 +167,21 @@ const ListBorrow = () => {
       key: "fineAmount",
       align: "right",
       render: (amount) => (
-        <span className={amount > 0 ? "text-red-500 font-semibold" : "text-gray-400"}>
+        <span className={amount > 0 ? "text-red-500 font-semibold text-xs sm:text-sm" : "text-gray-400 text-xs sm:text-sm"}>
           {formatCurrency(amount)}
         </span>
       ),
+      responsive: ['sm'],
     },
     {
-      title: "Trạng thái / Hành động",
+      title: "Hành động",
       key: "action",
       align: "center",
+      width: 100,
       render: (_, record) => {
         if (record.isReturned) {
           return (
-            <Tag icon={<CheckCircleOutlined />} color="success" className="px-3 py-1 text-sm rounded-full">
+            <Tag icon={<CheckCircleOutlined />} color="success" className="px-2 py-0.5 text-xs rounded-full">
               Đã trả
             </Tag>
           );
@@ -196,8 +200,10 @@ const ListBorrow = () => {
                 size="small"
                 icon={<SyncOutlined />}
                 style={{ backgroundColor: "#17966F", borderColor: "#17966F" }}
+                className="!px-2 !text-xs sm:!px-3 sm:!text-sm"
             >
-              Trả sách
+              <span className="hidden sm:inline">Trả sách</span>
+              <span className="sm:hidden">Trả</span>
             </Button>
           </Popconfirm>
         );
@@ -216,48 +222,60 @@ const ListBorrow = () => {
   });
 
   return (
-    <div className="flex justify-center items-start min-h-screen bg-gray-50 p-4">
+    <div className="flex justify-center items-start min-h-[300px] sm:min-h-screen bg-gray-50 p-2 sm:p-4">
       <Card
         className="w-full shadow-lg rounded-xl border-t-4 border-t-[#153D36]"
-        // --- SỬA LỖI DEPRECATED TẠI ĐÂY ---
-        styles={{ body: { padding: "20px" } }} 
+        styles={{ body: { padding: "12px" } }}
       >
-        <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-          <div>
-            <Title level={3} style={{ color: "#153D36", margin: 0 }}>
-              Quản Lý Mượn Trả
-            </Title>
-            <p className="text-gray-500 text-sm">Theo dõi danh sách sách đang được mượn</p>
+        <div className="sm:p-2">
+          <div className="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
+            {/* Header */}
+            <div>
+              <Title level={4} className="!text-base sm:!text-xl !mb-0" style={{ color: "#153D36" }}>
+                Quản Lý Mượn Trả
+              </Title>
+              <p className="text-gray-500 text-xs sm:text-sm">Theo dõi danh sách sách đang được mượn</p>
+            </div>
+            
+            {/* Controls - Stack on mobile */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <Input
+                placeholder="Tìm theo tên hoặc sách..."
+                prefix={<SearchOutlined className="text-gray-400" />}
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                className="w-full sm:w-64"
+                allowClear
+              />
+              <Button 
+                  icon={<ReloadOutlined />} 
+                  onClick={fetchData}
+                  loading={loading}
+                  className="w-full sm:w-auto"
+              >
+                  Làm mới
+              </Button>
+            </div>
           </div>
-          
-          <Space>
-            <Input
-              placeholder="Tìm theo tên hoặc sách..."
-              prefix={<SearchOutlined className="text-gray-400" />}
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              className="w-64"
-              allowClear
-            />
-            <Button 
-                icon={<ReloadOutlined />} 
-                onClick={fetchData}
-                loading={loading}
-            >
-                Làm mới
-            </Button>
-          </Space>
-        </div>
 
-        <Table
-          columns={columns}
-          dataSource={filteredData}
-          loading={loading}
-          pagination={{ pageSize: 8 }}
-          rowClassName={() => "hover:bg-gray-50 transition-colors"}
-          locale={{ emptyText: "Không có dữ liệu mượn sách" }}
-          bordered
-        />
+          {/* Responsive Table Container */}
+          <div className="overflow-x-auto -mx-3 sm:mx-0">
+            <div className="min-w-[400px] sm:min-w-0 px-3 sm:px-0">
+              <Table
+                columns={columns}
+                dataSource={filteredData}
+                loading={loading}
+                pagination={{ pageSize: 8, size: "small" }}
+                rowClassName={() => "hover:bg-gray-50 transition-colors"}
+                locale={{ emptyText: "Không có dữ liệu mượn sách" }}
+                bordered
+                size="small"
+                scroll={{ x: 'max-content' }}
+                className="[&_.ant-table-cell]:!py-2 sm:[&_.ant-table-cell]:!py-3 [&_.ant-table-cell]:!text-xs sm:[&_.ant-table-cell]:!text-sm"
+              />
+            </div>
+          </div>
+        </div>
       </Card>
     </div>
   );

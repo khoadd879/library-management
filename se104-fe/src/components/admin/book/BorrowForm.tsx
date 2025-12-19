@@ -117,116 +117,122 @@ const BorrowForm = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-[50vh] bg-gray-50 p-4">
+    <div className="flex justify-center items-center min-h-[40vh] sm:min-h-[50vh] bg-gray-50 p-2 sm:p-4">
       <Card
         className="w-full max-w-2xl shadow-lg rounded-xl border-t-4 border-t-[#153D36]"
-        bodyStyle={{ padding: "2rem" }}
+        styles={{ body: { padding: "1rem" } }}
       >
-        <div className="text-center mb-8">
-          <Title level={2} style={{ color: "#153D36", margin: 0 }}>
-            Phiếu Mượn Sách
-          </Title>
-          <p className="text-gray-500 mt-1">Nhập thông tin để tạo phiếu mượn mới</p>
-        </div>
+        <div className="sm:p-4">
+          <div className="text-center mb-4 sm:mb-8">
+            <Title level={3} className="!text-lg sm:!text-2xl" style={{ color: "#153D36", margin: 0 }}>
+              Phiếu Mượn Sách
+            </Title>
+            <p className="text-gray-500 mt-1 text-xs sm:text-sm">Nhập thông tin để tạo phiếu mượn mới</p>
+          </div>
 
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={onFinish}
-          initialValues={{
-            dateBorrow: dayjs(),
-          }}
-          size="large"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Form.Item
-              label={<span className="font-medium text-[#153D36]">Ngày mượn</span>}
-              name="dateBorrow"
-            >
-              <DatePicker 
-                format="DD/MM/YYYY" 
-                disabled 
-                className="w-full bg-gray-50" 
-                suffixIcon={<CalendarOutlined style={{ color: '#17966F' }} />}
-              />
-            </Form.Item>
-
-            <Form.Item
-              label={<span className="font-medium text-[#153D36]">Độc giả</span>}
-              name="idReader"
-              rules={[{ required: true, message: "Vui lòng chọn độc giả!" }]}
-            >
-              <Select
-                showSearch
-                placeholder="-- Tìm và chọn độc giả --"
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  (option?.children as unknown as string)
-                    .toLowerCase()
-                    .includes(input.toLowerCase())
-                }
-                suffixIcon={<UserOutlined style={{ color: '#17966F' }} />}
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={onFinish}
+            initialValues={{
+              dateBorrow: dayjs(),
+            }}
+            size="large"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+              <Form.Item
+                label={<span className="font-medium text-[#153D36] text-sm">Ngày mượn</span>}
+                name="dateBorrow"
+                className="mb-2 sm:mb-4"
               >
-                {readers.map((r) => (
-                  /* --- SỬA LỖI TẠI ĐÂY: Dùng r.idReader làm key --- */
-                  <Option key={r.idReader} value={r.idReader}>
-                    {r.nameReader} ({r.idReader})
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </div>
+                <DatePicker 
+                  format="DD/MM/YYYY" 
+                  disabled 
+                  className="w-full bg-gray-50" 
+                  suffixIcon={<CalendarOutlined style={{ color: '#17966F' }} />}
+                />
+              </Form.Item>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Form.Item
-              label={<span className="font-medium text-[#153D36]">Mã sách (ID)</span>}
-              name="idTheBook"
-              rules={[{ required: true, message: "Vui lòng nhập mã sách!" }]}
-              help={isCheckingBook ? <span className="text-[#17966F]"><Spin size="small" /> Đang kiểm tra...</span> : null}
-            >
-              <Input
-                prefix={<BarcodeOutlined className="text-gray-400" />}
-                placeholder="Nhập mã sách..."
-                onChange={handleIdBookChange}
-                allowClear
-              />
-            </Form.Item>
+              <Form.Item
+                label={<span className="font-medium text-[#153D36] text-sm">Độc giả</span>}
+                name="idReader"
+                rules={[{ required: true, message: "Vui lòng chọn độc giả!" }]}
+                className="mb-2 sm:mb-4"
+              >
+                <Select
+                  showSearch
+                  placeholder="-- Tìm và chọn độc giả --"
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    (option?.children as unknown as string)
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                  suffixIcon={<UserOutlined style={{ color: '#17966F' }} />}
+                >
+                  {readers.map((r) => (
+                    /* --- SỬA LỖI TẠI ĐÂY: Dùng r.idReader làm key --- */
+                    <Option key={r.idReader} value={r.idReader}>
+                      {r.nameReader} ({r.idReader})
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </div>
 
-            <Form.Item
-              label={<span className="font-medium text-[#153D36]">Tên sách</span>}
-              name="bookNameDisplay"
-            >
-              <Input
-                readOnly
-                placeholder="Tên sách sẽ hiện ở đây..."
-                prefix={<BookOutlined className={bookName ? "text-[#17966F]" : "text-gray-400"} />}
-                className={bookName && bookName !== "Không tìm thấy sách" ? "bg-green-50 border-green-200 text-[#153D36] font-medium" : "bg-gray-50"}
-                value={bookName}
-              />
-            </Form.Item>
-          </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+              <Form.Item
+                label={<span className="font-medium text-[#153D36] text-sm">Mã sách (ID)</span>}
+                name="idTheBook"
+                rules={[{ required: true, message: "Vui lòng nhập mã sách!" }]}
+                help={isCheckingBook ? <span className="text-[#17966F]"><Spin size="small" /> Đang kiểm tra...</span> : null}
+                className="mb-2 sm:mb-4"
+              >
+                <Input
+                  prefix={<BarcodeOutlined className="text-gray-400" />}
+                  placeholder="Nhập mã sách..."
+                  onChange={handleIdBookChange}
+                  allowClear
+                />
+              </Form.Item>
 
-          <Form.Item className="mt-4 mb-0">
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={isLoading}
-              block
-              size="large"
-              icon={<CheckCircleOutlined />}
-              style={{
-                backgroundColor: "#17966F",
-                borderColor: "#17966F",
-                height: "48px",
-                fontSize: "16px",
-                fontWeight: 600,
-              }}
-              className="hover:!bg-[#153D36] transition-colors duration-300 shadow-md"
-            >
-              {isLoading ? "Đang xử lý..." : "Xuất Phiếu Mượn"}
-            </Button>
-          </Form.Item>
-        </Form>
+              <Form.Item
+                label={<span className="font-medium text-[#153D36] text-sm">Tên sách</span>}
+                name="bookNameDisplay"
+                className="mb-2 sm:mb-4"
+              >
+                <Input
+                  readOnly
+                  placeholder="Tên sách sẽ hiện ở đây..."
+                  prefix={<BookOutlined className={bookName ? "text-[#17966F]" : "text-gray-400"} />}
+                  className={bookName && bookName !== "Không tìm thấy sách" ? "bg-green-50 border-green-200 text-[#153D36] font-medium" : "bg-gray-50"}
+                  value={bookName}
+                />
+              </Form.Item>
+            </div>
+
+            <Form.Item className="mt-2 sm:mt-4 mb-0">
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={isLoading}
+                block
+                size="large"
+                icon={<CheckCircleOutlined />}
+                style={{
+                  backgroundColor: "#17966F",
+                  borderColor: "#17966F",
+                  height: "44px",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                }}
+                className="hover:!bg-[#153D36] transition-colors duration-300 shadow-md sm:!h-12 sm:!text-base"
+              >
+                {isLoading ? "Đang xử lý..." : "Xuất Phiếu Mượn"}
+              </Button>
+            </Form.Item>
+          </Form>
+        </div>
       </Card>
     </div>
   );

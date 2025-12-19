@@ -9,8 +9,6 @@ import {
     Typography,
     Spin,
     Statistic,
-    Row,
-    Col,
     Divider,
 } from 'antd';
 import { getAllReadersAPI, addPenaltyAPI } from '@/services/api';
@@ -101,185 +99,192 @@ const FineForm = () => {
     const remainingDebt = Math.max(0, currentDebt - (payAmount || 0));
 
     return (
-        <div className="flex justify-center items-center min-h-[50vh] bg-gray-50 p-4">
+        <div className="flex justify-center items-center min-h-[40vh] sm:min-h-[50vh] bg-gray-50 p-2 sm:p-4">
             <Card
                 className="w-full max-w-lg shadow-lg rounded-xl border-t-4 border-t-[#153D36]"
-                bodyStyle={{ padding: '2rem' }}
+                styles={{ body: { padding: '1rem' } }}
             >
-                <div className="text-center mb-6">
-                    <Title level={2} style={{ color: '#153D36', margin: 0 }}>
-                        Phiếu Thu Tiền Phạt
-                    </Title>
-                    <Text type="secondary">
-                        Thu hồi nợ phí trễ hạn từ độc giả
-                    </Text>
-                </div>
+                <div className="sm:p-4">
+                    <div className="text-center mb-4 sm:mb-6">
+                        <Title level={3} className="!text-lg sm:!text-2xl" style={{ color: '#153D36', margin: 0 }}>
+                            Phiếu Thu Tiền Phạt
+                        </Title>
+                        <Text type="secondary" className="text-xs sm:text-sm">
+                            Thu hồi nợ phí trễ hạn từ độc giả
+                        </Text>
+                    </div>
 
-                <Spin spinning={loading}>
-                    <Form
-                        form={form}
-                        layout="vertical"
-                        onFinish={onFinish}
-                        size="large"
-                    >
-                        {/* Chọn độc giả */}
-                        <Form.Item
-                            label={
-                                <span className="font-medium text-[#153D36]">
-                                    Chọn độc giả
-                                </span>
-                            }
-                            name="idReader"
-                            rules={[
-                                {
-                                    required: true,
-                                    message: 'Vui lòng chọn độc giả!',
-                                },
-                            ]}
+                    <Spin spinning={loading}>
+                        <Form
+                            form={form}
+                            layout="vertical"
+                            onFinish={onFinish}
+                            size="large"
                         >
-                            <Select
-                                showSearch
-                                placeholder="Tìm theo tên độc giả..."
-                                optionFilterProp="children"
-                                filterOption={(input, option) =>
-                                    (option?.children as unknown as string)
-                                        .toLowerCase()
-                                        .includes(input.toLowerCase())
+                            {/* Chọn độc giả */}
+                            <Form.Item
+                                label={
+                                    <span className="font-medium text-[#153D36] text-sm">
+                                        Chọn độc giả
+                                    </span>
                                 }
-                                onChange={handleReaderChange}
-                                suffixIcon={
-                                    <UserOutlined
-                                        style={{ color: '#17966F' }}
-                                    />
-                                }
+                                name="idReader"
+                                rules={[
+                                    {
+                                        required: true,
+                                        message: 'Vui lòng chọn độc giả!',
+                                    },
+                                ]}
+                                className="mb-3 sm:mb-4"
                             >
-                                {readers.map((r: any) => (
-                                    <Option key={r.idReader} value={r.idReader}>
-                                        {r.nameReader ? r.nameReader : r.email}{' '}
-                                        - Nợ: {r.totalDebt.toLocaleString()} đ
-                                    </Option>
-                                ))}
-                            </Select>
-                        </Form.Item>
-
-                        {/* Hiển thị thông tin Nợ (Chỉ hiện khi đã chọn độc giả) */}
-                        {currentDebt > 0 && (
-                            <div className="bg-red-50 p-4 rounded-lg mb-6 border border-red-100">
-                                <Row gutter={16}>
-                                    <Col span={12}>
-                                        <Statistic
-                                            title="Tổng nợ hiện tại"
-                                            value={currentDebt}
-                                            valueStyle={{
-                                                color: '#cf1322',
-                                                fontWeight: 'bold',
-                                            }}
-                                            suffix="₫"
+                                <Select
+                                    showSearch
+                                    placeholder="Tìm theo tên độc giả..."
+                                    optionFilterProp="children"
+                                    filterOption={(input, option) =>
+                                        (option?.children as unknown as string)
+                                            .toLowerCase()
+                                            .includes(input.toLowerCase())
+                                    }
+                                    onChange={handleReaderChange}
+                                    suffixIcon={
+                                        <UserOutlined
+                                            style={{ color: '#17966F' }}
                                         />
-                                    </Col>
-                                    <Col span={12}>
-                                        <Statistic
-                                            title="Nợ còn lại sau thu"
-                                            value={remainingDebt}
-                                            valueStyle={{ color: '#153D36' }}
-                                            suffix="₫"
-                                        />
-                                    </Col>
-                                </Row>
-                            </div>
-                        )}
+                                    }
+                                >
+                                    {readers.map((r: any) => (
+                                        <Option key={r.idReader} value={r.idReader}>
+                                            {r.nameReader ? r.nameReader : r.email}{' '}
+                                            - Nợ: {r.totalDebt.toLocaleString()} đ
+                                        </Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
 
-                        {/* Thông báo nếu không nợ */}
-                        {form.getFieldValue('idReader') &&
-                            currentDebt === 0 && (
-                                <div className="bg-green-50 p-3 rounded mb-4 text-green-700 flex items-center gap-2">
-                                    <SolutionOutlined /> Độc giả này không có
-                                    khoản nợ nào.
+                            {/* Hiển thị thông tin Nợ (Chỉ hiện khi đã chọn độc giả) */}
+                            {currentDebt > 0 && (
+                                <div className="bg-red-50 p-3 sm:p-4 rounded-lg mb-4 sm:mb-6 border border-red-100">
+                                    <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                                        <div>
+                                            <Statistic
+                                                title={<span className="text-xs sm:text-sm">Tổng nợ hiện tại</span>}
+                                                value={currentDebt}
+                                                valueStyle={{
+                                                    color: '#cf1322',
+                                                    fontWeight: 'bold',
+                                                    fontSize: '16px',
+                                                }}
+                                                suffix="₫"
+                                                className="[&_.ant-statistic-content-value]:!text-base sm:[&_.ant-statistic-content-value]:!text-xl"
+                                            />
+                                        </div>
+                                        <div>
+                                            <Statistic
+                                                title={<span className="text-xs sm:text-sm">Nợ còn lại sau thu</span>}
+                                                value={remainingDebt}
+                                                valueStyle={{ color: '#153D36', fontSize: '16px' }}
+                                                suffix="₫"
+                                                className="[&_.ant-statistic-content-value]:!text-base sm:[&_.ant-statistic-content-value]:!text-xl"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             )}
 
-                        {/* Nhập số tiền */}
-                        <Form.Item
-                            label={
-                                <span className="font-medium text-[#153D36]">
-                                    Số tiền thu
-                                </span>
-                            }
-                            name="amount"
-                            rules={[
-                                {
-                                    required: true,
-                                    message: 'Vui lòng nhập số tiền!',
-                                },
-                                {
-                                    type: 'number',
-                                    min: 1000,
-                                    message: 'Số tiền tối thiểu là 1,000 đ',
-                                },
-                                {
-                                    validator: async (_, value) => {
-                                        if (value > currentDebt) {
-                                            return Promise.reject(
-                                                new Error(
-                                                    'Không thể thu quá số tiền nợ!'
-                                                )
-                                            );
-                                        }
+                            {/* Thông báo nếu không nợ */}
+                            {form.getFieldValue('idReader') &&
+                                currentDebt === 0 && (
+                                    <div className="bg-green-50 p-3 rounded mb-4 text-green-700 flex items-center gap-2 text-sm">
+                                        <SolutionOutlined /> Độc giả này không có
+                                        khoản nợ nào.
+                                    </div>
+                                )}
+
+                            {/* Nhập số tiền */}
+                            <Form.Item
+                                label={
+                                    <span className="font-medium text-[#153D36] text-sm">
+                                        Số tiền thu
+                                    </span>
+                                }
+                                name="amount"
+                                rules={[
+                                    {
+                                        required: true,
+                                        message: 'Vui lòng nhập số tiền!',
                                     },
-                                },
-                            ]}
-                        >
-                            <InputNumber
-                                style={{ width: '100%' }}
-                                placeholder="Nhập số tiền..."
-                                addonAfter="VND"
-                                disabled={currentDebt === 0}
-                                formatter={(value) =>
-                                    `${value}`.replace(
-                                        /\B(?=(\d{3})+(?!\d))/g,
-                                        ','
-                                    )
-                                }
-                                parser={(value) =>
-                                    value!.replace(
-                                        /\$\s?|(,*)/g,
-                                        ''
-                                    ) as unknown as number
-                                }
-                                onChange={(value) =>
-                                    setPayAmount(Number(value))
-                                }
-                                prefix={
-                                    <DollarOutlined className="text-gray-400" />
-                                }
-                            />
-                        </Form.Item>
-
-                        <Divider />
-
-                        {/* Button Submit */}
-                        <Form.Item className="mb-0">
-                            <Button
-                                type="primary"
-                                htmlType="submit"
-                                loading={submitting}
-                                disabled={currentDebt === 0}
-                                block
-                                size="large"
-                                style={{
-                                    backgroundColor: '#17966F',
-                                    borderColor: '#17966F',
-                                    fontWeight: 600,
-                                    height: '48px',
-                                    color: 'white',
-                                }}
-                                className="hover:!bg-[#153D36] transition-colors shadow-md"
+                                    {
+                                        type: 'number',
+                                        min: 1000,
+                                        message: 'Số tiền tối thiểu là 1,000 đ',
+                                    },
+                                    {
+                                        validator: async (_, value) => {
+                                            if (value > currentDebt) {
+                                                return Promise.reject(
+                                                    new Error(
+                                                        'Không thể thu quá số tiền nợ!'
+                                                    )
+                                                );
+                                            }
+                                        },
+                                    },
+                                ]}
+                                className="mb-3 sm:mb-4"
                             >
-                                Xác nhận thu tiền
-                            </Button>
-                        </Form.Item>
-                    </Form>
-                </Spin>
+                                <InputNumber
+                                    style={{ width: '100%' }}
+                                    placeholder="Nhập số tiền..."
+                                    addonAfter="VND"
+                                    disabled={currentDebt === 0}
+                                    formatter={(value) =>
+                                        `${value}`.replace(
+                                            /\B(?=(\d{3})+(?!\d))/g,
+                                            ','
+                                        )
+                                    }
+                                    parser={(value) =>
+                                        value!.replace(
+                                            /\$\s?|(,*)/g,
+                                            ''
+                                        ) as unknown as number
+                                    }
+                                    onChange={(value) =>
+                                        setPayAmount(Number(value))
+                                    }
+                                    prefix={
+                                        <DollarOutlined className="text-gray-400" />
+                                    }
+                                />
+                            </Form.Item>
+
+                            <Divider className="my-3 sm:my-4" />
+
+                            {/* Button Submit */}
+                            <Form.Item className="mb-0">
+                                <Button
+                                    type="primary"
+                                    htmlType="submit"
+                                    loading={submitting}
+                                    disabled={currentDebt === 0}
+                                    block
+                                    size="large"
+                                    style={{
+                                        backgroundColor: '#17966F',
+                                        borderColor: '#17966F',
+                                        fontWeight: 600,
+                                        height: '44px',
+                                        color: 'white',
+                                    }}
+                                    className="hover:!bg-[#153D36] transition-colors shadow-md sm:!h-12"
+                                >
+                                    Xác nhận thu tiền
+                                </Button>
+                            </Form.Item>
+                        </Form>
+                    </Spin>
+                </div>
             </Card>
         </div>
     );
