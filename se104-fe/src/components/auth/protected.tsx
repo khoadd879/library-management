@@ -1,24 +1,14 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useCurrentApp } from "@/components/context/app.context";
 import { Button, Result } from "antd";
+import LandingPage from "@/pages/landingPage";
 
 const ProtectedRoute = () => {
   const { isAuthenticated, user } = useCurrentApp();
   const location = useLocation();
   const role = user?.data.roleName;
   if (!isAuthenticated) {
-    return (
-      <Result
-        status="404"
-        title="Not Login"
-        subTitle="Bạn vui lòng đăng nhập để sử dụng tính năng này."
-        extra={
-          <Button type="primary">
-            <Link to="/signin">Đăng nhập</Link>
-          </Button>
-        }
-      />
-    );
+    return <LandingPage />;
   }
 
   const path = location.pathname;
