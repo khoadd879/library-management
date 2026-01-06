@@ -1,10 +1,14 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FaRobot,
   FaPaperPlane,
   FaTrash,
   FaTimes,
   FaCommentDots,
+  FaExternalLinkAlt,
+  FaSearch,
+  FaExclamationTriangle, // Icon cảnh báo cho Modal
 } from "react-icons/fa";
 import { useCurrentApp } from "@/components/context/app.context";
 import {
@@ -12,7 +16,10 @@ import {
   getAIHistoryAPI,
   deleteAIHistoryAPI,
 } from "@/services/api";
-import { Button, Tooltip, Spin, message as antMessage } from "antd";
+// 1. IMPORT THÊM Modal
+import { Tooltip, Spin, message as antMessage, Modal } from "antd";
+
+import ReactMarkdown from "react-markdown";
 
 interface IMessage {
   id: string;
@@ -23,14 +30,24 @@ interface IMessage {
 
 const AIChatWidget = () => {
   const { user } = useCurrentApp();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
+
+  // 2. STATE CHO MODAL XÓA
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Scroll to bottom when messages change
+  // Hàm xử lý chuỗi văn bản (Bold -> Link)
+  const processMessageContent = (text: string) => {
+    return text.replace(/\*\*(.*?)\*\*\s*\[.*?\]\((.*?)\)/g, "[**$1**]($2)");
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -41,7 +58,6 @@ const AIChatWidget = () => {
     }
   }, [messages, isOpen]);
 
-  // Fetch history when chat opens
   useEffect(() => {
     if (isOpen && user?.data?.idReader) {
       fetchHistory();
@@ -53,35 +69,22 @@ const AIChatWidget = () => {
     setIsHistoryLoading(true);
     try {
       const res = await getAIHistoryAPI(user.data.idReader);
-      // Giả sử API trả về mảng các cặp câu hỏi/trả lời hoặc danh sách tin nhắn
-      // Cần map dữ liệu trả về theo format của UI.
-      // Dưới đây là logic xử lý dữ liệu giả định (bạn có thể điều chỉnh theo response thực tế)
-
-      const formattedMessages: IMessage[] = [];
-      const historyData = res.data || res; // Tùy vào format axios response
-
-      if (Array.isArray(historyData)) {
-        historyData.forEach((item: any, index: number) => {
-          // Nếu API trả về cặp { request: "...", response: "..." }
-          if (item.request) {
-            formattedMessages.push({
-              id: `hist-req-${index}`,
-              sender: "user",
-              text: item.request,
-              timestamp: new Date(),
-            });
-          }
-          if (item.response) {
-            formattedMessages.push({
-              id: `hist-res-${index}`,
-              sender: "ai",
-              text: item.response,
-              timestamp: new Date(),
-            });
-          }
-          // Hoặc nếu API trả về danh sách phẳng thì map trực tiếp
-        });
+      let historyData = [];
+      if (Array.isArray(res?.data)) {
+        historyData = res.data;
+      } else if (Array.isArray(res)) {
+        historyData = res;
       }
+
+      const formattedMessages: IMessage[] = historyData.map(
+        (item: any, index: number) => ({
+          id: `hist-${index}`,
+          sender: item.role === "model" ? "ai" : "user",
+          text: item.message,
+          timestamp: new Date(),
+        })
+      );
+
       setMessages(formattedMessages);
     } catch (error) {
       console.error("Failed to load chat history", error);
@@ -107,11 +110,15 @@ const AIChatWidget = () => {
 
     try {
       const res = await createAIMessageAPI(user.data.idReader, userMsgText);
-      // Giả sử API trả về text câu trả lời trong res.data hoặc res.data.message
-      const aiResponseText =
-        typeof res.data === "string"
-          ? res.data
-          : res.data?.message || "Không có phản hồi từ AI";
+
+      let aiResponseText = "";
+      if (res?.data?.aiResponse) {
+        aiResponseText = res.data.aiResponse;
+      } else if (res?.aiResponse) {
+        aiResponseText = res.aiResponse;
+      } else {
+        aiResponseText = res?.message || "Không có phản hồi từ AI";
+      }
 
       const aiMessage: IMessage = {
         id: (Date.now() + 1).toString(),
@@ -140,23 +147,26 @@ const AIChatWidget = () => {
     }
   };
 
-  const handleDeleteHistory = async () => {
+  // 3. LOGIC XÓA LỊCH SỬ (Được gọi khi bấm OK ở Modal)
+  const confirmDeleteHistory = async () => {
     if (!user?.data?.idReader) return;
+    setIsDeleting(true); // Bật loading của nút OK
     try {
       await deleteAIHistoryAPI(user.data.idReader);
       setMessages([]);
       antMessage.success("Đã xóa lịch sử trò chuyện");
+      setIsDeleteModalOpen(false); // Đóng modal sau khi xóa thành công
     } catch (error) {
       antMessage.error("Không thể xóa lịch sử");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
-  // Nếu chưa đăng nhập thì không hiện chat
   if (!user) return null;
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end font-sans">
-      {/* Chat Window */}
       <div
         className={`bg-white rounded-2xl shadow-2xl w-80 sm:w-96 transition-all duration-300 origin-bottom-right overflow-hidden flex flex-col border border-gray-200 ${
           isOpen
@@ -180,7 +190,8 @@ const AIChatWidget = () => {
           <div className="flex gap-2">
             <Tooltip title="Xóa lịch sử">
               <button
-                onClick={handleDeleteHistory}
+                // 4. THAY ĐỔI SỰ KIỆN CLICK: Mở Modal thay vì xóa luôn
+                onClick={() => setIsDeleteModalOpen(true)}
                 className="p-2 hover:bg-white/10 rounded-full transition-colors text-emerald-200 hover:text-red-300"
               >
                 <FaTrash size={14} />
@@ -195,7 +206,7 @@ const AIChatWidget = () => {
           </div>
         </div>
 
-        {/* Messages Area */}
+        {/* Chat Body */}
         <div className="flex-1 bg-gray-50 p-4 overflow-y-auto custom-scrollbar flex flex-col gap-3">
           {isHistoryLoading ? (
             <div className="flex justify-center items-center h-full">
@@ -217,13 +228,70 @@ const AIChatWidget = () => {
                 }`}
               >
                 <div
-                  className={`max-w-[80%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm ${
+                  className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm ${
                     msg.sender === "user"
                       ? "bg-[#153D36] text-white rounded-br-none"
                       : "bg-white text-gray-800 border border-gray-200 rounded-bl-none"
                   }`}
                 >
-                  {msg.text}
+                  <ReactMarkdown
+                    components={{
+                      a: ({ node, href, children, ...props }) => {
+                        const isInternal =
+                          href &&
+                          (href.startsWith("/") || href.includes("localhost"));
+                        return (
+                          <a
+                            href={href}
+                            onClick={(e) => {
+                              if (isInternal && href) {
+                                e.preventDefault();
+                                const path = href.replace(/^.*\/\/[^\/]+/, "");
+                                navigate(path);
+                              }
+                            }}
+                            className="text-emerald-600 font-bold hover:underline cursor-pointer inline-flex items-center gap-1 transition-colors"
+                            target={isInternal ? "_self" : "_blank"}
+                            rel="noopener noreferrer"
+                            {...props}
+                          >
+                            {children}
+                            {!String(children).includes("**") &&
+                              !isInternal && (
+                                <FaExternalLinkAlt
+                                  size={10}
+                                  className="opacity-70"
+                                />
+                              )}
+                          </a>
+                        );
+                      },
+                      strong: ({ node, children, ...props }) => {
+                        return (
+                          <span
+                            className="font-black text-emerald-800 cursor-pointer hover:text-emerald-600 hover:underline decoration-wavy transition-colors inline-flex items-center gap-1 group/bold"
+                            title="Nhấn để tìm kiếm ngay"
+                            onClick={() => {
+                              const keyword = String(children);
+                              navigate(
+                                `/?search=${encodeURIComponent(keyword)}`
+                              );
+                            }}
+                            {...props}
+                          >
+                            {children}
+                          </span>
+                        );
+                      },
+                      p: ({ node, children, ...props }) => (
+                        <p className="mb-1 last:mb-0" {...props}>
+                          {children}
+                        </p>
+                      ),
+                    }}
+                  >
+                    {processMessageContent(msg.text)}
+                  </ReactMarkdown>
                 </div>
               </div>
             ))
@@ -269,7 +337,7 @@ const AIChatWidget = () => {
         </div>
       </div>
 
-      {/* Floating Toggle Button */}
+      {/* Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`group relative flex items-center justify-center w-14 h-14 rounded-full shadow-lg shadow-[#153D36]/30 transition-all duration-300 hover:scale-110 ${
@@ -287,6 +355,29 @@ const AIChatWidget = () => {
           </span>
         )}
       </button>
+
+      {/* 5. MODAL XÁC NHẬN XÓA */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2 text-red-600">
+            <FaExclamationTriangle /> Xác nhận xóa
+          </div>
+        }
+        open={isDeleteModalOpen}
+        onOk={confirmDeleteHistory}
+        onCancel={() => setIsDeleteModalOpen(false)}
+        okText="Xóa vĩnh viễn"
+        cancelText="Hủy bỏ"
+        okButtonProps={{ danger: true, loading: isDeleting }}
+        centered
+      >
+        <p className="text-gray-600">
+          Bạn có chắc chắn muốn xóa toàn bộ lịch sử trò chuyện với AI không?
+          <br />
+          Hành động này{" "}
+          <span className="font-bold text-red-500">không thể hoàn tác</span>.
+        </p>
+      </Modal>
     </div>
   );
 };
