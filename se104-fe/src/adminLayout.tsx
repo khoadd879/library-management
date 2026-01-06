@@ -1,14 +1,15 @@
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "antd";
+import AIChatWidget from "./components/AIChatWidget";
 
 const AdminLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
   // Color palette
-  const primaryColor = '#153D36';
-  const lightPrimary = '#E8F5F2';
-  const secondaryColor = '#27AE60';
+  const primaryColor = "#153D36";
+  const lightPrimary = "#E8F5F2";
+  const secondaryColor = "#27AE60";
 
   const navs = [
     {
@@ -34,43 +35,46 @@ const AdminLayout = () => {
     if (isActive) {
       return {
         backgroundColor: secondaryColor,
-        color: 'white',
+        color: "white",
         borderColor: primaryColor,
-        ':hover': {
+        ":hover": {
           backgroundColor: secondaryColor,
           borderColor: secondaryColor,
-        }
+        },
       };
     }
 
     if (isHome) {
       return {
-        backgroundColor: 'white',
+        backgroundColor: "white",
         color: primaryColor,
         borderColor: primaryColor,
-        ':hover': {
+        ":hover": {
           backgroundColor: lightPrimary,
           color: primaryColor,
           borderColor: primaryColor,
-        }
+        },
       };
     }
 
     return {
-      backgroundColor: 'white',
+      backgroundColor: "white",
       color: primaryColor,
       borderColor: primaryColor,
-      ':hover': {
+      ":hover": {
         backgroundColor: lightPrimary,
         color: secondaryColor,
         borderColor: secondaryColor,
-      }
+      },
     };
   };
 
   return (
     <div className="p-6 min-h-screen" style={{ background: lightPrimary }}>
-      <div className="flex gap-4 mb-8 bg-white rounded-xl shadow-sm p-4" style={{ border: `1px solid ${lightPrimary}` }}>
+      <div
+        className="flex gap-4 mb-8 bg-white rounded-xl shadow-sm p-4"
+        style={{ border: `1px solid ${lightPrimary}` }}
+      >
         {navs.map((nav) => (
           <Button
             key={nav.path}
@@ -80,14 +84,17 @@ const AdminLayout = () => {
             style={{
               borderRadius: 8,
               fontWeight: 500,
-              transition: 'all 0.3s ease',
+              transition: "all 0.3s ease",
               ...getButtonStyle(nav),
             }}
             onMouseEnter={(e) => {
               const style = getButtonStyle(nav);
-              e.currentTarget.style.backgroundColor = style[':hover']?.backgroundColor || style.backgroundColor;
-              e.currentTarget.style.color = style[':hover']?.color || style.color;
-              e.currentTarget.style.borderColor = style[':hover']?.borderColor || style.borderColor;
+              e.currentTarget.style.backgroundColor =
+                style[":hover"]?.backgroundColor || style.backgroundColor;
+              e.currentTarget.style.color =
+                style[":hover"]?.color || style.color;
+              e.currentTarget.style.borderColor =
+                style[":hover"]?.borderColor || style.borderColor;
             }}
             onMouseLeave={(e) => {
               const style = getButtonStyle(nav);
@@ -100,8 +107,12 @@ const AdminLayout = () => {
           </Button>
         ))}
       </div>
-      <div className="bg-white rounded-xl shadow-sm p-6" style={{ border: `1px solid ${lightPrimary}` }}>
+      <div
+        className="bg-white rounded-xl shadow-sm p-6"
+        style={{ border: `1px solid ${lightPrimary}` }}
+      >
         <Outlet />
+        <AIChatWidget />
       </div>
     </div>
   );

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import AppSidebar from "./components/layout/admin.sidebar";
 import GlobalMessageListener from "./components/MessageListener";
+import AIChatWidget from "./components/AIChatWidget";
 
 const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -12,11 +13,11 @@ const Layout = () => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
+
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
+
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   return (
@@ -29,27 +30,36 @@ const Layout = () => {
           }`}
           aria-label="Sidebar"
         >
-          <AppSidebar open={sidebarOpen} setOpen={setSidebarOpen} isMobile={false} />
+          <AppSidebar
+            open={sidebarOpen}
+            setOpen={setSidebarOpen}
+            isMobile={false}
+          />
         </aside>
       )}
-      
+
       {/* Mobile Header is rendered inside AppSidebar when isMobile is true */}
       {isMobile && (
-        <AppSidebar open={sidebarOpen} setOpen={setSidebarOpen} isMobile={true} />
+        <AppSidebar
+          open={sidebarOpen}
+          setOpen={setSidebarOpen}
+          isMobile={true}
+        />
       )}
 
       {/* Main content */}
       <div
         className={`flex-1 transition-all duration-300 ${
-          isMobile 
+          isMobile
             ? "pt-16" // Add padding for mobile header
-            : sidebarOpen 
-              ? "ml-72" 
-              : "ml-20"
+            : sidebarOpen
+            ? "ml-72"
+            : "ml-20"
         }`}
       >
         <GlobalMessageListener />
         <Outlet />
+        <AIChatWidget />
       </div>
     </div>
   );
