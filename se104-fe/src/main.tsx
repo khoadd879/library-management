@@ -37,6 +37,7 @@ import Report from "./pages/manager/report";
 import Parameter from "./pages/manager/parameter";
 import UserBorrowList from "./pages/client/UserBorrowList";
 import LandingPage from "./pages/landingPage";
+import AIChatWidget from "./components/AIChatWidget";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -105,6 +106,7 @@ const router = createBrowserRouter([
   { path: "/verification", element: <VerificationCodePage /> },
   { path: "/new-pass", element: <NewPasswordPage /> },
   { path: "/landingPage", element: <LandingPage /> },
+  { path: "/chatAI", element: <AIChatWidget /> },
 ]);
 
 createRoot(document.getElementById("root")!).render(
