@@ -1,9 +1,5 @@
 import { useCurrentApp } from "@/components/context/app.context";
-import {
-  authenticateAPI,
-  loginAPI,
-  loginGoogleRedirectAPI,
-} from "@/services/api";
+import { authenticateAPI, loginAPI } from "@/services/api";
 import { message, Spin } from "antd";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -16,27 +12,42 @@ const SignIn = () => {
   const navigate = useNavigate();
   const { setIsAuthenticated, setUser, isAuthenticated } = useCurrentApp();
 
+  // Lấy base URL từ biến môi trường
+  const BACKEND_URL =
+    import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
+
   useEffect(() => {
     const hasExistingToken = localStorage.getItem("token");
     if (isAuthenticated && hasExistingToken) {
       const token = localStorage.getItem("token");
       if (token) {
         try {
-          const base64Url = token.split('.')[1];
-          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          const base64Url = token.split(".")[1];
+          const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
           const jsonPayload = decodeURIComponent(
             atob(base64)
-              .split('')
-              .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-              .join('')
+              .split("")
+              .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+              .join("")
           );
           const payload = JSON.parse(jsonPayload);
-          const role = payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
-            payload.role || payload.roleName || 'Reader';
+          const role =
+            payload[
+              "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+            ] ||
+            payload.role ||
+            payload.roleName ||
+            "Reader";
           switch (role) {
-            case "Admin": navigate("/admin"); break;
-            case "Manager": navigate("/manager"); break;
-            default: navigate("/"); break;
+            case "Admin":
+              navigate("/admin");
+              break;
+            case "Manager":
+              navigate("/manager");
+              break;
+            default:
+              navigate("/");
+              break;
           }
         } catch (e) {
           navigate("/");
@@ -44,19 +55,20 @@ const SignIn = () => {
       }
     }
   }, []);
+
   const handleGoogleLogin = () => {
-    const popup = window.open(
-      "https://librarymanagement-api-840378105403.asia-southeast1.run.app/api/Authentication/login-google",
-      "_blank",
-      "width=500,height=600"
-    );
+    const returnUrl = encodeURIComponent("/");
+    const googleLoginUrl = `${BACKEND_URL}api/Authentication/login-google?returnUrl=${returnUrl}`;
+
+    const popup = window.open(googleLoginUrl, "_blank", "width=500,height=600");
 
     const handleMessage = async (event: MessageEvent) => {
-      if (
-        event.origin !==
-        "https://librarymanagement-api-840378105403.asia-southeast1.run.app"
-      )
-        return;
+      const allowedOrigin = BACKEND_URL.endsWith("/")
+        ? BACKEND_URL.slice(0, -1)
+        : BACKEND_URL;
+
+      if (event.origin !== allowedOrigin) return;
+
       if (event.data?.type === "google-auth-token") {
         const { token, refreshToken, iduser } = event.data;
 
@@ -69,16 +81,16 @@ const SignIn = () => {
           const userRes = await authenticateAPI(token);
           setUser(userRes);
         } catch (authError) {
-          console.warn('authenticateAPI failed, using token role:', authError);
+          console.warn("authenticateAPI failed, using token role:", authError);
         }
 
         setIsAuthenticated(true);
         message.success("Đăng nhập Google thành công!");
 
-        // Điều hướng theo role từ token
         navigateByRole(roleFromToken);
 
         window.removeEventListener("message", handleMessage);
+        if (popup) popup.close();
       }
     };
 
@@ -87,24 +99,26 @@ const SignIn = () => {
 
   const getRoleFromToken = (token: string): string => {
     try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const base64Url = token.split(".")[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
       const jsonPayload = decodeURIComponent(
         atob(base64)
-          .split('')
-          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-          .join('')
+          .split("")
+          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+          .join("")
       );
       const payload = JSON.parse(jsonPayload);
       return (
-        payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
+        payload[
+          "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+        ] ||
         payload.role ||
         payload.roleName ||
-        'Reader'
+        "Reader"
       );
     } catch (e) {
-      console.error('Error decoding token:', e);
-      return 'Reader';
+      console.error("Error decoding token:", e);
+      return "Reader";
     }
   };
 
@@ -143,14 +157,14 @@ const SignIn = () => {
           const userRes = await authenticateAPI(res.data.token);
           setUser(userRes);
         } catch (authError) {
-          console.warn('authenticateAPI failed, using token role:', authError);
+          console.warn("authenticateAPI failed, using token role:", authError);
         }
 
         setIsAuthenticated(true);
         message.success("Đăng nhập thành công!");
         navigateByRole(roleFromToken);
       } else {
-        message.error("Sai tài khoản hoặc mật khấu!");
+        message.error("Sai tài khoản hoặc mật khẩu!");
       }
     } catch (error) {
       message.error("Đăng nhập thất bại. Vui lòng thử lại!");
@@ -165,19 +179,19 @@ const SignIn = () => {
       <div className="absolute top-5 left-5 flex items-center space-x-2 text-white text-lg font-semibold">
         <img
           src="https://cdn-icons-png.flaticon.com/512/29/29302.png"
-          alt="Library Logo"
+          alt="Logo Thư viện"
           className="w-8 h-8 filter invert"
         />
-        <span className="hidden sm:inline">Library</span>
+        <span className="hidden sm:inline">LibManager</span>
       </div>
 
       <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 sm:p-8 w-full max-w-md mx-auto z-10 shadow-xl transition-all duration-300 transform hover:scale-[1.01]">
         <div className="text-center mb-8">
           <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
-            Sign In
+            Đăng nhập
           </h1>
           <p className="text-base sm:text-lg text-gray-200">
-            Welcome to website
+            Để sử dụng nhiều tính năng hơn
           </p>
         </div>
 
@@ -185,7 +199,7 @@ const SignIn = () => {
           <div>
             <input
               type="text"
-              placeholder="Login"
+              placeholder="Tên đăng nhập"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleLogin()}
@@ -197,7 +211,7 @@ const SignIn = () => {
           <div>
             <input
               type={showPassword ? "text" : "password"}
-              placeholder="Password"
+              placeholder="Mật khẩu"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleLogin()}
@@ -215,7 +229,7 @@ const SignIn = () => {
               onChange={() => setShowPassword(!showPassword)}
               className="rounded border-white/50 focus:ring-[#21b39b] h-4 w-4"
             />
-            <span>Show password</span>
+            <span>Hiện mật khẩu</span>
           </label>
           <a
             href="/forgot"
@@ -225,15 +239,16 @@ const SignIn = () => {
               transition: "color 0.3s",
             }}
           >
-            Forgot password?
+            Quên mật khẩu?
           </a>
         </div>
 
         <button
           onClick={handleLogin}
           disabled={loading}
-          className={`w-full py-3 bg-[#21b39b] rounded-lg text-white font-semibold hover:bg-[#1a9c86] transition-colors shadow-lg mt-6 text-sm sm:text-base flex items-center justify-center ${loading ? "opacity-70 cursor-not-allowed" : ""
-            }`}
+          className={`w-full py-3 bg-[#21b39b] rounded-lg text-white font-semibold hover:bg-[#1a9c86] transition-colors shadow-lg mt-6 text-sm sm:text-base flex items-center justify-center ${
+            loading ? "opacity-70 cursor-not-allowed" : ""
+          }`}
         >
           {loading ? (
             <div className="flex items-center gap-2">
@@ -241,12 +256,12 @@ const SignIn = () => {
               <span>Đang đăng nhập...</span>
             </div>
           ) : (
-            "Log In"
+            "Đăng nhập"
           )}
         </button>
 
         <div className="text-center text-white/80 text-sm mt-4">
-          Don't have an account?{" "}
+          Bạn chưa có tài khoản?{" "}
           <a
             href="/signup"
             style={{
@@ -256,11 +271,11 @@ const SignIn = () => {
               transition: "color 0.3s",
             }}
           >
-            Sign Up
+            Đăng ký ngay
           </a>
         </div>
         <div className="mt-4 w-full text-center">
-          <span className="text-white text-sm">Or</span>
+          <span className="text-white text-sm">Hoặc</span>
         </div>
 
         <div className="mt-4">
@@ -270,10 +285,10 @@ const SignIn = () => {
           >
             <img
               src="https://www.svgrepo.com/show/475656/google-color.svg"
-              alt="Google Logo"
+              alt="Logo Google"
               className="w-5 h-5"
             />
-            <span>Đăng nhập với Google</span>
+            <span>Đăng nhập bằng Google</span>
           </button>
         </div>
       </div>
