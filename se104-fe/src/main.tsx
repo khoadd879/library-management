@@ -105,8 +105,8 @@ const router = createBrowserRouter([
   { path: "/forgot", element: <ForgotPasswordPage /> },
   { path: "/verification", element: <VerificationCodePage /> },
   { path: "/new-pass", element: <NewPasswordPage /> },
-  { path: "/landingPage", element: <LandingPage /> },
   { path: "/chatAI", element: <AIChatWidget /> },
+  { path: "/landingPage", element: <LandingPage /> },
 ]);
 
 createRoot(document.getElementById("root")!).render(

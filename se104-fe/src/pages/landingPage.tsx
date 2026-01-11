@@ -172,10 +172,10 @@ const LandingPage = () => {
             {/* Nút Đăng ký */}
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <button
-                className="bg-gradient-to-r text-white from-[#153D36] to-emerald-600 hover:to-emerald-500 border-none shadow-xl shadow-emerald-900/20 font-bold rounded-full px-8 h-12 text-base flex items-center gap-2 group"
+                className="bg-gradient-to-r hover:cursor-pointer text-white from-[#153D36] to-emerald-600 hover:to-emerald-500 border-none shadow-xl shadow-emerald-900/20 font-bold rounded-full px-8 h-12 text-base flex items-center gap-2 group"
                 onClick={() => navigate("/signin")}
               >
-                Đăng ký
+                Đăng nhập
                 <ArrowRightOutlined className="text-xs group-hover:translate-x-1 transition-transform" />
               </button>
             </motion.div>
