@@ -28,7 +28,6 @@ import {
     ClearOutlined,
     FileTextOutlined,
     NumberOutlined,
-    SearchOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
@@ -97,9 +96,16 @@ const ReceiveBook = () => {
                 setTypeBooks(uniqueTypes);
 
                 if (Array.isArray(headerRes)) {
-                    setHeaderBooks(headerRes);
+                    // Filter out items with null/undefined idHeaderbook
+                    const validHeaderBooks = headerRes.filter(
+                        (hb: any) => hb.idHeaderbook != null && hb.nameBook != null
+                    );
+                    setHeaderBooks(validHeaderBooks);
                 } else if ((headerRes as any)?.data) {
-                    setHeaderBooks((headerRes as any).data);
+                    const validHeaderBooks = (headerRes as any).data.filter(
+                        (hb: any) => hb.idHeaderbook != null && hb.nameBook != null
+                    );
+                    setHeaderBooks(validHeaderBooks);
                 }
             } catch (err) {
                 message.error('Không thể tải dữ liệu danh mục.');
@@ -109,26 +115,34 @@ const ReceiveBook = () => {
     }, []);
 
     const handleHeaderBookChange = (value: string) => {
-        setSelectedHeaderId(value);
-        if (!value) return;
+        if (!value) {
+            // When user clears the selection
+            setSelectedHeaderId(null);
+            return;
+        }
 
-        const selected = headerBooks.find((h) => h.idHeaderBook === value);
-        console.log(selected);
+        const selected = headerBooks.find((h) => h.idHeaderbook === value);
+
         if (selected) {
+            setSelectedHeaderId(value); // Keep the selection visible
+
+            // Use field names from API response
+            const bookName = selected.nameBook || '';
+            const description = selected.describe || '';
+            const typeId = selected.idTypeBook?.idTypeBook || selected.idTypeBook || '';
+
             setFormState((prev) => ({
                 ...prev,
-                nameHeaderBook: selected.nameBook,
-                describeBook: selected.describe || '',
-                idTypeBook:
-                    selected.idTypeBook?.idTypeBook ||
-                    selected.idTypeBook ||
-                    '',
+                nameHeaderBook: bookName,
+                describeBook: description,
+                idTypeBook: typeId,
             }));
+
             message.success({
-                content: 'Đã cập nhật thông tin từ đầu sách cũ',
+                content: `Đã cập nhật: ${bookName}`,
                 key: 'autofill',
+                duration: 2,
             });
-            setSelectedHeaderId(null);
         }
     };
 
@@ -160,6 +174,18 @@ const ReceiveBook = () => {
             return;
         }
 
+        // Additional validations
+        const currentYear = new Date().getFullYear();
+        if (formState.reprintYear > currentYear) {
+            message.error('Năm tái bản không thể lớn hơn năm hiện tại!');
+            return;
+        }
+
+        if (formState.quantity < 1) {
+            message.error('Số lượng nhập phải lớn hơn 0!');
+            return;
+        }
+
         setIsLoading(true);
         try {
             const receiptFormData = new FormData();
@@ -188,20 +214,20 @@ const ReceiveBook = () => {
 
             // File Ảnh
             if (bookImage) {
-                receiptFormData.append('headerBook.bookImage', bookImage);
+                receiptFormData.append('headerBook.BookImage', bookImage);
             }
 
             // 3. headerBook -> bookCreateRequest Level
             receiptFormData.append(
-                'headerBook.bookCreateRequest.publisher',
+                'headerBook.bookCreateRequest.Publisher',
                 formState.publisher
             );
             receiptFormData.append(
-                'headerBook.bookCreateRequest.reprintYear',
+                'headerBook.bookCreateRequest.ReprintYear',
                 formState.reprintYear.toString()
             );
             receiptFormData.append(
-                'headerBook.bookCreateRequest.valueOfBook',
+                'headerBook.bookCreateRequest.ValueOfBook',
                 formState.valueOfBook.toString()
             );
 
@@ -212,18 +238,22 @@ const ReceiveBook = () => {
             );
 
             const res = await addBookReceiptAPI(receiptFormData);
-            // Kiểm tra response tùy thuộc vào API của bạn (ví dụ statusCode hoặc success field)
-            if (res?.statusCode === 201 || res?.success || res?.data) {
-                message.success('Nhập sách thành công!');
+
+            // Check if response is successful
+            if (res?.statusCode === 201 && res?.success === true) {
+                message.success(res?.message || 'Nhập sách thành công!');
                 resetForm();
             } else {
-                message.error(
-                    res?.message || res?.data?.message || 'Có lỗi xảy ra'
-                );
+                // Show backend error message
+                const errorMessage = res?.message || 'Có lỗi xảy ra khi nhập sách';
+                message.error(errorMessage);
+                console.error('Book receipt response error:', res);
             }
-        } catch (err) {
-            console.error(err);
-            message.error('Lỗi hệ thống!');
+        } catch (err: any) {
+            console.error('Book receipt error:', err);
+            // Handle network/unexpected errors
+            const errorMsg = err?.message || err?.response?.data?.message || 'Lỗi hệ thống!';
+            message.error(errorMsg);
         } finally {
             setIsLoading(false);
         }
@@ -361,27 +391,32 @@ const ReceiveBook = () => {
                                         <Select
                                             showSearch
                                             allowClear
-                                            placeholder="Tìm kiếm đầu sách trong thư viện..."
-                                            optionFilterProp="children"
-                                            onChange={handleHeaderBookChange}
+                                            placeholder="Nhập tên sách để tìm kiếm..."
+                                            onChange={(value: string) => {
+                                                if (value) {
+                                                    handleHeaderBookChange(value);
+                                                } else {
+                                                    setSelectedHeaderId(null);
+                                                }
+                                            }}
+                                            filterOption={(input, option) =>
+                                                (option?.children as unknown as string)
+                                                    ?.toLowerCase()
+                                                    ?.includes(input.toLowerCase())
+                                            }
                                             value={selectedHeaderId}
                                             size="large"
                                             className="w-full"
-                                            suffixIcon={
-                                                <SearchOutlined className="text-gray-400" />
-                                            }
-                                            filterOption={(input, option) =>
-                                                (option?.label ?? '')
-                                                    .toLowerCase()
-                                                    .includes(
-                                                        input.toLowerCase()
-                                                    )
-                                            }
-                                            options={headerBooks.map((hb) => ({
-                                                label: hb.nameBook,
-                                                value: hb.idHeaderBook,
-                                            }))}
-                                        />
+                                        >
+                                            {headerBooks.map((hb) => (
+                                                <Select.Option key={hb.idHeaderbook} value={hb.idHeaderbook}>
+                                                    {hb.nameBook}
+                                                </Select.Option>
+                                            ))}
+                                        </Select>
+                                        <p className="text-xs text-gray-400 mt-1">
+                                            Nếu không chọn, hệ thống sẽ tạo đầu sách mới từ thông tin bạn nhập
+                                        </p>
                                     </Col>
                                     <Col xs={24} md={12}>
                                         <label className="block text-sm font-semibold text-gray-600 mb-1.5">
@@ -393,7 +428,6 @@ const ReceiveBook = () => {
                                         <Input
                                             size="large"
                                             placeholder="Nhập tên sách..."
-                                            disabled={!!selectedHeaderId}
                                             value={formState.nameHeaderBook}
                                             onChange={(e) =>
                                                 setFormState({
@@ -507,6 +541,9 @@ const ReceiveBook = () => {
                                                 <CalendarOutlined className="text-gray-300 mr-2" />
                                             }
                                         />
+                                        <p className="text-xs text-gray-400 mt-1">
+                                            Năm xuất bản không được quá xa hiện tại (theo quy định hệ thống)
+                                        </p>
                                     </Col>
                                     <Col xs={24} md={12}>
                                         <label className="block text-sm font-semibold text-gray-600 mb-1.5">

@@ -11,7 +11,6 @@ import {
   Tag,
   Space,
   Badge,
-  Descriptions
 } from "antd";
 import {
   SettingOutlined,
@@ -38,6 +37,64 @@ const formatParameterName = (name: string) => {
     .trim();
 };
 
+// Vietnamese translation mapping for parameter names
+const PARAMETER_TRANSLATIONS: Record<string, {
+  vn: string;
+  description: string;
+  unit?: string;
+}> = {
+  "MinReaderAge": {
+    vn: "Tuổi tối thiểu độc giả",
+    description: "Độ tuổi nhỏ nhất được phép đăng ký làm độc giả",
+    unit: "tuổi"
+  },
+  "MaxReaderAge": {
+    vn: "Tuổi tối đa độc giả",
+    description: "Độ tuổi lớn nhất được phép đăng ký làm độc giả",
+    unit: "tuổi"
+  },
+  "CardExpirationDate": {
+    vn: "Thời hạn thẻ",
+    description: "Số tháng thẻ độc giả có hiệu lực",
+    unit: "tháng"
+  },
+  "BorrowingLimit": {
+    vn: "Giới hạn mượn sách",
+    description: "Số sách tối đa được mượn cùng lúc",
+    unit: "cuốn"
+  },
+  "BorrowingPeriodDays": {
+    vn: "Thời gian mượn",
+    description: "Số ngày được phép mượn sách",
+    unit: "ngày"
+  },
+  "FinePerOverdueDay": {
+    vn: "Phí trễ hạn",
+    description: "Số tiền phạt mỗi ngày trả muộn",
+    unit: "VNĐ/ngày"
+  },
+  "LateReturnPenaltyPolicy": {
+    vn: "Chính sách phạt trễ",
+    description: "Bật/tắt tính năng phạt trả sách muộn"
+  },
+  "PublishGap": {
+    vn: "Khoảng cách phát hành tối thiểu",
+    description: "Số năm tối thiểu giữa xuất bản và nhập thư viện",
+    unit: "năm"
+  }
+};
+
+// Get parameter display information
+const getParameterDisplay = (nameParameter: string) => {
+  const translation = PARAMETER_TRANSLATIONS[nameParameter];
+  return {
+    vietnamese: translation?.vn || formatParameterName(nameParameter),
+    description: translation?.description || "",
+    unit: translation?.unit || "",
+    englishKey: nameParameter
+  };
+};
+
 const Parameter = () => {
   const [params, setParams] = useState<IParameter[]>([]);
   const [editing, setEditing] = useState<{ [key: string]: number }>({});
@@ -49,7 +106,7 @@ const Parameter = () => {
       setLoading(true);
       const res: any = await getAllParametersAPI();
       let dataToCheck: IParameter[] = [];
-      
+
       if (Array.isArray(res)) dataToCheck = res;
       else if (res?.data && Array.isArray(res.data)) dataToCheck = res.data;
       else if (res?.result && Array.isArray(res.result)) dataToCheck = res.result;
@@ -121,18 +178,30 @@ const Parameter = () => {
       width: "50%",
       render: (text: string, record: IParameter) => {
         const isChanged = editing[record.idParameter] !== record.valueParameter;
+        const display = getParameterDisplay(text);
+
         return (
           <div className="flex items-start gap-3">
-             {/* Icon thay đổi tùy trạng thái */}
+            {/* Icon thay đổi tùy trạng thái */}
             <div className={`mt-1 p-2 rounded-lg ${isChanged ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-500'}`}>
-               {isChanged ? <InfoCircleOutlined /> : <SettingOutlined />}
+              {isChanged ? <InfoCircleOutlined /> : <SettingOutlined />}
             </div>
             <div>
+              {/* Vietnamese name - primary */}
               <Text strong className="text-base block text-gray-800">
-                {formatParameterName(text)}
+                {display.vietnamese}
               </Text>
-              <Text type="secondary" className="text-xs font-mono text-gray-400">
-                Key: {text}
+
+              {/* Description */}
+              {display.description && (
+                <Text type="secondary" className="text-xs block text-gray-500 mt-0.5">
+                  {display.description}
+                </Text>
+              )}
+
+              {/* English key - for reference */}
+              <Text type="secondary" className="text-xs font-mono text-gray-400 mt-0.5 block">
+                Key: {display.englishKey}
               </Text>
             </div>
           </div>
@@ -143,15 +212,16 @@ const Parameter = () => {
       title: "GIÁ TRỊ THIẾT LẬP",
       width: "50%",
       render: (_: any, record: IParameter) => {
-        const isSwitch = record.nameParameter.toLowerCase().includes("policy") || 
-                         record.nameParameter.toLowerCase().includes("enable"); // Tự động đoán nếu tên có chữ Policy/Enable
+        const isSwitch = record.nameParameter.toLowerCase().includes("policy") ||
+          record.nameParameter.toLowerCase().includes("enable");
         const currentValue = editing[record.idParameter];
         const originalValue = record.valueParameter;
         const isChanged = currentValue !== originalValue;
+        const display = getParameterDisplay(record.nameParameter);
 
         return (
           <div className="flex items-center justify-between group">
-            <div className="flex-1 max-w-[200px]">
+            <div className="flex items-center gap-2">
               {isSwitch ? (
                 <Switch
                   checkedChildren={<CheckCircleOutlined />}
@@ -162,21 +232,29 @@ const Parameter = () => {
                   }
                 />
               ) : (
-                <InputNumber
-                  size="middle"
-                  className={`w-full ${isChanged ? 'border-orange-400 shadow-sm' : ''}`}
-                  value={currentValue}
-                  onChange={(val) =>
-                    setEditing((prev) => ({ ...prev, [record.idParameter]: val || 0 }))
-                  }
-                />
+                <>
+                  <InputNumber
+                    size="middle"
+                    className={`${isChanged ? 'border-orange-400 shadow-sm' : ''}`}
+                    value={currentValue}
+                    onChange={(val) =>
+                      setEditing((prev) => ({ ...prev, [record.idParameter]: val || 0 }))
+                    }
+                  />
+                  {/* Show unit */}
+                  {display.unit && (
+                    <Text type="secondary" className="text-sm whitespace-nowrap">
+                      {display.unit}
+                    </Text>
+                  )}
+                </>
               )}
             </div>
-            
-            {/* Hiển thị giá trị cũ mờ mờ để user so sánh */}
+
+            {/* Hiển thị giá trị cũ khi có thay đổi */}
             {isChanged && (
               <div className="text-xs text-gray-400 ml-4 flex flex-col items-end animate-fade-in">
-                <span>Gốc: {isSwitch ? (originalValue === 1 ? "Bật" : "Tắt") : originalValue}</span>
+                <span>Gốc: {isSwitch ? (originalValue === 1 ? "Bật" : "Tắt") : `${originalValue} ${display.unit || ""}`}</span>
                 <Tag color="warning" className="mr-0 mt-1 border-0 bg-orange-50 text-orange-600">Đã sửa</Tag>
               </div>
             )}
@@ -189,16 +267,16 @@ const Parameter = () => {
   return (
     <div className="p-6 bg-gray-50/50 min-h-screen pb-24 relative">
       <div className="max-w-5xl mx-auto">
-        
+
         {/* Header Section */}
         <div className="flex justify-between items-end mb-6">
           <div>
             <Title level={3} style={{ marginBottom: 0 }}>Cấu Hình Hệ Thống</Title>
             <Text type="secondary">Quản lý các tham số và luật lệ vận hành.</Text>
           </div>
-          <Button 
-            icon={<ReloadOutlined />} 
-            onClick={fetchParameters} 
+          <Button
+            icon={<ReloadOutlined />}
+            onClick={fetchParameters}
             loading={loading}
             type="text"
             className="text-gray-500 hover:text-blue-600 hover:bg-blue-50"
@@ -208,8 +286,8 @@ const Parameter = () => {
         </div>
 
         {/* Main Card */}
-        <Card 
-          bordered={false} 
+        <Card
+          bordered={false}
           className="shadow-sm rounded-xl overflow-hidden"
           bodyStyle={{ padding: 0 }}
         >
@@ -221,18 +299,17 @@ const Parameter = () => {
             columns={columns}
             // Row styling: Highlight row đang được sửa
             rowClassName={(record) => {
-                const isChanged = editing[record.idParameter] !== record.valueParameter;
-                return isChanged ? "bg-orange-50/30 transition-colors" : "hover:bg-gray-50 transition-colors";
+              const isChanged = editing[record.idParameter] !== record.valueParameter;
+              return isChanged ? "bg-orange-50/30 transition-colors" : "hover:bg-gray-50 transition-colors";
             }}
           />
         </Card>
       </div>
 
       {/* Floating Action Bar - Chỉ hiện khi có thay đổi */}
-      <div 
-        className={`fixed bottom-0 left-0 right-0 p-4 bg-white border-t shadow-[0_-4px_20px_rgba(0,0,0,0.1)] z-50 transition-transform duration-300 ease-in-out ${
-          hasChanges ? "translate-y-0" : "translate-y-full"
-        }`}
+      <div
+        className={`fixed bottom-0 left-0 right-0 p-4 bg-white border-t shadow-[0_-4px_20px_rgba(0,0,0,0.1)] z-50 transition-transform duration-300 ease-in-out ${hasChanges ? "translate-y-0" : "translate-y-full"
+          }`}
       >
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -240,10 +317,10 @@ const Parameter = () => {
             <span className="font-medium text-gray-700">cấu hình chưa được lưu.</span>
           </div>
           <Space>
-            <Button 
-                onClick={handleReset} 
-                icon={<UndoOutlined />}
-                disabled={saving}
+            <Button
+              onClick={handleReset}
+              icon={<UndoOutlined />}
+              disabled={saving}
             >
               Hủy thay đổi
             </Button>

@@ -126,15 +126,14 @@ const BookCard = ({
     {rank && (
       <div className="absolute -left-2 -top-2 w-12 h-12 z-20 flex items-center justify-center">
         <div
-          className={`absolute inset-0 transform rotate-45 translate-y-1 -translate-x-4 ${
-            rank === 1
-              ? "bg-yellow-400"
-              : rank === 2
+          className={`absolute inset-0 transform rotate-45 translate-y-1 -translate-x-4 ${rank === 1
+            ? "bg-yellow-400"
+            : rank === 2
               ? "bg-gray-300"
               : rank === 3
-              ? "bg-orange-400"
-              : "bg-[#153D36]"
-          }`}
+                ? "bg-orange-400"
+                : "bg-[#153D36]"
+            }`}
         ></div>
         <span className="relative text-white font-bold text-sm transform -rotate-15 ml-1 mt-1">
           #{rank}
@@ -481,17 +480,16 @@ const UserHomepage = () => {
         {/* HERO SECTION (Chỉ hiện khi không tìm kiếm) */}
         {!searchBooks && activeHeroBook && (
           <section
-            className={`relative rounded-[2.5rem] overflow-hidden bg-[#153D36] text-white shadow-2xl mb-12 min-h-[480px] flex items-center transition-all duration-500 ${
-              isHeroTransitioning
-                ? "opacity-50 blur-sm scale-[0.98]"
-                : "opacity-100 blur-0 scale-100"
-            }`}
+            className={`relative rounded-[2.5rem] overflow-hidden bg-[#153D36] text-white shadow-2xl mb-12 min-h-[480px] flex items-center transition-all duration-500 ${isHeroTransitioning
+              ? "opacity-50 blur-sm scale-[0.98]"
+              : "opacity-100 blur-0 scale-100"
+              }`}
           >
             <div className="absolute inset-0 z-0">
               <div
                 className="absolute inset-0 bg-cover bg-center opacity-20 blur-3xl scale-125"
                 style={{
-                  backgroundImage: `url(${activeHeroBook.image})`,
+                  backgroundImage: `url(${activeHeroBook.image || "https://placehold.co/320x480/153D36/FFFFFF?text=📚"})`,
                 }}
               ></div>
               <div className="absolute inset-0 bg-gradient-to-r from-[#153D36] via-[#153D36]/80 to-transparent"></div>
@@ -536,7 +534,7 @@ const UserHomepage = () => {
               <div className="relative group">
                 <div className="absolute inset-0 bg-emerald-500/20 blur-[100px] rounded-full"></div>
                 <img
-                  src={activeHeroBook.image}
+                  src={activeHeroBook.image || "https://placehold.co/320x480/153D36/FFFFFF?text=📚"}
                   className="relative w-[260px] md:w-[320px] aspect-[2/3] object-cover rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] rotate-2 group-hover:rotate-0 transition-all duration-700"
                   alt=""
                 />
@@ -549,9 +547,8 @@ const UserHomepage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           {/* CỘT CHÍNH: NẾU SEARCH -> COL-SPAN-12 (FULL), NẾU KHÔNG -> COL-SPAN-8 */}
           <div
-            className={`${
-              searchBooks !== null ? "lg:col-span-12" : "lg:col-span-8"
-            } space-y-20`}
+            className={`${searchBooks !== null ? "lg:col-span-12" : "lg:col-span-8"
+              } space-y-20`}
           >
             <section>
               <div className="flex items-center gap-4 mb-10">
