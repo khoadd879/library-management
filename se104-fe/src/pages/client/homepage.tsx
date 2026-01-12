@@ -1,12 +1,10 @@
 import { useEffect, useState, useRef } from "react";
-// 1. IMPORT THÊM useSearchParams
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   getAllBooksAndCommentsAPI,
   getLoanSlipHistoryAPI,
   listAuthorAPI,
   addFavoriteBookAPI,
-  findBooksByNameAPI,
   getStarByIdBookAPI,
 } from "@/services/api";
 import {
@@ -91,6 +89,17 @@ declare global {
     webkitSpeechRecognition: any;
   }
 }
+
+// --- HELPER: BỎ DẤU TIẾNG VIỆT ---
+const removeAccents = (str: string) => {
+  if (!str) return "";
+  return str
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D")
+    .toLowerCase();
+};
 
 const BookCardSkeleton = () => (
   <div className="bg-white rounded-2xl p-4 shadow-sm space-y-4 border border-gray-100">
@@ -178,14 +187,17 @@ const BookCard = ({
 
 const UserHomepage = () => {
   const navigate = useNavigate();
-  // --- 2. THÊM LOGIC LẮNG NGHE URL ---
   const [searchParams] = useSearchParams();
 
+  // STATE DATA
+  const [allBooks, setAllBooks] = useState<IBook[]>([]);
   const [featuredBooks, setFeaturedBooks] = useState<IBook[]>([]);
   const [authors, setAuthors] = useState<any[]>([]);
   const [latestBooks, setLatestBooks] = useState<IBook[]>([]);
   const [loanHistory, setLoanHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // STATE SEARCH & UI
   const [search, setSearch] = useState("");
   const [searchBooks, setSearchBooks] = useState<IBook[] | null>(null);
   const [isListening, setIsListening] = useState(false);
@@ -196,30 +208,43 @@ const UserHomepage = () => {
   const [activeHeroBook, setActiveHeroBook] = useState<IBook | null>(null);
   const [isHeroTransitioning, setIsHeroTransitioning] = useState(false);
 
-  // --- HÀM TÌM KIẾM ---
-  const handleSearch = async (value: string) => {
+  // --- LOGIC TÌM KIẾM ---
+  const handleSearch = (value: string) => {
     setSearch(value);
-    if (!value) {
+
+    if (!value || value.trim() === "") {
       setSearchBooks(null);
       return;
     }
-    try {
-      const res = await findBooksByNameAPI(value);
-      setSearchBooks(Array.isArray(res) ? res : []);
-    } catch (err) {
-      setSearchBooks([]);
-    }
+
+    if (!allBooks || allBooks.length === 0) return;
+
+    const searchTerm = removeAccents(value.trim());
+
+    const filtered = allBooks.filter((book) => {
+      if (!book) return false;
+      const bookName = book.nameBook ? removeAccents(book.nameBook) : "";
+      const authorName =
+        book.authors && book.authors.length > 0 && book.authors[0]?.nameAuthor
+          ? removeAccents(book.authors[0].nameAuthor)
+          : "";
+      return bookName.includes(searchTerm) || authorName.includes(searchTerm);
+    });
+
+    setSearchBooks(filtered);
   };
 
-  // --- EFFECT: TỰ ĐỘNG TÌM KHI URL THAY ĐỔI ---
   useEffect(() => {
     const query = searchParams.get("search");
-    if (query) {
-      setSearch(query);
-      handleSearch(query);
+    if (query && allBooks.length > 0) {
+      if (search === "") {
+        setSearch(query);
+        handleSearch(query);
+      }
     }
-  }, [searchParams]); // Chạy lại mỗi khi URL thay đổi param 'search'
+  }, [searchParams, allBooks]);
 
+  // --- VOICE SEARCH ---
   const handleVoiceSearch = () => {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -245,7 +270,6 @@ const UserHomepage = () => {
     recognition.onresult = (event: any) => {
       let transcript = event.results[0][0].transcript;
       transcript = transcript.replace(/\.$/, "").trim();
-
       setSearch(transcript);
       handleSearch(transcript);
       message.success(`Đã tìm: "${transcript}"`);
@@ -253,11 +277,6 @@ const UserHomepage = () => {
 
     recognition.onerror = (event: any) => {
       setIsListening(false);
-      if (event.error === "no-speech") {
-        message.info("Không nghe thấy giọng nói, vui lòng thử lại.");
-      } else {
-        console.error("Voice error:", event.error);
-      }
     };
 
     recognitionRef.current = recognition;
@@ -271,6 +290,7 @@ const UserHomepage = () => {
     }
   };
 
+  // --- TOGGLE LIKE ---
   const toggleLike = async (bookId: string) => {
     try {
       const idUser = localStorage.getItem("idUser");
@@ -281,9 +301,12 @@ const UserHomepage = () => {
           list.map((b) =>
             b.idBook === bookId ? { ...b, isLiked: !b.isLiked } : b
           );
+
+        setAllBooks((prev) => update(prev));
         setFeaturedBooks((prev) => update(prev));
         setLatestBooks((prev) => update(prev));
         if (searchBooks) setSearchBooks((prev) => update(prev!));
+
         if (activeHeroBook?.idBook === bookId)
           setActiveHeroBook((prev) =>
             prev ? { ...prev, isLiked: !prev.isLiked } : null
@@ -309,6 +332,7 @@ const UserHomepage = () => {
     }
   };
 
+  // --- FETCH DATA ---
   useEffect(() => {
     const fetchData = async () => {
       if (hasFetchedData.current) return;
@@ -345,11 +369,16 @@ const UserHomepage = () => {
               }
             })
           );
+
+          setAllBooks(booksWithStars);
+
           const sortedFeatured = [...booksWithStars]
             .sort((a, b) => (b.star || 0) - (a.star || 0))
             .slice(0, 8);
           setFeaturedBooks(sortedFeatured);
+
           if (sortedFeatured.length > 0) setActiveHeroBook(sortedFeatured[0]);
+
           setLatestBooks(
             [...booksWithStars]
               .sort((a, b) => (b.reprintYear || 0) - (a.reprintYear || 0))
@@ -379,20 +408,17 @@ const UserHomepage = () => {
             >
               <CloseOutlined className="text-xl" />
             </button>
-
             <div className="relative">
               <div className="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center animate-ripple">
                 <AudioFilled className="text-4xl text-red-500" />
               </div>
             </div>
-
             <div className="text-center space-y-2">
               <h3 className="font-bold text-xl text-gray-800">Đang nghe...</h3>
               <p className="text-gray-500 text-sm">
                 Hãy nói tên sách hoặc tác giả
               </p>
             </div>
-
             <button
               onClick={stopListening}
               className="px-6 py-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold text-sm transition-colors"
@@ -403,6 +429,7 @@ const UserHomepage = () => {
         </div>
       )}
 
+      {/* --- HEADER --- */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           <div
@@ -417,7 +444,6 @@ const UserHomepage = () => {
             </span>
           </div>
 
-          {/* --- SEARCH BAR WITH MIC --- */}
           <div className="flex-1 max-w-xl relative">
             <SearchOutlined className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
@@ -430,7 +456,6 @@ const UserHomepage = () => {
             <div
               className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full hover:bg-gray-200 cursor-pointer transition-colors group"
               onClick={handleVoiceSearch}
-              title="Tìm kiếm bằng giọng nói"
             >
               {isListening ? (
                 <AudioFilled className="text-red-500 animate-pulse text-lg" />
@@ -451,8 +476,9 @@ const UserHomepage = () => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* HERO SECTION - SYNCED WITH SWIPER */}
+      {/* --- MAIN CONTENT --- */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-[calc(100vh-64px)]">
+        {/* HERO SECTION (Chỉ hiện khi không tìm kiếm) */}
         {!searchBooks && activeHeroBook && (
           <section
             className={`relative rounded-[2.5rem] overflow-hidden bg-[#153D36] text-white shadow-2xl mb-12 min-h-[480px] flex items-center transition-all duration-500 ${
@@ -519,10 +545,14 @@ const UserHomepage = () => {
           </section>
         )}
 
+        {/* --- GRID LAYOUT CHÍNH --- */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-          {/* LEFT COLUMN */}
-          <div className="lg:col-span-8 space-y-20">
-            {/* RANKING */}
+          {/* CỘT CHÍNH: NẾU SEARCH -> COL-SPAN-12 (FULL), NẾU KHÔNG -> COL-SPAN-8 */}
+          <div
+            className={`${
+              searchBooks !== null ? "lg:col-span-12" : "lg:col-span-8"
+            } space-y-20`}
+          >
             <section>
               <div className="flex items-center gap-4 mb-10">
                 <div className="w-12 h-12 bg-amber-100 rounded-2xl flex items-center justify-center">
@@ -534,6 +564,8 @@ const UserHomepage = () => {
                     : "Bảng vàng thư viện"}
                 </h2>
               </div>
+
+              {/* LOGIC HIỂN THỊ */}
               {loading ? (
                 <div className="grid grid-cols-3 gap-8">
                   {[1, 2, 3].map((i) => (
@@ -541,17 +573,44 @@ const UserHomepage = () => {
                   ))}
                 </div>
               ) : searchBooks !== null ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                  {searchBooks.map((book) => (
-                    <BookCard
-                      key={book.idBook}
-                      book={book}
-                      onLike={toggleLike}
-                      onClick={(id) => navigate(`/detail/${id}`)}
-                    />
-                  ))}
-                </div>
+                /* --- TRƯỜNG HỢP CÓ TÌM KIẾM --- */
+                searchBooks.length === 0 ? (
+                  // Không tìm thấy
+                  <div className="flex flex-col items-center justify-center py-16 animate-fadeIn text-center">
+                    <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                      <SearchOutlined className="text-4xl text-gray-300" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-700 mb-2">
+                      Không tìm thấy sách
+                    </h3>
+                    <p className="text-gray-400 mb-6 max-w-xs mx-auto">
+                      Không có kết quả nào cho từ khóa <b>"{search}"</b>
+                    </p>
+                    <button
+                      onClick={() => {
+                        setSearch("");
+                        setSearchBooks(null);
+                      }}
+                      className="text-[#153D36] font-bold hover:underline"
+                    >
+                      Quay lại trang chủ
+                    </button>
+                  </div>
+                ) : (
+                  // Có kết quả: Mở rộng grid (5 cột cho màn hình lớn vì ẩn sidebar)
+                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
+                    {searchBooks.map((book) => (
+                      <BookCard
+                        key={book.idBook}
+                        book={book}
+                        onLike={toggleLike}
+                        onClick={(id) => navigate(`/detail/${id}`)}
+                      />
+                    ))}
+                  </div>
+                )
               ) : (
+                /* --- TRƯỜNG HỢP MẶC ĐỊNH (SWIPER) --- */
                 <Swiper
                   effect={"coverflow"}
                   grabCursor={true}
@@ -596,7 +655,7 @@ const UserHomepage = () => {
               )}
             </section>
 
-            {/* NEW BOOKS */}
+            {/* NEW BOOKS SECTION */}
             {!searchBooks && (
               <section>
                 <div className="flex items-center justify-between mb-10 border-b border-gray-100 pb-4">
@@ -626,7 +685,7 @@ const UserHomepage = () => {
             )}
           </div>
 
-          {/* SIDEBAR */}
+          {/* RIGHT COLUMN: SIDEBAR (CHỈ HIỆN KHI KHÔNG TÌM KIẾM) */}
           {!searchBooks && (
             <div className="lg:col-span-4 space-y-12">
               <div className="sticky top-24 space-y-12">
@@ -678,7 +737,6 @@ const UserHomepage = () => {
                       ))
                     )}
                   </div>
-                  {/* Decoration */}
                   <div className="absolute top-0 right-0 w-40 h-40 bg-[#153D36]/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
                 </section>
 
@@ -748,7 +806,6 @@ const UserHomepage = () => {
                       </div>
                     )}
                   </div>
-                  {/* Decoration */}
                   <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-all duration-700"></div>
                 </section>
               </div>
