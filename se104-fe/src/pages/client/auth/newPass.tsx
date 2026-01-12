@@ -22,15 +22,21 @@ const NewPasswordPage = () => {
     try {
       const res = await changePassword(email, password, confirmPassword);
 
-      if (res) {
+      // Check if response is successful
+      if (res?.statusCode === 200 && res?.success === true) {
         message.success("Đổi mật khẩu thành công!");
         navigate("/signin");
       } else {
-        message.error("Đổi mật khẩu thất bại");
+        const errorMessage = res?.message || "Đổi mật khẩu thất bại";
+        message.error(errorMessage);
+        console.error("Change password response error:", res);
+        throw new Error(errorMessage);
       }
-    } catch (error) {
-      message.error("Error");
+    } catch (error: any) {
       console.error("Change password error:", error);
+      const errorMsg = error?.message || "Có lỗi xảy ra khi đổi mật khẩu. Vui lòng thử lại!";
+      message.error(errorMsg);
+      throw error;
     }
   }
   return (

@@ -15,7 +15,9 @@ const ForgotPasswordPage = () => {
 
     try {
       const res = await forgotPassword(email);
-      if (res != null) {
+
+      // Check if response is successful (statusCode 200 and success: true)
+      if (res?.statusCode === 200 && res?.success === true) {
         message.success("Gửi mã OTP thành công");
         navigate("/verification", {
           state: {
@@ -24,12 +26,22 @@ const ForgotPasswordPage = () => {
           },
         });
       } else {
-        message.error("Gửi mã OTP thất bại!");
-        console.error("OTP response error:", res.status);
+        // Handle error response from backend
+        const errorMessage = res?.message || "Gửi mã OTP thất bại!";
+        message.error(errorMessage);
+        console.error("OTP response error:", res);
+        throw new Error(errorMessage);
       }
-    } catch (error) {
-      message.error("Thất bại");
+    } catch (error: any) {
+      // Log error for debugging
       console.error("OTP error:", error);
+
+      // Show user-friendly error message
+      const errorMsg = error?.message || error?.data?.message || "Có lỗi xảy ra khi gửi OTP. Vui lòng thử lại!";
+      message.error(errorMsg);
+
+      // Re-throw to ensure error is visible in console
+      throw error;
     }
   };
 

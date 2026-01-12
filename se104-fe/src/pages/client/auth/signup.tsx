@@ -31,6 +31,9 @@ const SignUp = () => {
         navigate("/verification", {
           state: {
             email: email,
+            mode: "signup",
+            password: password,
+            confirmPassword: confirmPassword,
           },
         });
       } else {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { signUpWithOtpAPI, verifyOTP } from "@/services/api";
+import { signUpWithOtpAPI, verifyOTP, signUpSendOtpAPI, forgotPassword } from "@/services/api";
 import { message } from "antd";
 
 const VerificationCodePage = () => {
@@ -11,8 +11,8 @@ const VerificationCodePage = () => {
   const location = useLocation();
   const mode = location.state?.mode || "signup";
   const email = location.state?.email || "";
-
-  //TODO: Làm phần resend OTP
+  const password = location.state?.password || "";
+  const confirmPassword = location.state?.confirmPassword || "";
 
   useEffect(() => {
     if (timer > 0) {
@@ -20,6 +20,34 @@ const VerificationCodePage = () => {
       return () => clearTimeout(countdown);
     }
   }, [timer]);
+
+  const handleResendOTP = async () => {
+    try {
+      let res;
+      if (mode === "signup") {
+        res = await signUpSendOtpAPI(email, password, confirmPassword);
+      } else if (mode === "forgot") {
+        res = await forgotPassword(email);
+      }
+
+      // Check if response is successful
+      if (res?.statusCode === 200 && res?.success === true) {
+        message.success("Mã OTP đã được gửi lại!");
+        setTimer(30); // Reset timer
+        setOtp(["", "", "", "", "", ""]); // Clear OTP input
+      } else {
+        const errorMessage = res?.message || "Gửi lại OTP thất bại!";
+        message.error(errorMessage);
+        console.error("Resend OTP response error:", res);
+        throw new Error(errorMessage);
+      }
+    } catch (error: any) {
+      console.error("Resend OTP error:", error);
+      const errorMsg = error?.message || "Lỗi khi gửi lại OTP. Vui lòng thử lại!";
+      message.error(errorMsg);
+      throw error;
+    }
+  };
 
   const handleConfirmCode = async () => {
     const enteredOtp = otp.join("").trim();
@@ -33,10 +61,11 @@ const VerificationCodePage = () => {
       if (mode === "signup") {
         res = await signUpWithOtpAPI(email, enteredOtp);
       } else if (mode === "forgot") {
-        res = await verifyOTP(email, enteredOtp); // <-- API khác
+        res = await verifyOTP(email, enteredOtp);
       }
 
-      if (res) {
+      // Check if response is successful
+      if (res?.statusCode === 200 && res?.success === true) {
         message.success("Xác minh thành công!");
 
         if (mode === "signup") {
@@ -45,11 +74,16 @@ const VerificationCodePage = () => {
           navigate("/new-pass", { state: { email } });
         }
       } else {
-        message.error("Mã xác minh không đúng!");
+        const errorMessage = res?.message || "Mã xác minh không đúng!";
+        message.error(errorMessage);
+        console.error("Verify OTP response error:", res);
+        throw new Error(errorMessage);
       }
-    } catch (err) {
-      message.error("Lỗi xác minh. Vui lòng thử lại!");
+    } catch (err: any) {
       console.error("Verify error:", err);
+      const errorMsg = err?.message || "Lỗi xác minh. Vui lòng thử lại!";
+      message.error(errorMsg);
+      throw err;
     }
   };
 
@@ -132,7 +166,7 @@ const VerificationCodePage = () => {
           ) : (
             <button
               className="text-sm text-[#a5f3fc] hover:underline transition-colors"
-            //onClick={handleResendOTP}
+              onClick={handleResendOTP}
             >
               Gửi lại mã xác minh
             </button>

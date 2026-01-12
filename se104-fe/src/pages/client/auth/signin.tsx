@@ -33,7 +33,7 @@ const SignIn = () => {
           const payload = JSON.parse(jsonPayload);
           const role =
             payload[
-              "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+            "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
             ] ||
             payload.role ||
             payload.roleName ||
@@ -57,10 +57,17 @@ const SignIn = () => {
   }, []);
 
   const handleGoogleLogin = () => {
-    const returnUrl = encodeURIComponent("/");
+    // returnUrl must point to backend profile endpoint, not frontend route
+    const returnUrl = encodeURIComponent("/api/Authentication/profile");
     const googleLoginUrl = `${BACKEND_URL}api/Authentication/login-google?returnUrl=${returnUrl}`;
 
     const popup = window.open(googleLoginUrl, "_blank", "width=500,height=600");
+
+    // Check if popup was blocked
+    if (!popup) {
+      message.error("Popup bị chặn! Vui lòng cho phép popup và thử lại.");
+      return;
+    }
 
     const handleMessage = async (event: MessageEvent) => {
       const allowedOrigin = BACKEND_URL.endsWith("/")
@@ -89,10 +96,23 @@ const SignIn = () => {
 
         navigateByRole(roleFromToken);
 
-        window.removeEventListener("message", handleMessage);
-        if (popup) popup.close();
+        cleanup();
       }
     };
+
+    // Cleanup function to remove event listener and close popup
+    const cleanup = () => {
+      window.removeEventListener("message", handleMessage);
+      if (popup && !popup.closed) popup.close();
+      if (popupCheckInterval) clearInterval(popupCheckInterval);
+    };
+
+    // Check if popup is closed manually by user
+    const popupCheckInterval = setInterval(() => {
+      if (popup.closed) {
+        cleanup();
+      }
+    }, 500);
 
     window.addEventListener("message", handleMessage);
   };
@@ -110,7 +130,7 @@ const SignIn = () => {
       const payload = JSON.parse(jsonPayload);
       return (
         payload[
-          "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+        "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
         ] ||
         payload.role ||
         payload.roleName ||
@@ -246,9 +266,8 @@ const SignIn = () => {
         <button
           onClick={handleLogin}
           disabled={loading}
-          className={`w-full py-3 bg-[#21b39b] rounded-lg text-white font-semibold hover:bg-[#1a9c86] transition-colors shadow-lg mt-6 text-sm sm:text-base flex items-center justify-center ${
-            loading ? "opacity-70 cursor-not-allowed" : ""
-          }`}
+          className={`w-full py-3 bg-[#21b39b] rounded-lg text-white font-semibold hover:bg-[#1a9c86] transition-colors shadow-lg mt-6 text-sm sm:text-base flex items-center justify-center ${loading ? "opacity-70 cursor-not-allowed" : ""
+            }`}
         >
           {loading ? (
             <div className="flex items-center gap-2">
