@@ -25,7 +25,7 @@ import {
   AudioOutlined,
   CloseOutlined,
 } from "@ant-design/icons";
-import { message, Skeleton, Avatar, Tag } from "antd";
+import { message, Skeleton, Avatar } from "antd";
 
 // --- IMPORT SWIPER ---
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -38,36 +38,82 @@ import "swiper/css/pagination";
 
 // --- CUSTOM CSS ---
 const swiperStyles = `
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .animate-fadeInUp {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+  
+  .animate-float {
+    animation: float 4s ease-in-out infinite;
+  }
+
   .swiper-pagination-bullet {
     background-color: #cbd5e1;
-    opacity: 0.5;
-    width: 8px;
-    height: 8px;
-    transition: all 0.3s;
+    opacity: 0.6;
+    width: 10px;
+    height: 10px;
+    transition: all 0.3s ease;
   }
   .swiper-pagination-bullet-active {
     background-color: #153D36 !important;
     opacity: 1;
-    width: 24px;
-    border-radius: 4px;
+    width: 28px;
+    border-radius: 5px;
   }
   .mySwiper .swiper-slide {
-    transition: transform 0.8s ease, opacity 0.8s ease;
-    opacity: 0.4;
-    transform: scale(0.85);
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
+    opacity: 0.6;
+    transform: scale(0.88);
   }
   .mySwiper .swiper-slide-active {
     opacity: 1;
-    transform: scale(1.05);
+    transform: scale(1.02);
     z-index: 10;
   }
-  @keyframes ripple {
-    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-    70% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  
+  .glass-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
   }
-  .animate-ripple {
-    animation: ripple 1.5s infinite;
+  
+  .premium-shadow {
+    box-shadow: 0 4px 20px -2px rgba(21, 61, 54, 0.12), 0 12px 40px -4px rgba(21, 61, 54, 0.08);
+  }
+  
+  .premium-shadow:hover {
+    box-shadow: 0 8px 30px -2px rgba(21, 61, 54, 0.18), 0 20px 60px -4px rgba(21, 61, 54, 0.12);
+  }
+  
+  .gradient-text {
+    background: linear-gradient(135deg, #153D36 0%, #1e5649 50%, #27705e 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .glow-emerald {
+    box-shadow: 0 0 40px rgba(21, 61, 54, 0.3);
   }
 `;
 
@@ -120,35 +166,38 @@ const BookCard = ({
   rank?: number;
 }) => (
   <div
-    className="bg-white rounded-2xl p-3 border border-gray-100 flex flex-col h-full relative overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer"
+    className="glass-card rounded-2xl p-3 flex flex-col h-full relative overflow-hidden premium-shadow transition-all duration-400 group cursor-pointer hover:-translate-y-1"
     onClick={() => onClick(book.idBook)}
   >
     {rank && (
-      <div className="absolute -left-2 -top-2 w-12 h-12 z-20 flex items-center justify-center">
+      <div className="absolute top-3 left-3 z-20">
         <div
-          className={`absolute inset-0 transform rotate-45 translate-y-1 -translate-x-4 ${rank === 1
-            ? "bg-yellow-400"
+          className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm shadow-lg ${rank === 1
+            ? "bg-gradient-to-br from-yellow-400 to-amber-500 text-white"
             : rank === 2
-              ? "bg-gray-300"
+              ? "bg-gradient-to-br from-gray-300 to-gray-400 text-gray-700"
               : rank === 3
-                ? "bg-orange-400"
-                : "bg-[#153D36]"
+                ? "bg-gradient-to-br from-orange-400 to-orange-500 text-white"
+                : "bg-gradient-to-br from-[#153D36] to-[#1e5649] text-white"
             }`}
-        ></div>
-        <span className="relative text-white font-bold text-sm transform -rotate-15 ml-1 mt-1">
-          #{rank}
-        </span>
+        >
+          {rank}
+        </div>
       </div>
     )}
 
-    <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-gray-50 mb-3">
+    <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-gradient-to-br from-gray-100 to-gray-50 mb-3">
       <img
         src={book.image || "https://placehold.co/400x600"}
         alt={book.nameBook}
-        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
       />
+      {/* Gradient overlay on hover */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+      {/* Like button */}
       <div
-        className="absolute top-2 right-2 p-2 bg-white/90 backdrop-blur-md rounded-full shadow-md cursor-pointer hover:bg-red-50 transition-all z-10"
+        className="absolute top-3 right-3 p-2.5 bg-white/95 backdrop-blur-xl rounded-xl shadow-lg cursor-pointer hover:bg-red-50 hover:scale-110 transition-all duration-300 z-10"
         onClick={(e) => {
           e.stopPropagation();
           onLike(book.idBook);
@@ -157,26 +206,33 @@ const BookCard = ({
         {book.isLiked ? (
           <HeartFilled className="text-lg text-red-500" />
         ) : (
-          <HeartOutlined className="text-gray-400 text-lg hover:text-red-500" />
+          <HeartOutlined className="text-gray-400 text-lg group-hover:text-red-400" />
         )}
+      </div>
+
+      {/* Quick action button on hover */}
+      <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+        <button className="w-full py-2.5 bg-white/95 backdrop-blur-xl rounded-xl text-[#153D36] text-xs font-bold shadow-lg hover:bg-[#153D36] hover:text-white transition-all duration-300">
+          Xem chi tiết
+        </button>
       </div>
     </div>
 
     <div className="flex-1 flex flex-col px-1">
-      <h3 className="font-bold text-gray-800 text-sm line-clamp-2 mb-1 group-hover:text-[#153D36] transition-colors">
+      <h3 className="font-bold text-gray-800 text-sm line-clamp-2 mb-1.5 group-hover:text-[#153D36] transition-colors leading-snug">
         {book.nameBook}
       </h3>
-      <p className="text-xs text-gray-400 mb-3 truncate">
+      <p className="text-xs text-gray-400 mb-3 truncate font-medium">
         {book.authors?.[0]?.nameAuthor || "Tác giả ẩn danh"}
       </p>
-      <div className="mt-auto flex items-center justify-between pt-2 border-t border-gray-50">
-        <div className="flex items-center gap-1">
-          <StarFilled className="text-yellow-400 text-[10px]" />
-          <span className="text-xs font-bold text-gray-600">
+      <div className="mt-auto flex items-center justify-between pt-3 border-t border-gray-100">
+        <div className="flex items-center gap-1.5 bg-amber-50 px-2 py-1 rounded-lg">
+          <StarFilled className="text-amber-400 text-xs" />
+          <span className="text-xs font-bold text-amber-600">
             {book.star ? book.star.toFixed(1) : "5.0"}
           </span>
         </div>
-        <span className="text-[10px] font-medium text-gray-400 bg-gray-50 px-2 py-0.5 rounded-md">
+        <span className="text-[10px] font-semibold text-[#153D36] bg-emerald-50 px-2.5 py-1 rounded-lg">
           {book.reprintYear || 2024}
         </span>
       </div>
@@ -408,7 +464,7 @@ const UserHomepage = () => {
               <CloseOutlined className="text-xl" />
             </button>
             <div className="relative">
-              <div className="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center animate-ripple">
+              <div className="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center animate-pulse">
                 <AudioFilled className="text-4xl text-red-500" />
               </div>
             </div>
@@ -480,64 +536,97 @@ const UserHomepage = () => {
         {/* HERO SECTION (Chỉ hiện khi không tìm kiếm) */}
         {!searchBooks && activeHeroBook && (
           <section
-            className={`relative rounded-[2.5rem] overflow-hidden bg-[#153D36] text-white shadow-2xl mb-12 min-h-[480px] flex items-center transition-all duration-500 ${isHeroTransitioning
-              ? "opacity-50 blur-sm scale-[0.98]"
-              : "opacity-100 blur-0 scale-100"
+            className={`relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#0d2925] via-[#153D36] to-[#1a4a40] text-white mb-14 min-h-[460px] flex items-center transition-opacity duration-300 ${isHeroTransitioning
+              ? "opacity-70"
+              : "opacity-100"
               }`}
           >
+            {/* Background layers */}
             <div className="absolute inset-0 z-0">
+              {/* Blurred book background */}
               <div
-                className="absolute inset-0 bg-cover bg-center opacity-20 blur-3xl scale-125"
+                className="absolute inset-0 bg-cover bg-center opacity-10 blur-2xl scale-110"
                 style={{
                   backgroundImage: `url(${activeHeroBook.image || "https://placehold.co/320x480/153D36/FFFFFF?text=📚"})`,
                 }}
               ></div>
-              <div className="absolute inset-0 bg-gradient-to-r from-[#153D36] via-[#153D36]/80 to-transparent"></div>
+              {/* Grid pattern overlay */}
+              <div className="absolute inset-0 opacity-5" style={{
+                backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
+                backgroundSize: '40px 40px'
+              }}></div>
+              {/* Gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-r from-[#0d2925] via-[#153D36]/95 to-transparent"></div>
+              {/* Decorative circles */}
+              <div className="absolute -top-20 -right-20 w-80 h-80 bg-emerald-400/10 rounded-full blur-3xl"></div>
+              <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-emerald-300/10 rounded-full blur-3xl"></div>
             </div>
-            <div className="relative z-10 w-full px-8 md:px-16 py-12 flex flex-col-reverse md:flex-row items-center gap-12">
-              <div className="flex-1 space-y-6">
-                <Tag
-                  color="gold"
-                  className="font-black border-none uppercase px-4 py-1 rounded-full flex items-center gap-2 w-fit"
-                >
-                  <FireFilled /> Sách thịnh hành
-                </Tag>
-                <h1 className="text-4xl md:text-6xl font-black leading-tight drop-shadow-2xl">
+
+            <div className="relative z-10 w-full px-8 md:px-16 py-14 flex flex-col-reverse md:flex-row items-center gap-14">
+              {/* Content */}
+              <div className="flex-1 space-y-7">
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-400 to-orange-400 text-[#153D36] px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider shadow-lg">
+                    <FireFilled className="text-sm" /> Thịnh hành
+                  </span>
+                  <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-semibold text-white/80 border border-white/10">
+                    <StarFilled className="text-amber-400" /> {activeHeroBook.star?.toFixed(1) || "5.0"}
+                  </span>
+                </div>
+
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight">
                   {activeHeroBook.nameBook}
                 </h1>
-                <p className="text-emerald-50/80 text-lg font-medium max-w-xl line-clamp-2 italic">
-                  "
+
+                <p className="text-emerald-100/70 text-lg font-medium max-w-xl line-clamp-2 leading-relaxed">
                   {activeHeroBook.description ||
-                    `Khám phá hành trình tri thức cùng ${activeHeroBook.authors?.[0]?.nameAuthor}. Một tác phẩm không thể bỏ qua tại thư viện.`}
-                  "
+                    `Khám phá hành trình tri thức cùng ${activeHeroBook.authors?.[0]?.nameAuthor || 'tác giả'}. Một tác phẩm không thể bỏ qua tại thư viện.`}
                 </p>
-                <div className="flex flex-wrap gap-4 pt-4">
+
+                <div className="flex items-center gap-3 text-sm text-white/60">
+                  <span className="flex items-center gap-2">
+                    <UserOutlined />
+                    {activeHeroBook.authors?.[0]?.nameAuthor || "Tác giả ẩn danh"}
+                  </span>
+                  <span className="w-1 h-1 bg-white/40 rounded-full"></span>
+                  <span>{activeHeroBook.reprintYear || 2024}</span>
+                </div>
+
+                <div className="flex flex-wrap gap-4 pt-2">
                   <button
                     onClick={() => navigate(`/detail/${activeHeroBook.idBook}`)}
-                    className="bg-white text-[#153D36] px-10 py-4 rounded-2xl font-black hover:bg-emerald-50 hover:scale-105 transition-all shadow-2xl flex items-center gap-2"
+                    className="group bg-white text-[#153D36] px-8 py-4 rounded-2xl font-bold hover:bg-emerald-50 transition-all duration-300 shadow-xl hover:shadow-2xl flex items-center gap-3"
                   >
-                    <ReadOutlined /> CHI TIẾT SÁCH
+                    <ReadOutlined className="text-lg" />
+                    <span>Xem chi tiết</span>
+                    <RightOutlined className="text-sm opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                   </button>
                   <button
                     onClick={() => toggleLike(activeHeroBook.idBook)}
-                    className="px-8 py-4 rounded-2xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 transition-all font-bold flex items-center gap-2"
+                    className="px-8 py-4 rounded-2xl bg-white/10 hover:bg-white/20 backdrop-blur-xl border border-white/20 transition-all duration-300 font-semibold flex items-center gap-3 hover:border-white/40"
                   >
                     {activeHeroBook.isLiked ? (
-                      <HeartFilled className="text-red-500" />
+                      <HeartFilled className="text-red-400 text-lg" />
                     ) : (
-                      <HeartOutlined />
-                    )}{" "}
-                    YÊU THÍCH
+                      <HeartOutlined className="text-lg" />
+                    )}
+                    Yêu thích
                   </button>
                 </div>
               </div>
-              <div className="relative group">
-                <div className="absolute inset-0 bg-emerald-500/20 blur-[100px] rounded-full"></div>
-                <img
-                  src={activeHeroBook.image || "https://placehold.co/320x480/153D36/FFFFFF?text=📚"}
-                  className="relative w-[260px] md:w-[320px] aspect-[2/3] object-cover rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] rotate-2 group-hover:rotate-0 transition-all duration-700"
-                  alt=""
-                />
+
+              {/* Book image with float animation */}
+              <div className="relative animate-float">
+                <div className="absolute inset-0 bg-gradient-to-b from-emerald-400/20 to-transparent blur-3xl rounded-full scale-150"></div>
+                <div className="relative">
+                  <img
+                    src={activeHeroBook.image || "https://placehold.co/320x480/153D36/FFFFFF?text=📚"}
+                    className="relative w-[260px] md:w-[300px] aspect-[2/3] object-cover rounded-2xl shadow-[0_25px_80px_-15px_rgba(0,0,0,0.5)] glow-emerald"
+                    alt={activeHeroBook.nameBook}
+                  />
+                  {/* Decorative frame */}
+                  <div className="absolute -inset-3 border-2 border-white/10 rounded-3xl"></div>
+                </div>
               </div>
             </div>
           </section>
@@ -551,15 +640,20 @@ const UserHomepage = () => {
               } space-y-20`}
           >
             <section>
-              <div className="flex items-center gap-4 mb-10">
-                <div className="w-12 h-12 bg-amber-100 rounded-2xl flex items-center justify-center">
-                  <TrophyFilled className="text-amber-500 text-2xl" />
+              <div className="flex items-center gap-4 mb-12">
+                <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-200">
+                  <TrophyFilled className="text-white text-2xl" />
                 </div>
-                <h2 className="text-3xl font-black text-gray-800 tracking-tight uppercase italic">
-                  {searchBooks !== null
-                    ? "Kết quả tìm kiếm"
-                    : "Bảng vàng thư viện"}
-                </h2>
+                <div>
+                  <h2 className="text-2xl md:text-3xl font-black text-gray-800 tracking-tight">
+                    {searchBooks !== null
+                      ? "Kết quả tìm kiếm"
+                      : "Bảng vàng thư viện"}
+                  </h2>
+                  <p className="text-gray-400 text-sm font-medium mt-1">
+                    {searchBooks !== null ? `Tìm thấy ${searchBooks.length} kết quả` : "Những cuốn sách được yêu thích nhất"}
+                  </p>
+                </div>
               </div>
 
               {/* LOGIC HIỂN THỊ */}
@@ -655,20 +749,29 @@ const UserHomepage = () => {
             {/* NEW BOOKS SECTION */}
             {!searchBooks && (
               <section>
-                <div className="flex items-center justify-between mb-10 border-b border-gray-100 pb-4">
-                  <h2 className="text-2xl font-black text-gray-800 flex items-center gap-3">
-                    <div className="w-3 h-3 bg-[#153D36] rounded-full animate-ping"></div>{" "}
-                    SÁCH MỚI LÊN KỆ
-                  </h2>
+                <div className="flex items-center justify-between mb-10">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-[#153D36] to-[#1e5649] rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-200">
+                      <BookOutlined className="text-white text-xl" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-black text-gray-800">
+                        Sách mới lên kệ
+                      </h2>
+                      <p className="text-gray-400 text-sm font-medium mt-0.5">
+                        Những đầu sách mới nhất tại thư viện
+                      </p>
+                    </div>
+                  </div>
                   <button
                     onClick={() => navigate("/new-books")}
-                    className="group text-[#153D36] font-black text-sm uppercase tracking-wider flex items-center"
+                    className="group flex items-center gap-2 bg-[#153D36]/5 hover:bg-[#153D36] text-[#153D36] hover:text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-300"
                   >
-                    XEM TẤT CẢ{" "}
-                    <RightOutlined className="ml-2 group-hover:translate-x-1 transition-transform" />
+                    Xem tất cả
+                    <RightOutlined className="text-xs group-hover:translate-x-1 transition-transform" />
                   </button>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                   {latestBooks.map((book) => (
                     <BookCard
                       key={book.idBook}
@@ -687,19 +790,28 @@ const UserHomepage = () => {
             <div className="lg:col-span-4 space-y-12">
               <div className="sticky top-24 space-y-12">
                 {/* TOP AUTHORS */}
-                <section className="bg-white rounded-[2rem] p-8 shadow-2xl shadow-gray-200/50 border border-gray-50 relative overflow-hidden">
-                  <div className="flex justify-between items-center mb-8 relative z-10">
-                    <h3 className="font-black text-xl text-gray-800 uppercase tracking-tighter">
-                      Tác giả tiêu biểu
-                    </h3>
+                <section className="glass-card rounded-2xl p-6 premium-shadow relative overflow-hidden">
+                  {/* Decorative gradient */}
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-100 to-transparent rounded-full -translate-y-1/2 translate-x-1/2 opacity-60"></div>
+
+                  <div className="flex justify-between items-center mb-6 relative z-10">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-[#153D36] to-[#1e5649] rounded-xl flex items-center justify-center">
+                        <UserOutlined className="text-white text-lg" />
+                      </div>
+                      <h3 className="font-bold text-lg text-gray-800">
+                        Tác giả tiêu biểu
+                      </h3>
+                    </div>
                     <button
                       onClick={() => navigate("/author")}
-                      className="text-[#153D36] font-bold text-xs hover:underline uppercase"
+                      className="text-[#153D36] font-semibold text-xs hover:underline flex items-center gap-1"
                     >
-                      Tất cả
+                      Xem tất cả <RightOutlined className="text-[10px]" />
                     </button>
                   </div>
-                  <div className="space-y-6 relative z-10">
+
+                  <div className="space-y-3 relative z-10">
                     {loading ? (
                       <Skeleton active avatar />
                     ) : (
@@ -709,52 +821,62 @@ const UserHomepage = () => {
                           onClick={() =>
                             navigate(`/authorInfo/${author.idAuthor}`)
                           }
-                          className="flex items-center gap-4 group cursor-pointer p-2 hover:bg-emerald-50 rounded-2xl transition-all duration-300"
+                          className="flex items-center gap-4 group cursor-pointer p-3 bg-gray-50/50 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-transparent rounded-xl transition-all duration-300"
                         >
                           <div className="relative">
                             <Avatar
-                              size={60}
+                              size={48}
                               src={author.urlAvatar}
-                              className="border-2 border-white shadow-lg group-hover:scale-110 transition-transform duration-500"
+                              className="border-2 border-white shadow-md group-hover:shadow-lg transition-all duration-300"
                               icon={<UserOutlined />}
                             />
-                            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-amber-400 text-[#153D36] rounded-full flex items-center justify-center text-[10px] font-black border-2 border-white shadow-sm">
+                            <div className={`absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border-2 border-white shadow-sm ${index === 0 ? 'bg-gradient-to-br from-amber-400 to-orange-500 text-white' :
+                              index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-400 text-gray-700' :
+                                index === 2 ? 'bg-gradient-to-br from-orange-400 to-orange-500 text-white' :
+                                  'bg-[#153D36] text-white'
+                              }`}>
                               {index + 1}
                             </div>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-black text-gray-800 group-hover:text-[#153D36] transition-colors truncate text-base">
+                            <h4 className="font-bold text-gray-800 group-hover:text-[#153D36] transition-colors truncate text-sm">
                               {author.nameAuthor}
                             </h4>
-                            <Tag className="m-0 mt-1 border-none bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-md uppercase">
+                            <span className="text-[10px] text-gray-400 font-medium">
                               {author.nationality || "Việt Nam"}
-                            </Tag>
+                            </span>
                           </div>
+                          <RightOutlined className="text-gray-300 text-xs opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
                         </div>
                       ))
                     )}
                   </div>
-                  <div className="absolute top-0 right-0 w-40 h-40 bg-[#153D36]/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
                 </section>
 
                 {/* RECENT BORROWING */}
-                <section className="bg-[#153D36] rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden group">
-                  <div className="flex justify-between items-center mb-10 relative z-10">
-                    <div className="flex items-center gap-3 text-white">
-                      <HistoryOutlined className="text-emerald-400 text-2xl" />
-                      <h3 className="font-black text-lg uppercase tracking-widest">
+                <section className="bg-gradient-to-br from-[#0d2925] via-[#153D36] to-[#1a4a40] rounded-2xl p-6 premium-shadow relative overflow-hidden">
+                  {/* Decorative elements */}
+                  <div className="absolute top-0 right-0 w-40 h-40 bg-emerald-400/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                  <div className="absolute bottom-0 left-0 w-32 h-32 bg-emerald-400/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+
+                  <div className="flex justify-between items-center mb-6 relative z-10">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-white/10 backdrop-blur-xl rounded-xl flex items-center justify-center">
+                        <HistoryOutlined className="text-emerald-400 text-lg" />
+                      </div>
+                      <h3 className="font-bold text-lg text-white">
                         Mượn gần đây
                       </h3>
                     </div>
                     <button
                       onClick={() => navigate("/history")}
-                      className="text-emerald-300 text-[10px] font-black hover:text-white uppercase tracking-widest"
+                      className="text-emerald-300 text-xs font-semibold hover:text-white flex items-center gap-1 transition-colors"
                     >
-                      Lịch sử
+                      Xem lịch sử <RightOutlined className="text-[10px]" />
                     </button>
                   </div>
 
-                  <div className="space-y-5 relative z-10">
+                  <div className="space-y-3 relative z-10">
                     {loading ? (
                       <Skeleton active paragraph={{ rows: 3 }} />
                     ) : loanHistory.length > 0 ? (
@@ -762,48 +884,45 @@ const UserHomepage = () => {
                         <div
                           key={item.idBook}
                           onClick={() => navigate(`/detail/${item.idBook}`)}
-                          className="flex gap-4 p-3 bg-white/5 hover:bg-white/10 rounded-2xl transition-all duration-300 cursor-pointer border border-white/5 hover:border-emerald-500/30 group/item"
+                          className="flex gap-4 p-3 bg-white/5 hover:bg-white/10 rounded-xl transition-all duration-300 cursor-pointer border border-white/5 hover:border-emerald-500/20 group"
                         >
-                          <div className="w-16 h-22 flex-shrink-0 shadow-2xl">
+                          <div className="w-14 h-20 flex-shrink-0">
                             <img
                               src={
                                 item.avatarUrl || "https://placehold.co/150x220"
                               }
-                              className="w-full h-full object-cover rounded-xl border border-white/10 group-item-hover:scale-105 transition-transform"
+                              className="w-full h-full object-cover rounded-lg border border-white/10 shadow-lg"
                               alt=""
                             />
                           </div>
                           <div className="flex-1 min-w-0 flex flex-col justify-center">
-                            <h4 className="text-sm font-black truncate text-white group-item-hover:text-emerald-400 transition-colors mb-1">
+                            <h4 className="text-sm font-bold truncate text-white group-hover:text-emerald-300 transition-colors mb-1">
                               {item.nameBook}
                             </h4>
-                            <div className="space-y-1">
-                              <p className="text-[10px] text-gray-400 font-medium">
-                                ID: {item.idBook}
-                              </p>
-                              {item.dateReturn ? (
-                                <span className="text-[10px] text-emerald-400 font-black flex items-center gap-1.5 uppercase">
-                                  <CheckCircleFilled /> Đã hoàn trả
-                                </span>
-                              ) : (
-                                <span className="text-[10px] text-amber-400 font-black flex items-center gap-1.5 uppercase animate-pulse">
-                                  <ClockCircleFilled /> Đang mượn
-                                </span>
-                              )}
-                            </div>
+                            <p className="text-[10px] text-white/40 font-medium mb-2">
+                              ID: {item.idBook}
+                            </p>
+                            {item.dateReturn ? (
+                              <span className="inline-flex items-center gap-1.5 text-[10px] text-emerald-400 font-semibold bg-emerald-400/10 px-2 py-0.5 rounded-full w-fit">
+                                <CheckCircleFilled /> Đã hoàn trả
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1.5 text-[10px] text-amber-400 font-semibold bg-amber-400/10 px-2 py-0.5 rounded-full w-fit">
+                                <ClockCircleFilled /> Đang mượn
+                              </span>
+                            )}
                           </div>
                         </div>
                       ))
                     ) : (
-                      <div className="flex flex-col items-center justify-center py-12 text-white/20">
-                        <BookOutlined className="text-5xl mb-3" />
-                        <p className="text-xs uppercase tracking-widest font-black">
-                          Chưa có lịch sử
+                      <div className="flex flex-col items-center justify-center py-10 text-white/20">
+                        <BookOutlined className="text-4xl mb-3" />
+                        <p className="text-xs font-medium">
+                          Chưa có lịch sử mượn sách
                         </p>
                       </div>
                     )}
                   </div>
-                  <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-all duration-700"></div>
                 </section>
               </div>
             </div>

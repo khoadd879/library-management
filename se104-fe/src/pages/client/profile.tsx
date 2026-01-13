@@ -339,11 +339,10 @@ const ProfilePage = () => {
                     name={name}
                     value={value}
                     onChange={onChange}
-                    className={`w-full pl-10 pr-3 py-2.5 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 outline-none ${
-                        error
-                            ? 'border-red-500 ring-1 ring-red-200'
-                            : 'border-gray-200'
-                    }`}
+                    className={`w-full pl-10 pr-3 py-2.5 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 outline-none ${error
+                        ? 'border-red-500 ring-1 ring-red-200'
+                        : 'border-gray-200'
+                        }`}
                     placeholder={placeholder}
                 />
                 {error && (
@@ -355,7 +354,7 @@ const ProfilePage = () => {
 
     return (
         <div className="min-h-screen bg-[#F0F2F5] p-4 md:p-8 flex justify-center items-start animate-fade-in font-sans">
-            <div className="max-w-6xl w-full flex flex-col md:flex-row gap-6">
+            <div className="max-w-6xl w-full flex flex-col md:flex-row gap-6 md:items-stretch">
                 {/* ================= LEFT COLUMN: IDENTITY CARD ================= */}
                 <div className="w-full md:w-[350px] flex flex-col gap-6">
                     {/* Main Profile Card */}
@@ -373,7 +372,7 @@ const ProfilePage = () => {
                                         onClick={handleAvatarClick}
                                     />
                                 ) : userData?.avatar &&
-                                  typeof userData.avatar === 'string' ? (
+                                    typeof userData.avatar === 'string' ? (
                                     <img
                                         src={userData.avatar}
                                         alt="User Avatar"
@@ -391,11 +390,10 @@ const ProfilePage = () => {
 
                                 {/* Camera Icon Overlay on Hover/Edit */}
                                 <div
-                                    className={`absolute inset-0 bg-black/40 rounded-full flex items-center justify-center text-white opacity-0 transition-opacity duration-300 cursor-pointer ${
-                                        isEditing
-                                            ? 'group-hover:opacity-100'
-                                            : ''
-                                    }`}
+                                    className={`absolute inset-0 bg-black/40 rounded-full flex items-center justify-center text-white opacity-0 transition-opacity duration-300 cursor-pointer ${isEditing
+                                        ? 'group-hover:opacity-100'
+                                        : ''
+                                        }`}
                                     onClick={handleAvatarClick}
                                 >
                                     <CameraOutlined className="text-2xl" />
@@ -526,11 +524,10 @@ const ProfilePage = () => {
                                 </span>
                             </div>
                             <span
-                                className={`font-bold ${
-                                    totalDebt > 0
-                                        ? 'text-red-500'
-                                        : 'text-green-500'
-                                }`}
+                                className={`font-bold ${totalDebt > 0
+                                    ? 'text-red-500'
+                                    : 'text-green-500'
+                                    }`}
                             >
                                 {debtLoading ? (
                                     <Spin size="small" />
@@ -543,191 +540,204 @@ const ProfilePage = () => {
                 </div>
 
                 {/* ================= RIGHT COLUMN: SETTINGS FORM ================= */}
-                <div className="flex-1 bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
-                    <div className="flex justify-between items-center mb-8">
-                        <div>
-                            <h3 className="text-xl font-bold text-gray-800">
-                                Thông tin cá nhân
-                            </h3>
-                            <p className="text-gray-400 text-sm mt-1">
-                                Quản lý thông tin chi tiết của bạn
-                            </p>
-                        </div>
+                <div className="flex-1 flex bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="flex-1 flex flex-col">
+                        {/* Header with gradient */}
+                        <div className="bg-gradient-to-r from-[#153D36] to-[#1a4a42] p-6">
+                            <div className="flex justify-between items-center">
+                                <div>
+                                    <h3 className="text-lg font-bold text-white">
+                                        Thông tin cá nhân
+                                    </h3>
+                                    <p className="text-emerald-200/70 text-sm mt-0.5">
+                                        Quản lý thông tin chi tiết của bạn
+                                    </p>
+                                </div>
 
-                        {!isEditing ? (
-                            <button
-                                onClick={handleEditClick}
-                                className="flex items-center gap-2 px-5 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-all active:scale-95"
-                            >
-                                <EditOutlined /> <span>Chỉnh sửa</span>
-                            </button>
-                        ) : (
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={handleCancelClick}
-                                    className="flex items-center gap-2 px-5 py-2.5 bg-gray-100 text-gray-600 font-medium rounded-xl hover:bg-gray-200 transition-all active:scale-95"
-                                >
-                                    <CloseOutlined /> <span>Hủy</span>
-                                </button>
-                                <button
-                                    onClick={handleSaveClick}
-                                    className="flex items-center gap-2 px-5 py-2.5 bg-[#153D36] text-white font-medium rounded-xl hover:bg-[#1E4D45] shadow-lg shadow-emerald-200 transition-all active:scale-95"
-                                >
-                                    <SaveOutlined /> <span>Lưu lại</span>
-                                </button>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                        {/* Email */}
-                        <div className="col-span-2">
-                            <Label text="Địa chỉ Email" />
-                            <CustomInput
-                                isEdit={isEditing}
-                                icon={<MailOutlined />}
-                                name="email"
-                                value={
-                                    isEditing ? formData.email : userData?.email
-                                }
-                                onChange={handleInputChange}
-                                placeholder="example@email.com"
-                                error={errors.email}
-                            />
-                        </div>
-
-                        {/* Phone */}
-                        <div>
-                            <Label text="Số điện thoại" />
-                            <CustomInput
-                                isEdit={isEditing}
-                                icon={<PhoneOutlined />}
-                                name="phone"
-                                value={
-                                    isEditing ? formData.phone : userData?.phone
-                                }
-                                onChange={handleInputChange}
-                                placeholder="0909..."
-                                error={errors.phone}
-                            />
-                        </div>
-
-                        {/* Gender */}
-                        <div>
-                            <Label text="Giới tính" />
-                            {isEditing ? (
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                                        {formData.gender === 'Nam' ? (
-                                            <ManOutlined />
-                                        ) : (
-                                            <WomanOutlined />
-                                        )}
-                                    </div>
-                                    <select
-                                        name="gender"
-                                        value={formData.gender}
-                                        onChange={handleInputChange}
-                                        className={`w-full pl-10 pr-3 py-2.5 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none appearance-none ${
-                                            errors.gender
-                                                ? 'border-red-500'
-                                                : 'border-gray-200'
-                                        }`}
+                                {!isEditing ? (
+                                    <button
+                                        onClick={handleEditClick}
+                                        className="flex items-center gap-2 px-4 py-2 bg-white/10 text-white text-sm font-medium rounded-lg hover:bg-white/20 transition-all border border-white/20"
                                     >
-                                        <option value="">Chọn giới tính</option>
-                                        <option value="Nam">Nam</option>
-                                        <option value="Nữ">Nữ</option>
-                                    </select>
-                                    {errors.gender && (
-                                        <p className="text-red-500 text-xs mt-1">
-                                            {errors.gender}
-                                        </p>
-                                    )}
-                                </div>
-                            ) : (
-                                <span className="font-medium text-gray-800 flex items-center gap-2">
-                                    {userData?.sex === 'Nam' ? (
-                                        <ManOutlined className="text-blue-500" />
-                                    ) : (
-                                        <WomanOutlined className="text-pink-500" />
-                                    )}
-                                    {userData?.sex || 'Chưa cập nhật'}
-                                </span>
-                            )}
-                        </div>
-
-                        {/* Birthday */}
-                        <div className="col-span-1">
-                            <Label text="Ngày sinh" />
-                            {isEditing ? (
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                                        <CalendarOutlined />
+                                        <EditOutlined /> Chỉnh sửa
+                                    </button>
+                                ) : (
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={handleCancelClick}
+                                            className="px-4 py-2 bg-white/10 text-white text-sm font-medium rounded-lg hover:bg-white/20 transition-all border border-white/20"
+                                        >
+                                            <CloseOutlined /> Hủy
+                                        </button>
+                                        <button
+                                            onClick={handleSaveClick}
+                                            className="flex items-center gap-2 px-4 py-2 bg-white text-[#153D36] text-sm font-semibold rounded-lg hover:bg-emerald-50 transition-all"
+                                        >
+                                            <SaveOutlined /> Lưu
+                                        </button>
                                     </div>
-                                    <input
-                                        type="date"
-                                        name="dob"
-                                        value={dob}
-                                        onChange={(e) => setDob(e.target.value)}
-                                        className={`w-full pl-10 pr-3 py-2.5 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none ${
-                                            errors.dob
-                                                ? 'border-red-500'
-                                                : 'border-gray-200'
-                                        }`}
-                                    />
-                                </div>
-                            ) : (
-                                <span className="font-medium text-gray-800">
-                                    {userData?.dob
-                                        ? dayjs(userData.dob).format(
-                                              'DD/MM/YYYY'
-                                          )
-                                        : 'Chưa cập nhật'}
-                                </span>
-                            )}
-                        </div>
-
-                        {/* Password (Edit only) */}
-                        {isEditing && (
-                            <div className="col-span-1 animate-fade-in-up">
-                                <Label text="Mật khẩu mới (Tùy chọn)" />
-                                <CustomInput
-                                    isEdit={true}
-                                    type="password"
-                                    name="password"
-                                    value={formData.password}
-                                    onChange={handleInputChange}
-                                    placeholder="Nhập để đổi mật khẩu"
-                                />
+                                )}
                             </div>
-                        )}
+                        </div>
 
-                        {/* Address */}
-                        <div className="col-span-2">
-                            <Label text="Địa chỉ thường trú" />
-                            {isEditing ? (
-                                <div className="relative">
-                                    <div className="absolute top-3 left-3 text-gray-400">
-                                        <HomeOutlined />
+                        {/* Content */}
+                        <div className="p-8">
+                            <div className="space-y-8">
+                                {/* Section 1: Contact Info */}
+                                <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 ml-1">
+                                        Thông tin liên hệ
+                                    </h4>
+                                    <div className="space-y-4">
+                                        {/* Email + Phone Row (2 columns) */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {/* Email */}
+                                            <div className="group p-4 rounded-2xl bg-gray-50/50 hover:bg-gray-50 transition-all border border-transparent hover:border-gray-100">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-[#153D36]">
+                                                        <MailOutlined />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-xs text-gray-500 mb-1">Email</p>
+                                                        {isEditing ? (
+                                                            <input
+                                                                type="email"
+                                                                name="email"
+                                                                value={formData.email}
+                                                                onChange={handleInputChange}
+                                                                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
+                                                                placeholder="example@email.com"
+                                                            />
+                                                        ) : (
+                                                            <p className="text-gray-900 font-semibold truncate">
+                                                                {userData?.email || '—'}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Phone */}
+                                            <div className="group p-4 rounded-2xl bg-gray-50/50 hover:bg-gray-50 transition-all border border-transparent hover:border-gray-100">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
+                                                        <PhoneOutlined />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-xs text-gray-500 mb-1">Số điện thoại</p>
+                                                        {isEditing ? (
+                                                            <input
+                                                                type="text"
+                                                                name="phone"
+                                                                value={formData.phone}
+                                                                onChange={handleInputChange}
+                                                                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
+                                                                placeholder="0909..."
+                                                            />
+                                                        ) : (
+                                                            <p className="text-gray-900 font-semibold">
+                                                                {userData?.phone || '—'}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Address Row */}
+                                        <div className="group p-4 rounded-2xl bg-gray-50/50 hover:bg-gray-50 transition-all border border-transparent hover:border-gray-100">
+                                            <div className="flex items-start gap-4">
+                                                <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600">
+                                                    <HomeOutlined />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-xs text-gray-500 mb-1">Địa chỉ thường trú</p>
+                                                    {isEditing ? (
+                                                        <textarea
+                                                            name="address"
+                                                            value={formData.address}
+                                                            onChange={handleInputChange}
+                                                            rows={2}
+                                                            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none resize-none"
+                                                            placeholder="Số nhà, tên đường..."
+                                                        />
+                                                    ) : (
+                                                        <p className="text-gray-900 font-semibold leading-relaxed">
+                                                            {userData?.address || '—'}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <textarea
-                                        name="address"
-                                        value={formData.address}
-                                        onChange={handleInputChange}
-                                        rows={3}
-                                        className={`w-full pl-10 pr-3 py-2 bg-gray-50 border rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none ${
-                                            errors.address
-                                                ? 'border-red-500'
-                                                : 'border-gray-200'
-                                        }`}
-                                        placeholder="Số nhà, tên đường..."
-                                    />
                                 </div>
-                            ) : (
-                                <p className="font-medium text-gray-800 leading-relaxed">
-                                    {userData?.address || 'Chưa cập nhật'}
-                                </p>
-                            )}
+
+                                <hr className="border-gray-100 border-dashed" />
+
+                                {/* Section 2: Personal Info */}
+                                <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 ml-1">
+                                        Thông tin cá nhân
+                                    </h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {/* Birthday */}
+                                        <div className="group p-4 rounded-2xl bg-gray-50/50 hover:bg-gray-50 transition-all border border-transparent hover:border-gray-100">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center text-orange-600">
+                                                    <CalendarOutlined />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-xs text-gray-500 mb-1">Ngày sinh</p>
+                                                    {isEditing ? (
+                                                        <input
+                                                            type="date"
+                                                            name="dob"
+                                                            value={dob}
+                                                            onChange={(e) => setDob(e.target.value)}
+                                                            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
+                                                        />
+                                                    ) : (
+                                                        <p className="text-gray-900 font-semibold">
+                                                            {userData?.dob ? dayjs(userData.dob).format('DD/MM/YYYY') : '—'}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Gender */}
+                                        <div className="group p-4 rounded-2xl bg-gray-50/50 hover:bg-gray-50 transition-all border border-transparent hover:border-gray-100">
+                                            <div className="flex items-center gap-4">
+                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${userData?.sex === 'Nam' || formData.gender === 'Nam'
+                                                    ? 'bg-blue-100 text-blue-600'
+                                                    : 'bg-pink-100 text-pink-600'
+                                                    }`}>
+                                                    {userData?.sex === 'Nam' || formData.gender === 'Nam' ? <ManOutlined /> : <WomanOutlined />}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-xs text-gray-500 mb-1">Giới tính</p>
+                                                    {isEditing ? (
+                                                        <select
+                                                            name="gender"
+                                                            value={formData.gender}
+                                                            onChange={handleInputChange}
+                                                            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none appearance-none"
+                                                        >
+                                                            <option value="">Chọn</option>
+                                                            <option value="Nam">Nam</option>
+                                                            <option value="Nữ">Nữ</option>
+                                                        </select>
+                                                    ) : (
+                                                        <p className="text-gray-900 font-semibold">
+                                                            {userData?.sex || '—'}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

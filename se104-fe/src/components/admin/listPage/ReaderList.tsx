@@ -8,7 +8,6 @@ import {
     Tooltip,
     Modal,
     message,
-    Card,
 } from 'antd';
 import {
     EditOutlined,
@@ -16,7 +15,7 @@ import {
     UserOutlined,
     PhoneOutlined,
     MailOutlined,
-    EnvironmentOutlined,
+    CalendarOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import {
@@ -27,7 +26,6 @@ import {
 } from '@/services/api';
 import UpdateReaderModal from '../user/UpdateReaderModal';
 
-// Interface chuẩn hóa dữ liệu
 interface IReader {
     idReader: string;
     nameReader: string | null;
@@ -63,14 +61,11 @@ const ReaderList = ({ keyword }: Props) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
-    // 1. Fetch và Filter theo Role Reader
     const fetchReaders = async () => {
         setLoading(true);
         try {
             const res = await getListReader();
             const listReader = res.data || [];
-
-            // Lọc danh sách: Kiểm tra cả role_name và role để đảm bảo lấy đúng Reader
             const fil = listReader.filter(
                 (r: any) => r.role_name === 'Reader' || r.role === 'Reader'
             );
@@ -87,7 +82,6 @@ const ReaderList = ({ keyword }: Props) => {
         fetchReaders();
     }, []);
 
-    // 2. Tải danh sách loại độc giả cho Modal
     useEffect(() => {
         const fetchTypeReaderOptions = async () => {
             try {
@@ -105,7 +99,6 @@ const ReaderList = ({ keyword }: Props) => {
         fetchTypeReaderOptions();
     }, []);
 
-    // 3. Logic tìm kiếm (Client-side)
     const filteredReaders = useMemo(() => {
         if (!keyword) return readers;
         const lowerKeyword = keyword.toLowerCase();
@@ -123,17 +116,14 @@ const ReaderList = ({ keyword }: Props) => {
         setIsOpen(true);
     };
 
-    // 4. Xử lý cập nhật thông tin
     const handleUpdate = async (formData: FormData) => {
         if (!selectedReader) return;
         setIsSubmitting(true);
         try {
-            // Gọi API update bằng formData từ UpdateReaderModal
             await updateReaderAPI(selectedReader.idReader, formData);
-
             message.success('Cập nhật độc giả thành công!');
             setIsOpen(false);
-            fetchReaders(); // Tải lại danh sách sau khi lưu
+            fetchReaders();
         } catch (err) {
             console.error('Lỗi khi cập nhật:', err);
             message.error('Cập nhật thất bại, vui lòng thử lại!');
@@ -156,93 +146,91 @@ const ReaderList = ({ keyword }: Props) => {
         }
     };
 
-    // 5. Định nghĩa các cột cho Table Ant Design
     const columns: ColumnsType<IReader> = [
         {
             title: 'Độc giả',
             key: 'info',
-            width: 250,
+            fixed: 'left',
+            width: 220,
             render: (_, record) => (
                 <div className="flex items-center gap-3">
                     <Avatar
                         src={record.urlAvatar || ''}
-                        size={48}
+                        size={40}
                         icon={<UserOutlined />}
-                        className="border border-gray-200 shadow-sm flex-shrink-0"
+                        className="border-2 border-emerald-100 flex-shrink-0"
                     />
-                    <div className="flex flex-col">
-                        <span className="font-semibold text-[#153D36] text-base">
+                    <div className="min-w-0">
+                        <p className="font-semibold text-gray-800 truncate m-0 text-sm">
                             {record.nameReader || 'Chưa cập nhật'}
-                        </span>
-                        <Tag
-                            color="blue"
-                            className="w-fit mt-1 border-none bg-blue-50 text-blue-600"
-                        >
-                            {record.idReader}
-                        </Tag>
+                        </p>
+                        <p className="text-xs text-gray-400 m-0 truncate">
+                            {record.idTypeReader?.nameTypeReader || 'Độc giả'}
+                        </p>
                     </div>
                 </div>
             ),
         },
         {
-            title: 'Liên hệ',
-            key: 'contact',
+            title: 'Email',
+            key: 'email',
+            width: 200,
             render: (_, record) => (
-                <div className="flex flex-col gap-1 text-sm text-gray-600">
-                    <div className="flex items-center gap-2">
-                        <MailOutlined className="text-gray-400" />
-                        <span>{record.email || '---'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <PhoneOutlined className="text-gray-400" />
-                        <span>{record.phone || '---'}</span>
-                    </div>
+                <div className="flex items-center gap-2 text-gray-600">
+                    <MailOutlined className="text-[#153D36] flex-shrink-0" />
+                    <span className="truncate text-sm">{record.email || '---'}</span>
                 </div>
             ),
         },
         {
-            title: 'Địa chỉ',
-            dataIndex: 'address',
-            key: 'address',
-            render: (text) => (
-                <div className="flex items-start gap-2 text-gray-600 max-w-[200px]">
-                    <EnvironmentOutlined className="text-gray-400 mt-1" />
-                    <span className="truncate">{text || '---'}</span>
+            title: 'SĐT',
+            key: 'phone',
+            width: 130,
+            render: (_, record) => (
+                <div className="flex items-center gap-2 text-gray-600">
+                    <PhoneOutlined className="text-[#153D36] flex-shrink-0" />
+                    <span className="text-sm">{record.phone || '---'}</span>
                 </div>
             ),
         },
         {
-            title: 'Ngày lập thẻ',
+            title: 'Ngày tạo',
             dataIndex: 'createDate',
             key: 'createDate',
+            width: 120,
             render: (date) => (
-                <span className="text-gray-600">
-                    {date ? new Date(date).toLocaleDateString('vi-VN') : '---'}
-                </span>
+                <div className="flex items-center gap-2 text-gray-600">
+                    <CalendarOutlined className="text-[#153D36] flex-shrink-0" />
+                    <span className="text-sm">
+                        {date ? new Date(date).toLocaleDateString('vi-VN') : '---'}
+                    </span>
+                </div>
             ),
         },
         {
-            title: 'Thao tác',
+            title: '',
             key: 'action',
-            align: 'center',
-            width: 120,
+            fixed: 'right',
+            width: 90,
             render: (_, record) => (
                 <Space size="small">
-                    <Tooltip title="Chỉnh sửa thông tin">
+                    <Tooltip title="Sửa">
                         <Button
                             type="text"
-                            icon={<EditOutlined className="text-blue-600" />}
+                            size="small"
+                            icon={<EditOutlined />}
                             onClick={() => handleEdit(record)}
-                            className="hover:bg-blue-50"
+                            className="text-[#153D36] hover:!text-emerald-600 hover:!bg-emerald-50"
                         />
                     </Tooltip>
-                    <Tooltip title="Xoá độc giả">
+                    <Tooltip title="Xoá">
                         <Button
                             type="text"
+                            size="small"
                             danger
                             icon={<DeleteOutlined />}
                             onClick={() => setPendingDeleteId(record.idReader)}
-                            className="hover:bg-red-50"
+                            className="hover:!bg-red-50"
                         />
                     </Tooltip>
                 </Space>
@@ -255,23 +243,28 @@ const ReaderList = ({ keyword }: Props) => {
     )?.nameReader;
 
     return (
-        <Card
-            className="shadow-sm rounded-xl border-none"
-            bodyStyle={{ padding: 0 }}
-        >
-            <Table
-                columns={columns}
-                dataSource={filteredReaders}
-                rowKey="idReader"
-                loading={loading}
-                pagination={{
-                    pageSize: 5,
-                    showSizeChanger: true,
-                    pageSizeOptions: ['5', '10', '20'],
-                    showTotal: (total) => `Tổng ${total} độc giả`,
-                }}
-                locale={{ emptyText: 'Không tìm thấy dữ liệu' }}
-            />
+        <>
+            <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+                <Table
+                    columns={columns}
+                    dataSource={filteredReaders}
+                    rowKey="idReader"
+                    loading={loading}
+                    scroll={{ x: 700 }}
+                    size="middle"
+                    pagination={{
+                        pageSize: 8,
+                        showSizeChanger: false,
+                        showTotal: (total) => (
+                            <span className="text-gray-500 text-sm">
+                                Tổng <span className="font-semibold text-[#153D36]">{total}</span> độc giả
+                            </span>
+                        ),
+                    }}
+                    locale={{ emptyText: 'Không tìm thấy dữ liệu' }}
+                    className="reader-table"
+                />
+            </div>
 
             {selectedReader && (
                 <UpdateReaderModal
@@ -300,25 +293,30 @@ const ReaderList = ({ keyword }: Props) => {
             )}
 
             <Modal
-                title="Xác nhận xoá"
+                title={
+                    <span className="text-[#153D36] font-semibold">
+                        Xác nhận xoá độc giả
+                    </span>
+                }
                 open={!!pendingDeleteId}
                 onOk={confirmDelete}
                 onCancel={() => setPendingDeleteId(null)}
-                okText="Xoá ngay"
-                cancelText="Huỷ bỏ"
+                okText="Xoá"
+                cancelText="Huỷ"
                 okButtonProps={{ danger: true }}
                 centered
+                width={400}
             >
-                <div className="text-center py-4">
-                    <p className="text-gray-600 mb-2">
-                        Bạn có chắc chắn muốn xoá độc giả này khỏi hệ thống?
+                <div className="py-4 text-center">
+                    <p className="text-gray-600 mb-3">
+                        Bạn có chắc muốn xoá độc giả này không?
                     </p>
-                    <div className="font-bold text-lg text-[#153D36] bg-gray-50 py-2 rounded">
+                    <Tag color="red" className="text-base px-4 py-1">
                         {pendingReaderName || 'Độc giả này'}
-                    </div>
+                    </Tag>
                 </div>
             </Modal>
-        </Card>
+        </>
     );
 };
 

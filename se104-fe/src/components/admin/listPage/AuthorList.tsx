@@ -9,7 +9,6 @@ import {
     Space,
     Tooltip,
     Typography,
-    Card,
 } from 'antd';
 import { EditOutlined, DeleteOutlined, UserOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
@@ -25,14 +24,12 @@ interface Props {
     keyword: string;
 }
 
-// === SỬA INTERFACE TẠI ĐÂY ===
-// Thêm | null vào các trường có thể rỗng
 interface IAuthor {
     idAuthor: string;
     nameAuthor: string;
     nationality: string | null;
     biography: string | null;
-    urlAvatar: string | null; // <-- Khắc phục lỗi chính
+    urlAvatar: string | null;
     idTypeBook: {
         idTypeBook: string;
         nameTypeBook: string;
@@ -40,23 +37,19 @@ interface IAuthor {
 }
 
 const AuthorList = ({ keyword }: Props) => {
-    // State
     const [authors, setAuthors] = useState<IAuthor[]>([]);
     const [loading, setLoading] = useState(true);
     const [typeBookOptions, setTypeBookOptions] = useState<
         { value: string; label: string }[]
     >([]);
 
-    // Modal state
     const [openModal, setOpenModal] = useState(false);
     const [selectedAuthor, setSelectedAuthor] = useState<IAuthor | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Delete state
     const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
 
-    // 1. Fetch Type Books
     useEffect(() => {
         const fetchTypeBooks = async () => {
             try {
@@ -74,7 +67,6 @@ const AuthorList = ({ keyword }: Props) => {
         fetchTypeBooks();
     }, []);
 
-    // 2. Fetch Authors List
     const loadAuthors = async () => {
         setLoading(true);
         try {
@@ -92,7 +84,6 @@ const AuthorList = ({ keyword }: Props) => {
         loadAuthors();
     }, []);
 
-    // 3. Filter Logic
     const filteredAuthors = useMemo(() => {
         if (!keyword) return authors;
         return authors.filter((author) =>
@@ -102,7 +93,6 @@ const AuthorList = ({ keyword }: Props) => {
         );
     }, [authors, keyword]);
 
-    // 4. Handlers
     const handleEdit = (author: IAuthor) => {
         setSelectedAuthor(author);
         setOpenModal(true);
@@ -140,52 +130,50 @@ const AuthorList = ({ keyword }: Props) => {
         }
     };
 
-    // 5. Columns Configuration
     const columns: ColumnsType<IAuthor> = [
         {
-            title: 'Photo',
-            dataIndex: 'urlAvatar',
-            key: 'urlAvatar',
-            align: 'center',
-            width: 80,
-            render: (url) => (
-                <Avatar
-                    src={url}
-                    icon={<UserOutlined />}
-                    size="large"
-                    className="border border-gray-200"
-                />
+            title: 'Tác giả',
+            key: 'author',
+            fixed: 'left',
+            width: 220,
+            render: (_, record) => (
+                <div className="flex items-center gap-3">
+                    <Avatar
+                        src={record.urlAvatar}
+                        icon={<UserOutlined />}
+                        size={40}
+                        className="border-2 border-emerald-100 flex-shrink-0"
+                    />
+                    <div className="min-w-0">
+                        <p className="font-semibold text-gray-800 m-0 text-sm truncate">
+                            {record.nameAuthor}
+                        </p>
+                        <p className="text-xs text-gray-400 m-0">
+                            {record.nationality || 'Không rõ'}
+                        </p>
+                    </div>
+                </div>
             ),
-        },
-        {
-            title: 'Tên tác giả',
-            dataIndex: 'nameAuthor',
-            key: 'nameAuthor',
-            render: (text) => (
-                <span className="font-medium text-[#153D36]">{text}</span>
-            ),
-            sorter: (a, b) => a.nameAuthor.localeCompare(b.nameAuthor),
         },
         {
             title: 'Thể loại',
             dataIndex: ['idTypeBook', 'nameTypeBook'],
             key: 'typeBook',
-            render: (text) => <Tag color="cyan">{text || 'Chưa cập nhật'}</Tag>,
-        },
-        {
-            title: 'Quốc tịch',
-            dataIndex: 'nationality',
-            key: 'nationality',
-            render: (text) => text || '---',
+            width: 140,
+            render: (text) => (
+                <Tag color="cyan" className="border-none">
+                    {text || 'Chưa phân loại'}
+                </Tag>
+            ),
         },
         {
             title: 'Tiểu sử',
             dataIndex: 'biography',
             key: 'biography',
-            width: 300,
+            ellipsis: true,
             render: (text) => (
                 <Typography.Paragraph
-                    ellipsis={{ rows: 2, expandable: true, symbol: 'Xem thêm' }}
+                    ellipsis={{ rows: 2 }}
                     className="mb-0 text-gray-600 text-sm"
                 >
                     {text || 'Chưa có thông tin'}
@@ -193,25 +181,29 @@ const AuthorList = ({ keyword }: Props) => {
             ),
         },
         {
-            title: 'Thao tác',
+            title: '',
             key: 'action',
-            align: 'center',
-            width: 120,
+            fixed: 'right',
+            width: 90,
             render: (_, record) => (
                 <Space size="small">
-                    <Tooltip title="Chỉnh sửa">
+                    <Tooltip title="Sửa">
                         <Button
                             type="text"
-                            icon={<EditOutlined className="text-blue-600" />}
+                            size="small"
+                            icon={<EditOutlined />}
                             onClick={() => handleEdit(record)}
+                            className="text-[#153D36] hover:!text-emerald-600 hover:!bg-emerald-50"
                         />
                     </Tooltip>
                     <Tooltip title="Xoá">
                         <Button
                             type="text"
+                            size="small"
                             danger
                             icon={<DeleteOutlined />}
                             onClick={() => setPendingDeleteId(record.idAuthor)}
+                            className="hover:!bg-red-50"
                         />
                     </Tooltip>
                 </Space>
@@ -224,36 +216,38 @@ const AuthorList = ({ keyword }: Props) => {
     )?.nameAuthor;
 
     return (
-        <Card
-            className="shadow-sm rounded-xl border-none"
-            bodyStyle={{ padding: 0 }}
-        >
-            <Table
-                columns={columns}
-                dataSource={filteredAuthors}
-                rowKey="idAuthor"
-                loading={loading}
-                pagination={{
-                    pageSize: 5,
-                    showSizeChanger: true,
-                    pageSizeOptions: ['5', '10', '20'],
-                    showTotal: (total) => `Tổng ${total} tác giả`,
-                }}
-                locale={{ emptyText: 'Không tìm thấy tác giả nào' }}
-            />
+        <>
+            <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+                <Table
+                    columns={columns}
+                    dataSource={filteredAuthors}
+                    rowKey="idAuthor"
+                    loading={loading}
+                    scroll={{ x: 600 }}
+                    size="middle"
+                    pagination={{
+                        pageSize: 8,
+                        showSizeChanger: false,
+                        showTotal: (total) => (
+                            <span className="text-gray-500 text-sm">
+                                Tổng <span className="font-semibold text-[#153D36]">{total}</span> tác giả
+                            </span>
+                        ),
+                    }}
+                    locale={{ emptyText: 'Không tìm thấy tác giả nào' }}
+                />
+            </div>
 
-            {/* Modal Edit */}
             {selectedAuthor && (
                 <UpdateAuthorModal
                     open={openModal}
                     onClose={() => setOpenModal(false)}
                     initialData={{
-            
                         nameAuthor: selectedAuthor.nameAuthor || '',
                         nationality: selectedAuthor.nationality || '',
                         idTypeBook: selectedAuthor.idTypeBook?.idTypeBook || '',
                         biography: selectedAuthor.biography || '',
-                        urlAvatar: selectedAuthor.urlAvatar, // Avatar null thì Component Upload tự xử lý
+                        urlAvatar: selectedAuthor.urlAvatar,
                     }}
                     typeBookOptions={typeBookOptions}
                     onSubmit={handleUpdateSubmit}
@@ -261,30 +255,34 @@ const AuthorList = ({ keyword }: Props) => {
                 />
             )}
 
-            {/* Modal Delete Confirmation */}
             <Modal
-                title="Xác nhận xoá"
+                title={
+                    <span className="text-[#153D36] font-semibold">
+                        Xác nhận xoá tác giả
+                    </span>
+                }
                 open={!!pendingDeleteId}
                 onOk={confirmDelete}
                 onCancel={() => setPendingDeleteId(null)}
-                okText="Xoá ngay"
-                cancelText="Huỷ bỏ"
+                okText="Xoá"
+                cancelText="Huỷ"
                 okButtonProps={{ danger: true, loading: isDeleting }}
                 centered
+                width={400}
             >
-                <div className="text-center py-4">
-                    <p className="text-gray-600">
-                        Bạn có chắc chắn muốn xoá tác giả này không?
+                <div className="py-4 text-center">
+                    <p className="text-gray-600 mb-3">
+                        Bạn có chắc muốn xoá tác giả này không?
                     </p>
-                    <p className="font-bold text-lg mt-1 text-[#153D36]">
+                    <Tag color="red" className="text-base px-4 py-1">
                         {pendingAuthorName || 'Tác giả này'}
-                    </p>
-                    <p className="text-red-500 text-xs mt-2">
-                        *Hành động này không thể hoàn tác.
+                    </Tag>
+                    <p className="text-red-500 text-xs mt-3">
+                        * Hành động này không thể hoàn tác
                     </p>
                 </div>
             </Modal>
-        </Card>
+        </>
     );
 };
 

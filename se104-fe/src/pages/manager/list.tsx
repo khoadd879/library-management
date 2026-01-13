@@ -1,30 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import {
-    Input,
-    Tabs,
-    Badge,
-    Avatar,
-    Layout,
-    Typography,
-    Dropdown,
-    MenuProps,
-    Button,
-} from 'antd';
+import { Input, Layout, Typography } from 'antd';
 import {
     SearchOutlined,
-    BellOutlined,
-    UserOutlined,
-    DownOutlined,
     TeamOutlined,
     SolutionOutlined,
     ReadOutlined,
     TagsOutlined,
     BookOutlined,
-    LogoutOutlined,
-    SettingOutlined,
 } from '@ant-design/icons';
 
-// Import các component con của bạn
 import BookList from '@/components/admin/listPage/BookList';
 import ReaderList from '@/components/admin/listPage/ReaderList';
 import AuthorList from '@/components/admin/listPage/AuthorList';
@@ -39,7 +23,6 @@ const List = () => {
     const [searchKeyword, setSearchKeyword] = useState('');
     const [debouncedKeyword, setDebouncedKeyword] = useState('');
 
-    // Logic Search & Debounce giữ nguyên như cũ
     useEffect(() => {
         setSearchKeyword('');
         setDebouncedKeyword('');
@@ -51,19 +34,6 @@ const List = () => {
         }, 500);
         return () => clearTimeout(timer);
     }, [searchKeyword]);
-
-    // Menu Dropdown cho User (Ví dụ: Đăng xuất, Cài đặt)
-    const userMenuItems: MenuProps['items'] = [
-        { key: '1', label: 'Thông tin cá nhân', icon: <UserOutlined /> },
-        { key: '2', label: 'Cài đặt', icon: <SettingOutlined /> },
-        { type: 'divider' },
-        {
-            key: '3',
-            label: 'Đăng xuất',
-            icon: <LogoutOutlined />,
-            danger: true,
-        },
-    ];
 
     const tabItems = [
         {
@@ -99,71 +69,123 @@ const List = () => {
     ];
 
     return (
-        <Layout className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50/30">
+        <Layout className="min-h-screen bg-[#f5f7fa]">
             {/* Header Section */}
-            <div className="bg-gradient-to-r from-[#153D36] via-[#1A4A42] to-[#0D2621] px-8 py-6">
-                <div className="max-w-[1600px] mx-auto">
+            <div className="bg-[#153D36] px-4 sm:px-6 lg:px-8 py-5">
+                <div className="max-w-[1400px] mx-auto">
                     <Title
-                        level={2}
-                        style={{
-                            color: 'white',
-                            margin: 0,
-                            fontWeight: 700,
-                        }}
+                        level={3}
+                        className="!text-white !mb-1 !font-semibold"
                     >
                         Quản lý thư viện
                     </Title>
-                    <Text className="text-emerald-200/80">
+                    <Text className="text-emerald-200/70 text-sm">
                         Tra cứu và quản lý dữ liệu hệ thống
                     </Text>
                 </div>
             </div>
 
-            <Content className="p-6 md:p-10 max-w-[1600px] mx-auto w-full">
-                {/* === PHẦN NỘI DUNG CHÍNH (CARD TRẮNG) === */}
+            <Content className="p-4 sm:p-6 lg:p-8 max-w-[1400px] mx-auto w-full">
+                {/* Main Card */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <Tabs
-                        activeKey={activeTab}
-                        onChange={setActiveTab}
-                        type="card"
-                        size="large"
-                        // Tùy chỉnh CSS cho Tabs để nó hòa nhập với nền trắng
-                        className="custom-admin-tabs pt-4 px-4"
-                        items={tabItems.map((item) => ({
-                            key: item.key,
-                            label: (
-                                <span className="flex items-center gap-2 px-1 py-1">
-                                    {item.icon}
-                                    {item.label}
-                                </span>
-                            ),
-                            children: (
-                                <div className="p-2 animate-fadeIn min-h-[500px]">
-                                    {/* Truyền keyword xuống children */}
-                                    {item.children}
-                                </div>
-                            ),
-                        }))}
-                        // Thanh Search nằm gọn bên phải Tabs
-                        tabBarExtraContent={
-                            <div className="mr-2 pb-1 w-[280px] md:w-[350px]">
-                                <Input
-                                    placeholder="Tìm kiếm theo tên, mã..."
-                                    prefix={
-                                        <SearchOutlined className="text-gray-400" />
-                                    }
-                                    value={searchKeyword}
-                                    onChange={(e) =>
-                                        setSearchKeyword(e.target.value)
-                                    }
-                                    allowClear
-                                    className="rounded-lg bg-gray-50 hover:bg-white focus:bg-white border-gray-200 hover:border-[#153D36] focus:border-[#153D36] transition-all"
-                                />
-                            </div>
-                        }
-                    />
+                    {/* Tab Header with Search */}
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 p-4 border-b border-gray-100">
+                        {/* Tabs */}
+                        <div className="flex flex-wrap gap-2">
+                            {tabItems.map((item) => (
+                                <button
+                                    key={item.key}
+                                    onClick={() => setActiveTab(item.key)}
+                                    className={`
+                                        flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
+                                        ${activeTab === item.key
+                                            ? 'bg-[#153D36] text-white shadow-lg shadow-emerald-500/20'
+                                            : 'bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-[#153D36]'
+                                        }
+                                    `}
+                                >
+                                    <span className={activeTab === item.key ? 'text-emerald-300' : 'text-gray-400'}>
+                                        {item.icon}
+                                    </span>
+                                    <span className="hidden sm:inline">{item.label}</span>
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Search */}
+                        <div className="w-full lg:w-auto">
+                            <Input
+                                placeholder="Tìm kiếm theo tên, mã..."
+                                prefix={<SearchOutlined className="text-gray-400" />}
+                                value={searchKeyword}
+                                onChange={(e) => setSearchKeyword(e.target.value)}
+                                allowClear
+                                className="w-full lg:w-[300px] rounded-xl bg-gray-50 hover:bg-white focus:bg-white border-gray-200 hover:border-[#153D36] focus:border-[#153D36] transition-all h-10"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Tab Content */}
+                    <div className="p-4 sm:p-6">
+                        {tabItems.find((item) => item.key === activeTab)?.children}
+                    </div>
                 </div>
             </Content>
+
+            {/* Custom Table Styles */}
+            <style>{`
+                .ant-table {
+                    font-size: 14px;
+                }
+                .ant-table-thead > tr > th {
+                    background: #f8fafc !important;
+                    color: #64748b !important;
+                    font-weight: 600 !important;
+                    font-size: 12px !important;
+                    text-transform: uppercase !important;
+                    letter-spacing: 0.05em !important;
+                    border-bottom: 1px solid #e2e8f0 !important;
+                    padding: 12px 16px !important;
+                }
+                .ant-table-tbody > tr > td {
+                    padding: 14px 16px !important;
+                    border-bottom: 1px solid #f1f5f9 !important;
+                }
+                .ant-table-tbody > tr:hover > td {
+                    background: #f0fdf4 !important;
+                }
+                .ant-table-tbody > tr:last-child > td {
+                    border-bottom: none !important;
+                }
+                .ant-pagination {
+                    padding: 16px !important;
+                    margin: 0 !important;
+                    border-top: 1px solid #f1f5f9;
+                }
+                .ant-pagination-item-active {
+                    border-color: #153D36 !important;
+                }
+                .ant-pagination-item-active a {
+                    color: #153D36 !important;
+                }
+                .ant-spin-dot-item {
+                    background-color: #153D36 !important;
+                }
+                .ant-table-cell-fix-left,
+                .ant-table-cell-fix-right {
+                    background: #fff !important;
+                }
+                .ant-table-tbody > tr:hover .ant-table-cell-fix-left,
+                .ant-table-tbody > tr:hover .ant-table-cell-fix-right {
+                    background: #f0fdf4 !important;
+                }
+                @media (max-width: 640px) {
+                    .ant-table-thead > tr > th,
+                    .ant-table-tbody > tr > td {
+                        padding: 10px 12px !important;
+                    }
+                }
+            `}</style>
         </Layout>
     );
 };
