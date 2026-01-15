@@ -20,6 +20,7 @@ import ChatUser from "./pages/client/chatUser";
 import AuthorPage from "./pages/client/author";
 import UserHomepage from "./pages/client/homepage";
 import FeaturedBooks from "./pages/client/featured";
+import AllBooks from "./pages/client/allBooks";
 import NewBooks from "./pages/client/newBook";
 import BookDetailPage from "./pages/client/detail";
 import SignIn from "@/pages/client/auth/signin";
@@ -55,6 +56,7 @@ const router = createBrowserRouter([
           { path: "chat", element: <ChatUser /> },
           { path: "author", element: <AuthorPage /> },
           { path: "featured", element: <FeaturedBooks /> },
+          { path: "all-books", element: <AllBooks /> },
           { path: "new-books", element: <NewBooks /> },
           { path: "detail/:id", element: <BookDetailPage /> },
           { path: "profile", element: <Profile /> },

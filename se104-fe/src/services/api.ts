@@ -141,6 +141,10 @@ export const getTypeBooksAPI = () => {
   return axios.get("/api/TypeBook/list-all-typebook");
 };
 
+export const getTypeBooksWithCountAPI = () => {
+  return axios.get("/api/TypeBook/list-typebook-with-count");
+};
+
 export const addLoanBookAPI = (idReader: string, idTheBook: string) => {
   const urlBackend = "/api/LoanSlipBook/add-loanbook";
   return axios.post(urlBackend, { idReader, idTheBook });

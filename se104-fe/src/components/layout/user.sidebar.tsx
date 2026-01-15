@@ -8,6 +8,7 @@ import {
     FaUserCircle,
     FaBars,
     FaTimes,
+    FaBook,
 } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useCurrentApp } from '../context/app.context';
@@ -41,6 +42,11 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen, isMobile = fal
             icon: <FaHome size={20} />,
             label: 'Trang chủ',
             onClick: () => { navigate('/'); setMobileMenuOpen(false); },
+        },
+        {
+            icon: <FaBook size={20} />,
+            label: 'Tất cả sách',
+            onClick: () => { navigate('/all-books'); setMobileMenuOpen(false); },
         },
         {
             icon: <FaHeart size={20} />,
@@ -157,7 +163,7 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen, isMobile = fal
                 {mobileMenuOpen && (
                     <>
                         {/* Backdrop */}
-                        <div 
+                        <div
                             className="fixed inset-0 bg-black/50 z-40 mt-16"
                             onClick={() => setMobileMenuOpen(false)}
                         />
@@ -196,14 +202,13 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen, isMobile = fal
     // Desktop Sidebar View
     return (
         <nav
-            className={`fixed top-0 left-0 h-full flex flex-col duration-500 ease-out bg-gradient-to-b from-[#153D36] via-[#1A4A42] to-[#0D2621] text-white z-50 shadow-2xl ${
-                open ? 'w-72' : 'w-20'
-            }`}
+            className={`fixed top-0 left-0 h-full flex flex-col duration-500 ease-out bg-gradient-to-b from-[#153D36] via-[#1A4A42] to-[#0D2621] text-white z-50 shadow-2xl ${open ? 'w-72' : 'w-20'
+                }`}
             aria-label="Sidebar"
         >
             {/* Decorative gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-teal-500/5 pointer-events-none" />
-            
+
             {/* Header - User Info */}
             <div className="relative px-4 py-6 flex justify-between items-center border-b border-white/10">
                 <button
@@ -211,9 +216,8 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen, isMobile = fal
                     onClick={() => navigate('/profile')}
                 >
                     <div
-                        className={`flex items-center gap-4 ${
-                            !open && 'hidden'
-                        }`}
+                        className={`flex items-center gap-4 ${!open && 'hidden'
+                            }`}
                     >
                         {/* Avatar with glow effect */}
                         <div className="relative">
@@ -263,14 +267,13 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen, isMobile = fal
                         >
                             {/* Active indicator bar */}
                             <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-0 bg-emerald-400 rounded-full group-hover:h-6 transition-all duration-300 shadow-lg shadow-emerald-400/50" />
-                            
+
                             <div className="flex justify-center w-8 text-emerald-300/80 group-hover:text-emerald-300 group-hover:scale-110 transition-all duration-300">
                                 {item.icon}
                             </div>
                             <span
-                                className={`${
-                                    !open ? 'opacity-0 w-0' : 'opacity-100'
-                                } transition-all duration-300 truncate text-sm font-medium text-white/90 group-hover:text-white`}
+                                className={`${!open ? 'opacity-0 w-0' : 'opacity-100'
+                                    } transition-all duration-300 truncate text-sm font-medium text-white/90 group-hover:text-white`}
                             >
                                 {item.label}
                             </span>
@@ -308,9 +311,8 @@ const UserSidebar: React.FC<UserSidebarProps> = ({ open, setOpen, isMobile = fal
                         <FaSignOutAlt size={18} />
                     </div>
                     <span
-                        className={`${
-                            !open ? 'opacity-0 w-0' : 'opacity-100'
-                        } transition-all duration-300 text-sm font-bold tracking-wide text-white/80 group-hover:text-red-300`}
+                        className={`${!open ? 'opacity-0 w-0' : 'opacity-100'
+                            } transition-all duration-300 text-sm font-bold tracking-wide text-white/80 group-hover:text-red-300`}
                     >
                         ĐĂNG XUẤT
                     </span>

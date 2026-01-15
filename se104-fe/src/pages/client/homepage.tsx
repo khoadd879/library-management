@@ -7,6 +7,7 @@ import {
   addFavoriteBookAPI,
   getStarByIdBookAPI,
 } from "@/services/api";
+import { getCachedBooks, setCachedBooks } from "@/utils/bookCache";
 import {
   HeartOutlined,
   HeartFilled,
@@ -411,19 +412,31 @@ const UserHomepage = () => {
 
         const booksResponse = data?.data ?? data ?? [];
         if (Array.isArray(booksResponse)) {
-          const booksWithStars = await Promise.all(
-            booksResponse.map(async (book: any) => {
-              try {
-                const res = await getStarByIdBookAPI(book.idBook);
-                return {
-                  ...book,
-                  star: res?.data?.[0]?.star ?? 0,
-                };
-              } catch {
-                return { ...book, star: 0 };
-              }
-            })
-          );
+          // Check global cache first
+          const cachedBooks = getCachedBooks();
+          let booksWithStars: IBook[];
+
+          if (cachedBooks && cachedBooks.length > 0) {
+            // Use cached data
+            booksWithStars = cachedBooks as IBook[];
+          } else {
+            // Fetch star ratings and save to cache
+            booksWithStars = await Promise.all(
+              booksResponse.map(async (book: any) => {
+                try {
+                  const res = await getStarByIdBookAPI(book.idBook);
+                  return {
+                    ...book,
+                    star: res?.data?.[0]?.star ?? 0,
+                  };
+                } catch {
+                  return { ...book, star: 0 };
+                }
+              })
+            );
+            // Save to global cache for other pages to use
+            setCachedBooks(booksWithStars as any);
+          }
 
           setAllBooks(booksWithStars);
 
