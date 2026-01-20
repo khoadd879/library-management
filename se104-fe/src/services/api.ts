@@ -10,7 +10,7 @@ export const loginAPI = (email: string, password: string) => {
 export const signUpSendOtpAPI = (
   email: string,
   password: string,
-  confirmPassword: string
+  confirmPassword: string,
 ) => {
   const urlBackend = "/api/Authentication/register-send-otp";
   return axios.post<any>(urlBackend, {
@@ -56,7 +56,7 @@ export const verifyOTP = (email: string, otp: String) => {
 export const changePassword = (
   email: string,
   newPassword: String,
-  repeatPassword: String
+  repeatPassword: String,
 ) => {
   const urlBackend = "/api/ForgotPassword/change-password";
   return axios.post<any>(urlBackend, { email, newPassword, repeatPassword });
@@ -130,7 +130,7 @@ export const updateReaderAPI = (idReader: string, formData: FormData) => {
       headers: {
         "Content-Type": "multipart/form-data",
       },
-    }
+    },
   );
 };
 export const findReaderAPI = (token: string, username: string) => {
@@ -155,7 +155,7 @@ export const getAllReadersAPI = () => {
 export const addSlipBookAPI = (
   idLoanSlipBook: string,
   idReader: string,
-  idTheBook: string
+  idTheBook: string,
 ) => {
   const url = "/api/LoanSlipBook/add-slipbook";
   return axios.post<IBackendRes<any>>(url, {
@@ -192,7 +192,7 @@ export const getChatHistoryAPI = async (receiveUserId: string) => {
 };
 export const getAllLoanSlipsAPI = async () => {
   const res = await axios.get<ILoanSlipData>(
-    "/api/LoanSlipBook/get-all-loan-slip-book"
+    "/api/LoanSlipBook/get-all-loan-slip-book",
   );
   return res;
 };
@@ -216,10 +216,10 @@ export const addPenaltyAPI = (idReader: string, amountCollected: number) => {
   });
 };
 export const deleteAuthorAPI = (idAuthor: string) => {
-  return axios.delete(`/api/Author/delete-author/${idAuthor}`);
+  return axios.delete(`/api/Author/delete-author?idAuthor=${idAuthor}`);
 };
 export const deleteReaderAPI = (idReader: string) => {
-  return axios.delete(`/api/reader/Reader/delete-reader/${idReader}`);
+  return axios.delete(`/api/reader/Reader/delete-reader?idReader=${idReader}`);
 };
 export const deleteBookAPI = (idBook: string) => {
   return axios.delete(`/api/Book/delete-book?idBook=${idBook}`);
@@ -230,7 +230,7 @@ export const addEvaluationAPI = (
   idUser: string,
   idBook: string,
   eva_Comment: string,
-  eva_Star: number
+  eva_Star: number,
 ) => {
   return axios.post(`/api/Book/add-evaluation?idUser=${idUser}`, {
     idBook,
@@ -252,7 +252,7 @@ export const updateBookAPI = (idBook: string, formData: FormData) => {
       headers: {
         "Content-Type": "multipart/form-data",
       },
-    }
+    },
   );
 };
 
@@ -264,7 +264,7 @@ export const getAllComments = async (idBook: string) => {
 export const updateCommentAPI = async (
   idComment: string,
   comment: string,
-  rate: number
+  rate: number,
 ) => {
   const url = `/api/Book/edit-comment?idComment=${idComment}&comment=${comment}&rate=${rate}`;
   return await axios.put<IBackendRes<any>>(url);
@@ -288,7 +288,7 @@ export const addRoleAPI = (roleName: string, description: string) => {
 
 export const addRolePermissionAPI = (
   roleName: string,
-  permissionName: string
+  permissionName: string,
 ) => {
   return axios.post("/api/RolePermission/add-role-permission", {
     roleName: roleName,
@@ -314,7 +314,7 @@ export const updateRolePermissionAPI = async (
   oldRoleName: string,
   oldPermissionName: string,
   newRoleName: string,
-  newPermissionName: string
+  newPermissionName: string,
 ) => {
   const res = await axios.patch("/api/RolePermission/update-role-permission", {
     oldRoleName,
@@ -327,7 +327,7 @@ export const updateRolePermissionAPI = async (
 };
 export const deleteRolePermissionAPI = async (
   roleName: string,
-  permissionName: string
+  permissionName: string,
 ) => {
   return axios.delete("/api/RolePermission/delete-role-permission", {
     data: {
@@ -344,11 +344,11 @@ export const addOverdueReportAPI = async (createdDate: string) => {
 };
 export const updateParameterAPI = async (
   idParameter: string,
-  data: { nameParameter: string; valueParameter: number }
+  data: { nameParameter: string; valueParameter: number },
 ) => {
   const res = await axios.put(
     `/api/Parameter/update-parameter?idParameter=${idParameter}`,
-    data
+    data,
   );
   return res;
 };
@@ -385,12 +385,12 @@ export const getReaderByIdAPI = async (idreader: string) => {
 };
 export const getPenaltiesByIdAPI = (idUser: string) => {
   return axios.get<IPenaltyData>(
-    `/api/PenaltyTicket/list-penalty-ticket-by-user?idUser=${idUser}`
+    `/api/PenaltyTicket/list-penalty-ticket-by-user?idUser=${idUser}`,
   );
 };
 export const getReceiptHistoryAPI = (idReader: string) => {
   return axios.get<IReturnData>(
-    `/api/LoanSlipBook/get-receipt-history?idReader=${idReader}`
+    `/api/LoanSlipBook/get-receipt-history?idReader=${idReader}`,
   );
 };
 export const getBookStatusAPI = async (idThebook: string) => {
@@ -403,7 +403,7 @@ export const getBookStatusAPI = async (idThebook: string) => {
 };
 export const getHeaderBookByTheBookIdAPI = async (thebookId: string) => {
   const res = await axios.get(
-    `/api/Book/headerbook-by-thebook-id?idTheBook=${thebookId}`
+    `/api/Book/headerbook-by-thebook-id?idTheBook=${thebookId}`,
   );
   return res;
 };
@@ -425,23 +425,28 @@ export const addTypeReaderAPI = (nameTypeReader: string) => {
   });
 };
 export const updateTypeBookAPI = (idTypeBook: string, nameTypeBook: string) => {
-  return axios.put(`/api/TypeBook/update-typebook/${idTypeBook}`, {
+  return axios.put(`/api/TypeBook/update-typebook?idTypeBook=${idTypeBook}`, {
     nameTypeBook,
   });
 };
 export const updateTypeReaderAPI = (
   idTypeReader: string,
-  nameTypeReader: string
+  nameTypeReader: string,
 ) => {
-  return axios.put(`/api/TypeReader/update-typereader/${idTypeReader}`, {
-    nameTypeReader,
-  });
+  return axios.put(
+    `/api/TypeReader/update-typereader?idTypeReader=${idTypeReader}`,
+    {
+      nameTypeReader,
+    },
+  );
 };
 export const deleteTypeBookAPI = (idTypeBook: string) => {
-  return axios.delete(`/api/TypeBook/delete-typebook/${idTypeBook}`);
+  return axios.delete(`/api/TypeBook/delete-typebook?idTypeBook=${idTypeBook}`);
 };
 export const deleteTypeReaderAPI = (idTypeReader: string) => {
-  return axios.delete(`/api/TypeReader/delete-typereader/${idTypeReader}`);
+  return axios.delete(
+    `/api/TypeReader/delete-typereader?idTypeReader=${idTypeReader}`,
+  );
 };
 export const createAIMessageAPI = (idReader: string, readerMessage: string) => {
   const url = "/api/Ai/generate-message";
