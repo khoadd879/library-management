@@ -1,9 +1,9 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
-import { getAllBooksAndCommentsAPI, getTypeBooksWithCountAPI } from '@/services/api';
+import { getAllBooksAndCommentsAPI, getTypeBooksWithCountAPI, addFavoriteBookAPI } from '@/services/api';
 import { message, Spin, Pagination, Select } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { BookOutlined, SearchOutlined, FilterOutlined, ReloadOutlined } from '@ant-design/icons';
-import { getCachedBooks, setCachedBooks, clearBookCache } from '@/utils/bookCache';
+import { BookOutlined, SearchOutlined, FilterOutlined, ReloadOutlined, HeartOutlined, HeartFilled } from '@ant-design/icons';
+
 
 const AllBooks = () => {
     const [books, setBooks] = useState<IBook[]>([]);
@@ -21,8 +21,27 @@ const AllBooks = () => {
         navigate(`/detail/${idBook}`);
     };
 
-    // Fetch books với global caching (shared với homepage)
-    const fetchBooks = useCallback(async (forceRefresh = false) => {
+    // Toggle favorite/like book
+    const toggleLike = async (bookId: string) => {
+        try {
+            const idUser = localStorage.getItem('idUser');
+            if (!idUser) return message.error('Vui lòng đăng nhập!');
+            const res = await addFavoriteBookAPI(idUser, bookId);
+            if (res) {
+                setBooks((prev) =>
+                    prev.map((b) =>
+                        b.idBook === bookId ? { ...b, isLiked: !b.isLiked } : b
+                    )
+                );
+                message.success('Đã cập nhật yêu thích');
+            }
+        } catch (err) {
+            message.error('Lỗi thao tác');
+        }
+    };
+
+    // Fetch books from API
+    const fetchBooks = useCallback(async () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
@@ -33,26 +52,10 @@ const AllBooks = () => {
                 return;
             }
 
-            // Force refresh thì xóa cache
-            if (forceRefresh) {
-                clearBookCache();
-            }
-
-            // Check global cache (shared với homepage)
-            const cachedBooks = getCachedBooks();
-            if (cachedBooks && cachedBooks.length > 0) {
-                console.log('📚 [AllBooks] Sử dụng dữ liệu từ global cache');
-                setBooks(cachedBooks as IBook[]);
-                setLoading(false);
-                return;
-            }
-
             console.log('🔄 [AllBooks] Đang tải sách từ API...');
             const res = await getAllBooksAndCommentsAPI(idUser);
             if (Array.isArray(res.data)) {
                 setBooks(res.data);
-                // Lưu vào global cache
-                setCachedBooks(res.data);
             } else {
                 message.error('Không có dữ liệu sách');
             }
@@ -204,7 +207,7 @@ const AllBooks = () => {
 
                         {/* Refresh */}
                         <button
-                            onClick={() => fetchBooks(true)}
+                            onClick={() => fetchBooks()}
                             className="p-2.5 bg-white/10 hover:bg-white/20 rounded-xl transition"
                             title="Tải lại dữ liệu"
                         >
@@ -248,6 +251,20 @@ const AllBooks = () => {
                                                 <span className="text-xs mt-1 opacity-60">No Cover</span>
                                             </div>
                                         )}
+                                        {/* Like button */}
+                                        <div
+                                            className="absolute top-2 right-2 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-md cursor-pointer hover:bg-red-50 hover:scale-110 transition-all duration-300 z-10"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                toggleLike(book.idBook);
+                                            }}
+                                        >
+                                            {book.isLiked ? (
+                                                <HeartFilled className="text-red-500" />
+                                            ) : (
+                                                <HeartOutlined className="text-gray-400 hover:text-red-400" />
+                                            )}
+                                        </div>
                                         {/* Overlay on hover */}
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
                                             <span className="text-white text-xs font-medium">Xem chi tiết →</span>
@@ -261,7 +278,7 @@ const AllBooks = () => {
                                     </p>
                                     <div className="flex items-center justify-between mt-2">
                                         <span className="text-xs text-gray-400">
-                                            {book.reprintYear || 'N/A'}
+                                            {book.reprintYear || '0.0'}
                                         </span>
                                         {book.authors?.[0]?.idTypeBook?.nameTypeBook && (
                                             <span className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full truncate max-w-[80px]">

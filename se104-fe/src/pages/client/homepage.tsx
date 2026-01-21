@@ -5,9 +5,8 @@ import {
   getLoanSlipHistoryAPI,
   listAuthorAPI,
   addFavoriteBookAPI,
-  getStarByIdBookAPI,
 } from "@/services/api";
-import { getCachedBooks, setCachedBooks } from "@/utils/bookCache";
+
 import {
   HeartOutlined,
   HeartFilled,
@@ -230,7 +229,7 @@ const BookCard = ({
         <div className="flex items-center gap-1.5 bg-amber-50 px-2 py-1 rounded-lg">
           <StarFilled className="text-amber-400 text-xs" />
           <span className="text-xs font-bold text-amber-600">
-            {book.star ? book.star.toFixed(1) : "5.0"}
+            {book.star !== undefined && book.star > 0 ? book.star.toFixed(1) : "0.0"}
           </span>
         </div>
         <span className="text-[10px] font-semibold text-[#153D36] bg-emerald-50 px-2.5 py-1 rounded-lg">
@@ -412,31 +411,19 @@ const UserHomepage = () => {
 
         const booksResponse = data?.data ?? data ?? [];
         if (Array.isArray(booksResponse)) {
-          // Check global cache first
-          const cachedBooks = getCachedBooks();
-          let booksWithStars: IBook[];
-
-          if (cachedBooks && cachedBooks.length > 0) {
-            // Use cached data
-            booksWithStars = cachedBooks as IBook[];
-          } else {
-            // Fetch star ratings and save to cache
-            booksWithStars = await Promise.all(
-              booksResponse.map(async (book: any) => {
-                try {
-                  const res = await getStarByIdBookAPI(book.idBook);
-                  return {
-                    ...book,
-                    star: res?.data?.[0]?.star ?? 0,
-                  };
-                } catch {
-                  return { ...book, star: 0 };
-                }
-              })
-            );
-            // Save to global cache for other pages to use
-            setCachedBooks(booksWithStars as any);
-          }
+          // Calculate star ratings from evaluations
+          const booksWithStars = booksResponse.map((book: any) => {
+            const evaluations = book.evaluations || [];
+            let star = 0;
+            if (evaluations.length > 0) {
+              const totalRating = evaluations.reduce((sum: number, e: any) => sum + (e.rating || 0), 0);
+              star = totalRating / evaluations.length;
+            }
+            return {
+              ...book,
+              star,
+            };
+          });
 
           setAllBooks(booksWithStars);
 
@@ -583,7 +570,7 @@ const UserHomepage = () => {
                     <FireFilled className="text-sm" /> Thịnh hành
                   </span>
                   <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-semibold text-white/80 border border-white/10">
-                    <StarFilled className="text-amber-400" /> {activeHeroBook.star?.toFixed(1) || "5.0"}
+                    <StarFilled className="text-amber-400" /> {activeHeroBook.star && activeHeroBook.star > 0 ? activeHeroBook.star.toFixed(1) : "0.0"}
                   </span>
                 </div>
 
