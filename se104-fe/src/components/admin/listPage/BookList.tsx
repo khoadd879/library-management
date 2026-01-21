@@ -144,16 +144,41 @@ const BookList = ({ keyword }: { keyword: string }) => {
     const handleAddBook = async (formData: FormData) => {
         setIsAdding(true);
         try {
-            await addBookAPI(formData);
+            const res = await addBookAPI(formData);
+            // Axios interceptor returns response.data directly
+            // Check if response indicates failure
+            if (res?.success === false) {
+                message.error(res?.message || 'Thêm sách thất bại!');
+                return;
+            }
             message.success('Thêm sách thành công!');
             fetchBooks();
             setIsAddModalOpen(false);
         } catch (err: any) {
             console.error('Lỗi thêm sách:', err);
-            const errorMsg =
-                err?.response?.data?.message ||
-                err?.response?.message ||
-                'Thêm sách thất bại!';
+
+            // Axios interceptor returns error.response.data directly as err
+            // So err might be the data object directly
+            let errorMsg = 'Thêm sách thất bại!';
+
+            if (err?.errors) {
+                // Handle validation errors object from ASP.NET: { "FieldName": ["error1", "error2"], ... }
+                const errorMessages = Object.entries(err.errors)
+                    .map(
+                        ([field, messages]) =>
+                            `${field}: ${(messages as string[]).join(', ')}`,
+                    )
+                    .join('; ');
+                errorMsg = errorMessages || err?.title || errorMsg;
+            } else if (err?.message) {
+                // Handle custom error message from BE (e.g., regulation violations)
+                errorMsg = err.message;
+            } else if (err?.title) {
+                errorMsg = err.title;
+            } else if (typeof err === 'string') {
+                errorMsg = err;
+            }
+
             message.error(errorMsg);
         } finally {
             setIsAdding(false);
