@@ -56,6 +56,11 @@ const AddBookModal = ({
     }, [open, form]);
 
     const handleFinish = async (values: any) => {
+        // Validate required image
+        if (fileList.length === 0) {
+            return; // Form.Item validation will show error
+        }
+
         const formData = new FormData();
 
         // Thêm các trường cơ bản theo HeaderBookCreationRequest
@@ -66,7 +71,7 @@ const AddBookModal = ({
         // Xử lý mảng tác giả (Authors)
         if (values.authors && values.authors.length > 0) {
             values.authors.forEach((id: string) =>
-                formData.append('Authors', id)
+                formData.append('Authors', id),
             );
         }
 
@@ -74,16 +79,17 @@ const AddBookModal = ({
         formData.append('bookCreateRequest.Publisher', values.publisher || '');
         formData.append(
             'bookCreateRequest.ReprintYear',
-            values.reprintYear?.toString() || new Date().getFullYear().toString()
+            values.reprintYear?.toString() ||
+                new Date().getFullYear().toString(),
         );
         formData.append(
             'bookCreateRequest.ValueOfBook',
-            values.valueOfBook?.toString() || '0'
+            values.valueOfBook?.toString() || '0',
         );
 
-        // Xử lý ảnh bìa sách (BookImage)
+        // Xử lý ảnh bìa sách (BookImage) - QUAN TRỌNG!
         if (fileList[0]?.originFileObj) {
-            formData.append('BookImage', fileList[0].originFileObj);
+            formData.append('BookImage', fileList[0].originFileObj as File);
         }
 
         await onSubmit(formData);
@@ -95,11 +101,18 @@ const AddBookModal = ({
             setPreviewImage(null);
         },
         beforeUpload: (file) => {
-            setFileList([file]);
+            const uploadFile: UploadFile = {
+                uid: file.uid || `-${Date.now()}`,
+                name: file.name,
+                status: 'done',
+                originFileObj: file,
+            };
+            setFileList([uploadFile]);
+
             const reader = new FileReader();
             reader.onload = (e) => setPreviewImage(e.target?.result as string);
             reader.readAsDataURL(file);
-            return false; // Ngăn auto upload
+            return false;
         },
         fileList,
         maxCount: 1,
@@ -120,7 +133,7 @@ const AddBookModal = ({
             width={750}
             centered
             destroyOnClose
-            bodyStyle={{ padding: '20px 24px' }}
+            styles={{ body: { padding: '20px 24px' } }}
         >
             <Form
                 form={form}
@@ -135,35 +148,66 @@ const AddBookModal = ({
                 <Row gutter={24}>
                     {/* Cột trái: Ảnh bìa */}
                     <Col span={8}>
-                        <div className="flex flex-col items-center gap-4">
-                            <div className="w-full aspect-[2/3] bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden shadow-inner">
-                                {previewImage ? (
-                                    <img
-                                        src={previewImage}
-                                        alt="Preview"
-                                        className="w-full h-full object-cover"
-                                    />
-                                ) : (
-                                    <div className="text-center p-4">
-                                        <BookOutlined className="text-4xl text-gray-300 mb-2" />
-                                        <Text type="secondary" className="text-xs block">
-                                            Chưa có ảnh bìa
-                                        </Text>
-                                    </div>
-                                )}
-                            </div>
-                            <Upload {...uploadProps} showUploadList={false}>
-                                <Button
-                                    icon={<UploadOutlined />}
-                                    className="w-full"
+                        <Form.Item
+                            name="bookImage"
+                            rules={[
+                                {
+                                    validator: () => {
+                                        if (fileList.length === 0) {
+                                            return Promise.reject(
+                                                'Vui lòng tải lên ảnh bìa sách',
+                                            );
+                                        }
+                                        return Promise.resolve();
+                                    },
+                                },
+                            ]}
+                        >
+                            <div className="flex flex-col items-center gap-4">
+                                <div
+                                    className={`w-full aspect-[2/3] bg-gray-50 rounded-lg border-2 border-dashed ${fileList.length === 0 ? 'border-gray-200' : 'border-green-400'} flex items-center justify-center overflow-hidden shadow-inner`}
                                 >
-                                    Chọn ảnh bìa
-                                </Button>
-                            </Upload>
-                            <Text type="secondary" className="text-xs text-center">
-                                Hỗ trợ: JPG, PNG. Tối đa 5MB
-                            </Text>
-                        </div>
+                                    {previewImage ? (
+                                        <img
+                                            src={previewImage}
+                                            alt="Preview"
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="text-center p-4">
+                                            <BookOutlined className="text-4xl text-gray-300 mb-2" />
+                                            <Text
+                                                type="secondary"
+                                                className="text-xs block"
+                                            >
+                                                Chưa có ảnh bìa
+                                            </Text>
+                                        </div>
+                                    )}
+                                </div>
+                                <Upload {...uploadProps} showUploadList={false}>
+                                    <Button
+                                        icon={<UploadOutlined />}
+                                        className="w-full"
+                                        type={
+                                            fileList.length > 0
+                                                ? 'default'
+                                                : 'dashed'
+                                        }
+                                    >
+                                        {fileList.length > 0
+                                            ? 'Đổi ảnh bìa'
+                                            : 'Chọn ảnh bìa *'}
+                                    </Button>
+                                </Upload>
+                                <Text
+                                    type="secondary"
+                                    className="text-xs text-center"
+                                >
+                                    Hỗ trợ: JPG, PNG. Tối đa 5MB
+                                </Text>
+                            </div>
+                        </Form.Item>
                     </Col>
 
                     {/* Cột phải: Thông tin chi tiết */}
@@ -223,11 +267,16 @@ const AddBookModal = ({
                                         formatter={(value) =>
                                             `${value}`.replace(
                                                 /\B(?=(\d{3})+(?!\d))/g,
-                                                ','
+                                                ',',
                                             )
                                         }
                                         parser={(value) =>
-                                            Number(value!.replace(/\$\s?|(,*)/g, '')) as 0
+                                            Number(
+                                                value!.replace(
+                                                    /\$\s?|(,*)/g,
+                                                    '',
+                                                ),
+                                            ) as 0
                                         }
                                         prefix={
                                             <DollarOutlined className="text-gray-400" />
@@ -310,11 +359,12 @@ const AddBookModal = ({
                     </Col>
                 </Row>
 
-                <Form.Item label="Mô tả sách" name="describeBook">
+                <Form.Item label="Mô tả sách" required name="describeBook">
                     <TextArea
                         rows={4}
                         placeholder="Mô tả ngắn về nội dung sách..."
                         showCount
+                        required
                         maxLength={1000}
                     />
                 </Form.Item>
