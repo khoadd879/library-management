@@ -45,7 +45,7 @@ const FineForm = () => {
 
             if (res && res.data && Array.isArray(res.data)) {
                 const debtors = res.data.filter(
-                    (r: IReaderSimple) => r.totalDebt > 0
+                    (r: IReaderSimple) => r.totalDebt > 0,
                 );
                 setReaders(debtors);
             }
@@ -85,11 +85,15 @@ const FineForm = () => {
                 // Reload lại danh sách độc giả để cập nhật số nợ mới
                 await fetchReaders();
             } else {
-                message.error(res?.data?.message || 'Xuất phiếu thất bại!');
+                message.error(res?.message || 'Xuất phiếu thất bại!');
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
-            message.error('Lỗi hệ thống!');
+            const errorMsg =
+                err?.response?.data?.message ||
+                err?.response?.message ||
+                'Lỗi hệ thống!';
+            message.error(errorMsg);
         } finally {
             setSubmitting(false);
         }
@@ -106,7 +110,11 @@ const FineForm = () => {
             >
                 <div className="sm:p-4">
                     <div className="text-center mb-4 sm:mb-6">
-                        <Title level={3} className="!text-lg sm:!text-2xl" style={{ color: '#153D36', margin: 0 }}>
+                        <Title
+                            level={3}
+                            className="!text-lg sm:!text-2xl"
+                            style={{ color: '#153D36', margin: 0 }}
+                        >
                             Phiếu Thu Tiền Phạt
                         </Title>
                         <Text type="secondary" className="text-xs sm:text-sm">
@@ -154,9 +162,15 @@ const FineForm = () => {
                                     }
                                 >
                                     {readers.map((r: any) => (
-                                        <Option key={r.idReader} value={r.idReader}>
-                                            {r.nameReader ? r.nameReader : r.email}{' '}
-                                            - Nợ: {r.totalDebt.toLocaleString()} đ
+                                        <Option
+                                            key={r.idReader}
+                                            value={r.idReader}
+                                        >
+                                            {r.nameReader
+                                                ? r.nameReader
+                                                : r.email}{' '}
+                                            - Nợ: {r.totalDebt.toLocaleString()}{' '}
+                                            đ
                                         </Option>
                                     ))}
                                 </Select>
@@ -168,7 +182,11 @@ const FineForm = () => {
                                     <div className="grid grid-cols-2 gap-2 sm:gap-4">
                                         <div>
                                             <Statistic
-                                                title={<span className="text-xs sm:text-sm">Tổng nợ hiện tại</span>}
+                                                title={
+                                                    <span className="text-xs sm:text-sm">
+                                                        Tổng nợ hiện tại
+                                                    </span>
+                                                }
                                                 value={currentDebt}
                                                 valueStyle={{
                                                     color: '#cf1322',
@@ -181,9 +199,16 @@ const FineForm = () => {
                                         </div>
                                         <div>
                                             <Statistic
-                                                title={<span className="text-xs sm:text-sm">Nợ còn lại sau thu</span>}
+                                                title={
+                                                    <span className="text-xs sm:text-sm">
+                                                        Nợ còn lại sau thu
+                                                    </span>
+                                                }
                                                 value={remainingDebt}
-                                                valueStyle={{ color: '#153D36', fontSize: '16px' }}
+                                                valueStyle={{
+                                                    color: '#153D36',
+                                                    fontSize: '16px',
+                                                }}
                                                 suffix="₫"
                                                 className="[&_.ant-statistic-content-value]:!text-base sm:[&_.ant-statistic-content-value]:!text-xl"
                                             />
@@ -196,8 +221,8 @@ const FineForm = () => {
                             {form.getFieldValue('idReader') &&
                                 currentDebt === 0 && (
                                     <div className="bg-green-50 p-3 rounded mb-4 text-green-700 flex items-center gap-2 text-sm">
-                                        <SolutionOutlined /> Độc giả này không có
-                                        khoản nợ nào.
+                                        <SolutionOutlined /> Độc giả này không
+                                        có khoản nợ nào.
                                     </div>
                                 )}
 
@@ -224,8 +249,8 @@ const FineForm = () => {
                                             if (value > currentDebt) {
                                                 return Promise.reject(
                                                     new Error(
-                                                        'Không thể thu quá số tiền nợ!'
-                                                    )
+                                                        'Không thể thu quá số tiền nợ!',
+                                                    ),
                                                 );
                                             }
                                         },
@@ -241,13 +266,13 @@ const FineForm = () => {
                                     formatter={(value) =>
                                         `${value}`.replace(
                                             /\B(?=(\d{3})+(?!\d))/g,
-                                            ','
+                                            ',',
                                         )
                                     }
                                     parser={(value) =>
                                         value!.replace(
                                             /\$\s?|(,*)/g,
-                                            ''
+                                            '',
                                         ) as unknown as number
                                     }
                                     onChange={(value) =>

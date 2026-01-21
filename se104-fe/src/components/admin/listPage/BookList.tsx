@@ -35,8 +35,12 @@ const BookList = ({ keyword }: { keyword: string }) => {
     const [loading, setLoading] = useState(true);
     const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
     const [selectedBook, setSelectedBook] = useState<IBook | null>(null);
-    const [typeBooks, setTypeBooks] = useState<{ value: string; label: string }[]>([]);
-    const [authors, setAuthors] = useState<{ id: string; nameAuthor: string }[]>([]);
+    const [typeBooks, setTypeBooks] = useState<
+        { value: string; label: string }[]
+    >([]);
+    const [authors, setAuthors] = useState<
+        { id: string; nameAuthor: string }[]
+    >([]);
     const [isUpdating, setIsUpdating] = useState(false);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
@@ -82,20 +86,24 @@ const BookList = ({ keyword }: { keyword: string }) => {
             getListAuthor(),
         ]);
 
-        const typeListData = Array.isArray(typeRes) ? typeRes : typeRes?.data || [];
+        const typeListData = Array.isArray(typeRes)
+            ? typeRes
+            : typeRes?.data || [];
         setTypeBooks(
             typeListData.map((t: any) => ({
                 value: t.idTypeBook,
                 label: t.nameTypeBook,
-            }))
+            })),
         );
 
-        const authorListData = Array.isArray(authorRes) ? authorRes : authorRes?.data || [];
+        const authorListData = Array.isArray(authorRes)
+            ? authorRes
+            : authorRes?.data || [];
         setAuthors(
             authorListData.map((a: any) => ({
                 id: a.idAuthor,
                 nameAuthor: a.nameAuthor,
-            }))
+            })),
         );
     };
 
@@ -142,7 +150,10 @@ const BookList = ({ keyword }: { keyword: string }) => {
             setIsAddModalOpen(false);
         } catch (err: any) {
             console.error('Lỗi thêm sách:', err);
-            const errorMsg = err?.response?.data?.message || 'Thêm sách thất bại!';
+            const errorMsg =
+                err?.response?.data?.message ||
+                err?.response?.message ||
+                'Thêm sách thất bại!';
             message.error(errorMsg);
         } finally {
             setIsAdding(false);
@@ -151,7 +162,7 @@ const BookList = ({ keyword }: { keyword: string }) => {
 
     const filteredBooks = useMemo(() => {
         return books.filter((book) =>
-            (book.nameBook || '').toLowerCase().includes(keyword.toLowerCase())
+            (book.nameBook || '').toLowerCase().includes(keyword.toLowerCase()),
         );
     }, [books, keyword]);
 
@@ -191,7 +202,11 @@ const BookList = ({ keyword }: { keyword: string }) => {
             render: (authors: any[]) => (
                 <div className="flex flex-wrap gap-1">
                     {authors?.slice(0, 2).map((a) => (
-                        <Tag key={a.idAuthor} color="cyan" className="text-xs border-none">
+                        <Tag
+                            key={a.idAuthor}
+                            color="cyan"
+                            className="text-xs border-none"
+                        >
                             {a.nameAuthor}
                         </Tag>
                     ))}
@@ -252,7 +267,11 @@ const BookList = ({ keyword }: { keyword: string }) => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
                 <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-500">
-                        Hiển thị <span className="font-semibold text-[#153D36]">{filteredBooks.length}</span> sách
+                        Hiển thị{' '}
+                        <span className="font-semibold text-[#153D36]">
+                            {filteredBooks.length}
+                        </span>{' '}
+                        sách
                     </span>
                 </div>
                 <Button
@@ -279,7 +298,11 @@ const BookList = ({ keyword }: { keyword: string }) => {
                         showSizeChanger: false,
                         showTotal: (total) => (
                             <span className="text-gray-500 text-sm">
-                                Tổng <span className="font-semibold text-[#153D36]">{total}</span> sách
+                                Tổng{' '}
+                                <span className="font-semibold text-[#153D36]">
+                                    {total}
+                                </span>{' '}
+                                sách
                             </span>
                         ),
                     }}
@@ -309,7 +332,10 @@ const BookList = ({ keyword }: { keyword: string }) => {
                         Bạn có chắc muốn xoá sách này không?
                     </p>
                     <Tag color="red" className="text-base px-4 py-1">
-                        {books.find((b) => b.idBook === pendingDeleteId)?.nameBook}
+                        {
+                            books.find((b) => b.idBook === pendingDeleteId)
+                                ?.nameBook
+                        }
                     </Tag>
                 </div>
             </Modal>
@@ -324,7 +350,8 @@ const BookList = ({ keyword }: { keyword: string }) => {
                         nameHeaderBook: selectedBook.nameBook,
                         describeBook: selectedBook.describe,
                         idTypeBook:
-                            selectedBook.authors[0]?.idTypeBook?.idTypeBook || '',
+                            selectedBook.authors[0]?.idTypeBook?.idTypeBook ||
+                            '',
                         idAuthors: selectedBook.authors.map((a) => a.idAuthor),
                         publisher: selectedBook.publisher || '',
                         reprintYear: selectedBook.reprintYear || 2024,
