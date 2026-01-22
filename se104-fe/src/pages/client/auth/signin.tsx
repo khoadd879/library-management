@@ -3,6 +3,9 @@ import { authenticateAPI, loginAPI } from "@/services/api";
 import { message, Spin } from "antd";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+// --- THÊM IMPORTS CHO LOGO MỚI ---
+import { ReadOutlined } from "@ant-design/icons";
+import { motion } from "framer-motion";
 
 const SignIn = () => {
   const [username, setUsername] = useState("");
@@ -28,12 +31,12 @@ const SignIn = () => {
             atob(base64)
               .split("")
               .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-              .join("")
+              .join(""),
           );
           const payload = JSON.parse(jsonPayload);
           const role =
             payload[
-            "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+              "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
             ] ||
             payload.role ||
             payload.roleName ||
@@ -69,7 +72,7 @@ const SignIn = () => {
       return;
     }
 
-    const handleMessage = async (event: MessageEvent) => {
+    const handleMessage = async (event: any) => {
       const allowedOrigin = BACKEND_URL.endsWith("/")
         ? BACKEND_URL.slice(0, -1)
         : BACKEND_URL;
@@ -117,7 +120,7 @@ const SignIn = () => {
     window.addEventListener("message", handleMessage);
   };
 
-  const getRoleFromToken = (token: string): string => {
+  const getRoleFromToken = (token: any) => {
     try {
       const base64Url = token.split(".")[1];
       const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
@@ -125,12 +128,12 @@ const SignIn = () => {
         atob(base64)
           .split("")
           .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-          .join("")
+          .join(""),
       );
       const payload = JSON.parse(jsonPayload);
       return (
         payload[
-        "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+          "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
         ] ||
         payload.role ||
         payload.roleName ||
@@ -142,7 +145,7 @@ const SignIn = () => {
     }
   };
 
-  const navigateByRole = (roleName: string) => {
+  const navigateByRole = (roleName: any) => {
     switch (roleName) {
       case "Admin":
         navigate("/admin");
@@ -196,14 +199,23 @@ const SignIn = () => {
 
   return (
     <div className="min-h-screen bg-[#0a3d3f] flex items-center justify-center relative overflow-hidden p-4">
-      <div className="absolute top-5 left-5 flex items-center space-x-2 text-white text-lg font-semibold">
-        <img
-          src="https://cdn-icons-png.flaticon.com/512/29/29302.png"
-          alt="Logo Thư viện"
-          className="w-8 h-8 filter invert"
-        />
-        <span className="hidden sm:inline">LibManager</span>
+      {/* --- PHẦN LOGO MỚI (Đã chỉnh màu chữ thành trắng cho hợp nền tối) --- */}
+      <div
+        className="absolute top-5 left-5 flex items-center gap-3 cursor-pointer group z-20"
+        onClick={() => navigate("/")}
+      >
+        <motion.div
+          whileHover={{ rotate: 15, scale: 1.1 }}
+          transition={{ type: "spring", stiffness: 300 }}
+          className="w-10 h-10 bg-gradient-to-br from-[#153D36] to-emerald-500 rounded-xl flex items-center justify-center shadow-lg shadow-black/20"
+        >
+          <ReadOutlined className="!text-white text-lg" />
+        </motion.div>
+        <span className="font-extrabold text-2xl text-white tracking-tight group-hover:text-emerald-200 transition-colors">
+          LibManager<span className="text-emerald-400">.</span>
+        </span>
       </div>
+      {/* ------------------------------------------------------------------ */}
 
       <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 sm:p-8 w-full max-w-md mx-auto z-10 shadow-xl transition-all duration-300 transform hover:scale-[1.01]">
         <div className="text-center mb-8">
@@ -266,8 +278,9 @@ const SignIn = () => {
         <button
           onClick={handleLogin}
           disabled={loading}
-          className={`w-full py-3 bg-[#21b39b] rounded-lg text-white font-semibold hover:bg-[#1a9c86] transition-colors shadow-lg mt-6 text-sm sm:text-base flex items-center justify-center ${loading ? "opacity-70 cursor-not-allowed" : ""
-            }`}
+          className={`w-full py-3 bg-[#21b39b] rounded-lg text-white font-semibold hover:bg-[#1a9c86] transition-colors shadow-lg mt-6 text-sm sm:text-base flex items-center justify-center ${
+            loading ? "opacity-70 cursor-not-allowed" : ""
+          }`}
         >
           {loading ? (
             <div className="flex items-center gap-2">

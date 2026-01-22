@@ -24,7 +24,9 @@ import {
   AudioFilled,
   AudioOutlined,
   CloseOutlined,
+  ReloadOutlined,
 } from "@ant-design/icons";
+
 import { message, Skeleton, Avatar } from "antd";
 
 // --- IMPORT SWIPER ---
@@ -172,14 +174,15 @@ const BookCard = ({
     {rank && (
       <div className="absolute top-3 left-3 z-20">
         <div
-          className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm shadow-lg ${rank === 1
-            ? "bg-gradient-to-br from-yellow-400 to-amber-500 text-white"
-            : rank === 2
-              ? "bg-gradient-to-br from-gray-300 to-gray-400 text-gray-700"
-              : rank === 3
-                ? "bg-gradient-to-br from-orange-400 to-orange-500 text-white"
-                : "bg-gradient-to-br from-[#153D36] to-[#1e5649] text-white"
-            }`}
+          className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm shadow-lg ${
+            rank === 1
+              ? "bg-gradient-to-br from-yellow-400 to-amber-500 text-white"
+              : rank === 2
+                ? "bg-gradient-to-br from-gray-300 to-gray-400 text-gray-700"
+                : rank === 3
+                  ? "bg-gradient-to-br from-orange-400 to-orange-500 text-white"
+                  : "bg-gradient-to-br from-[#153D36] to-[#1e5649] text-white"
+          }`}
         >
           {rank}
         </div>
@@ -229,7 +232,9 @@ const BookCard = ({
         <div className="flex items-center gap-1.5 bg-amber-50 px-2 py-1 rounded-lg">
           <StarFilled className="text-amber-400 text-xs" />
           <span className="text-xs font-bold text-amber-600">
-            {book.star !== undefined && book.star > 0 ? book.star.toFixed(1) : "0.0"}
+            {book.star !== undefined && book.star > 0
+              ? book.star.toFixed(1)
+              : "0.0"}
           </span>
         </div>
         <span className="text-[10px] font-semibold text-[#153D36] bg-emerald-50 px-2.5 py-1 rounded-lg">
@@ -354,7 +359,7 @@ const UserHomepage = () => {
       if (res) {
         const update = (list: IBook[]) =>
           list.map((b) =>
-            b.idBook === bookId ? { ...b, isLiked: !b.isLiked } : b
+            b.idBook === bookId ? { ...b, isLiked: !b.isLiked } : b,
           );
 
         setAllBooks((prev) => update(prev));
@@ -364,7 +369,7 @@ const UserHomepage = () => {
 
         if (activeHeroBook?.idBook === bookId)
           setActiveHeroBook((prev) =>
-            prev ? { ...prev, isLiked: !prev.isLiked } : null
+            prev ? { ...prev, isLiked: !prev.isLiked } : null,
           );
         message.success("Đã cập nhật yêu thích");
       }
@@ -416,7 +421,10 @@ const UserHomepage = () => {
             const evaluations = book.evaluations || [];
             let star = 0;
             if (evaluations.length > 0) {
-              const totalRating = evaluations.reduce((sum: number, e: any) => sum + (e.rating || 0), 0);
+              const totalRating = evaluations.reduce(
+                (sum: number, e: any) => sum + (e.rating || 0),
+                0,
+              );
               star = totalRating / evaluations.length;
             }
             return {
@@ -437,7 +445,7 @@ const UserHomepage = () => {
           setLatestBooks(
             [...booksWithStars]
               .sort((a, b) => (b.reprintYear || 0) - (a.reprintYear || 0))
-              .slice(0, 12)
+              .slice(0, 12),
           );
         }
       } catch (error) {
@@ -488,14 +496,15 @@ const UserHomepage = () => {
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           <div
-            className="flex items-center gap-2 cursor-pointer"
+            className="flex items-center gap-3 cursor-pointer group"
             onClick={() => navigate("/")}
           >
-            <div className="w-10 h-10 bg-[#153D36] rounded-xl text-white flex items-center justify-center shadow-lg">
-              <BookOutlined className="text-white text-xl" />
+            <div className="w-10 h-10 bg-gradient-to-br from-[#153D36] to-emerald-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-900/10 group-hover:scale-105 transition-transform duration-300">
+              <ReadOutlined className="!text-white text-lg" />
             </div>
-            <span className="font-extrabold text-xl text-[#153D36] tracking-tight hidden sm:block uppercase italic">
-              LibManager
+
+            <span className="font-extrabold text-xl text-[#153D36] tracking-tight hidden sm:block group-hover:text-emerald-800 transition-colors">
+              LibManager<span className="text-emerald-500">.</span>
             </span>
           </div>
 
@@ -536,10 +545,9 @@ const UserHomepage = () => {
         {/* HERO SECTION (Chỉ hiện khi không tìm kiếm) */}
         {!searchBooks && activeHeroBook && (
           <section
-            className={`relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#0d2925] via-[#153D36] to-[#1a4a40] text-white mb-14 min-h-[460px] flex items-center transition-opacity duration-300 ${isHeroTransitioning
-              ? "opacity-70"
-              : "opacity-100"
-              }`}
+            className={`relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#0d2925] via-[#153D36] to-[#1a4a40] text-white mb-14 min-h-[460px] flex items-center transition-opacity duration-300 ${
+              isHeroTransitioning ? "opacity-70" : "opacity-100"
+            }`}
           >
             {/* Background layers */}
             <div className="absolute inset-0 z-0">
@@ -551,10 +559,13 @@ const UserHomepage = () => {
                 }}
               ></div>
               {/* Grid pattern overlay */}
-              <div className="absolute inset-0 opacity-5" style={{
-                backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
-                backgroundSize: '40px 40px'
-              }}></div>
+              <div
+                className="absolute inset-0 opacity-5"
+                style={{
+                  backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
+                  backgroundSize: "40px 40px",
+                }}
+              ></div>
               {/* Gradient overlay */}
               <div className="absolute inset-0 bg-gradient-to-r from-[#0d2925] via-[#153D36]/95 to-transparent"></div>
               {/* Decorative circles */}
@@ -570,7 +581,10 @@ const UserHomepage = () => {
                     <FireFilled className="text-sm" /> Thịnh hành
                   </span>
                   <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-semibold text-white/80 border border-white/10">
-                    <StarFilled className="text-amber-400" /> {activeHeroBook.star && activeHeroBook.star > 0 ? activeHeroBook.star.toFixed(1) : "0.0"}
+                    <StarFilled className="text-amber-400" />{" "}
+                    {activeHeroBook.star && activeHeroBook.star > 0
+                      ? activeHeroBook.star.toFixed(1)
+                      : "0.0"}
                   </span>
                 </div>
 
@@ -580,13 +594,14 @@ const UserHomepage = () => {
 
                 <p className="text-emerald-100/70 text-lg font-medium max-w-xl line-clamp-2 leading-relaxed">
                   {activeHeroBook.description ||
-                    `Khám phá hành trình tri thức cùng ${activeHeroBook.authors?.[0]?.nameAuthor || 'tác giả'}. Một tác phẩm không thể bỏ qua tại thư viện.`}
+                    `Khám phá hành trình tri thức cùng ${activeHeroBook.authors?.[0]?.nameAuthor || "tác giả"}. Một tác phẩm không thể bỏ qua tại thư viện.`}
                 </p>
 
                 <div className="flex items-center gap-3 text-sm text-white/60">
                   <span className="flex items-center gap-2">
                     <UserOutlined />
-                    {activeHeroBook.authors?.[0]?.nameAuthor || "Tác giả ẩn danh"}
+                    {activeHeroBook.authors?.[0]?.nameAuthor ||
+                      "Tác giả ẩn danh"}
                   </span>
                   <span className="w-1 h-1 bg-white/40 rounded-full"></span>
                   <span>{activeHeroBook.reprintYear || 2024}</span>
@@ -620,7 +635,10 @@ const UserHomepage = () => {
                 <div className="absolute inset-0 bg-gradient-to-b from-emerald-400/20 to-transparent blur-3xl rounded-full scale-150"></div>
                 <div className="relative">
                   <img
-                    src={activeHeroBook.image || "https://placehold.co/320x480/153D36/FFFFFF?text=📚"}
+                    src={
+                      activeHeroBook.image ||
+                      "https://placehold.co/320x480/153D36/FFFFFF?text=📚"
+                    }
                     className="relative w-[260px] md:w-[300px] aspect-[2/3] object-cover rounded-2xl shadow-[0_25px_80px_-15px_rgba(0,0,0,0.5)] glow-emerald"
                     alt={activeHeroBook.nameBook}
                   />
@@ -636,8 +654,9 @@ const UserHomepage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           {/* CỘT CHÍNH: NẾU SEARCH -> COL-SPAN-12 (FULL), NẾU KHÔNG -> COL-SPAN-8 */}
           <div
-            className={`${searchBooks !== null ? "lg:col-span-12" : "lg:col-span-8"
-              } space-y-20`}
+            className={`${
+              searchBooks !== null ? "lg:col-span-12" : "lg:col-span-8"
+            } space-y-20`}
           >
             <section>
               <div className="flex items-center gap-4 mb-12">
@@ -651,7 +670,9 @@ const UserHomepage = () => {
                       : "Bảng vàng thư viện"}
                   </h2>
                   <p className="text-gray-400 text-sm font-medium mt-1">
-                    {searchBooks !== null ? `Tìm thấy ${searchBooks.length} kết quả` : "Những cuốn sách được yêu thích nhất"}
+                    {searchBooks !== null
+                      ? `Tìm thấy ${searchBooks.length} kết quả`
+                      : "Những cuốn sách được yêu thích nhất"}
                   </p>
                 </div>
               </div>
@@ -830,11 +851,17 @@ const UserHomepage = () => {
                               className="border-2 border-white shadow-md group-hover:shadow-lg transition-all duration-300"
                               icon={<UserOutlined />}
                             />
-                            <div className={`absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border-2 border-white shadow-sm ${index === 0 ? 'bg-gradient-to-br from-amber-400 to-orange-500 text-white' :
-                              index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-400 text-gray-700' :
-                                index === 2 ? 'bg-gradient-to-br from-orange-400 to-orange-500 text-white' :
-                                  'bg-[#153D36] text-white'
-                              }`}>
+                            <div
+                              className={`absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border-2 border-white shadow-sm ${
+                                index === 0
+                                  ? "bg-gradient-to-br from-amber-400 to-orange-500 text-white"
+                                  : index === 1
+                                    ? "bg-gradient-to-br from-gray-300 to-gray-400 text-gray-700"
+                                    : index === 2
+                                      ? "bg-gradient-to-br from-orange-400 to-orange-500 text-white"
+                                      : "bg-[#153D36] text-white"
+                              }`}
+                            >
                               {index + 1}
                             </div>
                           </div>

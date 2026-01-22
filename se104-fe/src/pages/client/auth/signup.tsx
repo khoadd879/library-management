@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { message } from "antd";
-
+import { ReadOutlined } from "@ant-design/icons";
+import { motion } from "framer-motion";
 import { signUpSendOtpAPI } from "@/services/api";
 
 const SignUp = () => {
@@ -26,7 +27,7 @@ const SignUp = () => {
       const res = await signUpSendOtpAPI(email, password, confirmPassword);
       if (res) {
         message.success(
-          "Đăng ký thành công! Vui lòng kiểm tra email để lấy mã OTP."
+          "Đăng ký thành công! Vui lòng kiểm tra email để lấy mã OTP.",
         );
         navigate("/verification", {
           state: {
@@ -47,13 +48,20 @@ const SignUp = () => {
 
   return (
     <div className="min-h-screen bg-[#0a3d3f] flex items-center justify-center relative overflow-hidden p-4">
-      <div className="absolute top-5 left-5 flex items-center space-x-2 text-white text-lg font-semibold">
-        <img
-          src="https://cdn-icons-png.flaticon.com/512/29/29302.png"
-          alt="Library Logo"
-          className="w-8 h-8 filter invert"
-        />
-        <span className="hidden sm:inline">Library</span>
+      <div
+        className="absolute top-5 left-5 flex items-center gap-3 cursor-pointer group z-20"
+        onClick={() => navigate("/")}
+      >
+        <motion.div
+          whileHover={{ rotate: 15, scale: 1.1 }}
+          transition={{ type: "spring", stiffness: 300 }}
+          className="w-10 h-10 bg-gradient-to-br from-[#153D36] to-emerald-500 rounded-xl flex items-center justify-center shadow-lg shadow-black/20"
+        >
+          <ReadOutlined className="!text-white text-lg" />
+        </motion.div>
+        <span className="font-extrabold text-2xl text-white tracking-tight group-hover:text-emerald-200 transition-colors">
+          LibManager<span className="text-emerald-400">.</span>
+        </span>
       </div>
 
       <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 sm:p-8 w-full max-w-md mx-auto z-10 shadow-xl transition-all duration-300 transform hover:scale-[1.01]">
