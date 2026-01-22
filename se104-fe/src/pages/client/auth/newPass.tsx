@@ -3,7 +3,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { changePassword } from "@/services/api";
 import { message } from "antd";
 import { useState } from "react";
-
+import { ReadOutlined } from "@ant-design/icons";
+import { motion } from "framer-motion";
 
 const NewPasswordPage = () => {
   const [password, setPassword] = useState("");
@@ -34,27 +35,38 @@ const NewPasswordPage = () => {
       }
     } catch (error: any) {
       console.error("Change password error:", error);
-      const errorMsg = error?.message || "Có lỗi xảy ra khi đổi mật khẩu. Vui lòng thử lại!";
+      const errorMsg =
+        error?.message || "Có lỗi xảy ra khi đổi mật khẩu. Vui lòng thử lại!";
       message.error(errorMsg);
       throw error;
     }
-  }
+  };
   return (
     <div className="min-h-screen bg-[#0a3d3f] flex items-center justify-center relative overflow-hidden p-4">
-      <div className="absolute top-5 left-5 flex items-center space-x-2 text-white text-lg font-semibold">
-        <img
-          src="https://cdn-icons-png.flaticon.com/512/29/29302.png"
-          alt="Library Logo"
-          className="w-8 h-8 filter invert"
-        />
-        <span className="hidden sm:inline">Library</span>
+      <div
+        className="absolute top-5 left-5 flex items-center gap-3 cursor-pointer group z-20"
+        onClick={() => navigate("/")}
+      >
+        <motion.div
+          whileHover={{ rotate: 15, scale: 1.1 }}
+          transition={{ type: "spring", stiffness: 300 }}
+          className="w-10 h-10 bg-gradient-to-br from-[#153D36] to-emerald-500 rounded-xl flex items-center justify-center shadow-lg shadow-black/20"
+        >
+          <ReadOutlined className="!text-white text-lg" />
+        </motion.div>
+        <span className="font-extrabold text-2xl text-white tracking-tight group-hover:text-emerald-200 transition-colors">
+          LibManager<span className="text-emerald-400">.</span>
+        </span>
       </div>
-
 
       <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 sm:p-8 w-full max-w-md mx-auto z-10 shadow-xl transition-all duration-300 transform hover:scale-[1.01]">
         <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">New Password</h1>
-          <p className="text-base sm:text-lg text-gray-200">Please enter your new password</p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+            New Password
+          </h1>
+          <p className="text-base sm:text-lg text-gray-200">
+            Please enter your new password
+          </p>
         </div>
 
         <div className="space-y-4">
@@ -83,7 +95,6 @@ const NewPasswordPage = () => {
           </div>
         </div>
 
-
         <button
           onKeyDown={(e) => e.key === "Enter" && handleChangePassword()}
           onClick={handleChangePassword}
@@ -96,7 +107,12 @@ const NewPasswordPage = () => {
           Remember your password?{" "}
           <a
             href="/signin"
-            style={{ color: 'white', fontWeight: '500', textDecoration: 'underline', transition: 'color 0.3s' }}
+            style={{
+              color: "white",
+              fontWeight: "500",
+              textDecoration: "underline",
+              transition: "color 0.3s",
+            }}
           >
             Sign In
           </a>

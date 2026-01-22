@@ -146,7 +146,7 @@ const LandingPage = () => {
               transition={{ type: "spring", stiffness: 300 }}
               className="w-11 h-11 bg-gradient-to-br from-[#153D36] to-emerald-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-900/10"
             >
-              <ReadOutlined className="text-white text-xl" />
+              <ReadOutlined className="!text-white text-xl" />
             </motion.div>
             <span className="font-extrabold text-2xl text-[#153D36] tracking-tight group-hover:text-emerald-800 transition-colors">
               LibManager<span className="text-emerald-500">.</span>
